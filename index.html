@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Simulador — Teoria das Restrições</title>
+<title>Linha de Produção</title>
 <style>
   :root{
     --bg: #14171a;
@@ -27,130 +27,58 @@
       var(--bg);
     color:var(--text);
     font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-    padding:28px 20px 60px;
+    padding:20px 20px 50px;
   }
   .wrap{max-width:1180px;margin:0 auto;}
 
-  header{margin-bottom:22px;display:flex;align-items:flex-start;gap:14px;}
-  .logo{
-    flex:0 0 auto;
-    width:44px;height:44px;
-    border-radius:12px;
-    background:linear-gradient(150deg, var(--yellow), #b98d0a);
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 6px 18px rgba(245,197,24,0.25);
-    margin-top:2px;
-  }
-  .logo svg{width:24px;height:24px;}
-  .eyebrow{
-    font-family: "Courier New", Consolas, monospace;
-    font-size:12px;
-    letter-spacing:0.18em;
-    color:var(--yellow);
-    text-transform:uppercase;
-    margin-bottom:6px;
-  }
-  h1{
-    font-size:28px;
-    font-weight:800;
-    letter-spacing:-0.01em;
-    margin:0 0 6px;
-    text-transform:uppercase;
-  }
-  p.sub{
-    color:var(--muted);
-    font-size:14.5px;
-    max-width:680px;
-    line-height:1.5;
-    margin:0;
-  }
-
-  .status{
+  .hud{
     display:flex;
-    gap:14px;
+    gap:12px;
     flex-wrap:wrap;
-    margin:20px 0 26px;
+    align-items:stretch;
+    margin-bottom:20px;
   }
-  .stat{
+  .hud-title{
+    display:flex; align-items:center; gap:10px;
+    font-size:20px; font-weight:800; letter-spacing:-0.01em;
+    padding-right:6px;
+  }
+  .hud-title .icon{font-size:26px;}
+  .chip{
     background:var(--panel);
     border:1px solid var(--border);
     border-radius:10px;
-    padding:14px 18px;
-    flex:1;
-    min-width:220px;
-    transition:border-color .25s, transform .15s;
-    position:relative;
-    overflow:hidden;
+    padding:9px 16px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    min-width:110px;
+    transition:box-shadow .2s;
   }
-  .stat:hover{border-color:var(--muted);}
-  .stat .label{
-    font-size:11px;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--muted);
-    margin-bottom:6px;
-    display:flex;align-items:center;gap:6px;
+  .chip .lab{
+    font-size:9.5px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase;
   }
-  .stat .value{
+  .chip .val{
     font-family:"Courier New", Consolas, monospace;
-    font-size:26px;
-    font-weight:700;
-    transition:color .2s;
+    font-size:20px; font-weight:800;
   }
-  .stat.warn .value{color:var(--yellow);}
-  .stat .value small{font-size:14px;color:var(--muted);font-weight:400;}
-  .stat.pulse::after{
-    content:"";
-    position:absolute; inset:0;
-    background:radial-gradient(circle at 12px 12px, rgba(245,197,24,0.35), transparent 70%);
-    animation:pulseFade .6s ease-out;
-    pointer-events:none;
+  .chip.gold .val{ color:var(--yellow); }
+  .chip.goal{ min-width:190px; }
+  .goal-bar{
+    height:6px; border-radius:4px; background:var(--panel-2);
+    margin-top:6px; overflow:hidden;
   }
-  @keyframes pulseFade{ from{opacity:1;} to{opacity:0;} }
-
-  .info-tip{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:14px;height:14px;border-radius:50%;
-    background:var(--panel-2); color:var(--muted);
-    font-size:10px; font-weight:700; cursor:default;
-    border:1px solid var(--border);
+  .goal-bar .fill{
+    height:100%; border-radius:4px;
+    background:linear-gradient(90deg, var(--blue), var(--green));
+    width:0%;
+    transition:width .25s;
   }
-  .stat .label .info-tip:hover ~ .tip-text,
-  .info-tip:hover + .tip-text{ opacity:1; transform:translateY(0); }
-  .tip-text{
-    position:absolute; left:14px; right:14px; bottom:8px;
-    background:var(--panel-2); border:1px solid var(--border);
-    border-radius:6px; padding:6px 8px; font-size:11px; color:var(--muted);
-    opacity:0; transform:translateY(4px);
-    transition:opacity .15s, transform .15s;
-    pointer-events:none; z-index:2; line-height:1.4;
+  .chip.pulse{ animation:chipPulse .5s ease-out; }
+  @keyframes chipPulse{
+    0%{ box-shadow:0 0 0 0 rgba(62,207,142,0.5); }
+    100%{ box-shadow:0 0 0 12px rgba(62,207,142,0); }
   }
-
-  .insight{
-    background: linear-gradient(180deg, rgba(245,197,24,0.08), rgba(245,197,24,0.02));
-    border:1px solid rgba(245,197,24,0.35);
-    border-radius:10px;
-    padding:14px 18px;
-    font-size:14px;
-    line-height:1.55;
-    margin-bottom:20px;
-    transition:box-shadow .3s;
-  }
-  .insight.flash{ box-shadow:0 0 0 3px rgba(245,197,24,0.25); }
-  .insight b{color:var(--yellow);}
-
-  .legend{
-    display:flex; gap:18px; flex-wrap:wrap;
-    font-size:11.5px; color:var(--muted);
-    margin-bottom:22px;
-    padding:10px 14px;
-    background:rgba(255,255,255,0.02);
-    border:1px solid var(--border);
-    border-radius:8px;
-  }
-  .legend .item{display:flex;align-items:center;gap:6px;}
-  .legend .swatch{width:12px;height:12px;border-radius:3px;flex:0 0 auto;}
-  .legend .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
 
   .line{
     display:flex;
@@ -158,7 +86,7 @@
     gap:6px;
     overflow-x:auto;
     padding:10px 4px 26px;
-    margin-bottom:10px;
+    margin-bottom:6px;
   }
   .cell{
     display:flex;
@@ -185,10 +113,9 @@
     background:rgba(224,82,75,0.06);
   }
   .buffer.overload::after{
-    content:"cheio";
-    position:absolute; top:-9px; left:50%; transform:translateX(-50%);
-    background:var(--red); color:#fff; font-size:8px; font-weight:800;
-    letter-spacing:.05em; text-transform:uppercase; padding:1px 6px; border-radius:4px;
+    content:"⚠";
+    position:absolute; top:-13px; left:50%; transform:translateX(-50%);
+    color:var(--red); font-size:13px;
   }
   .unit{
     width:22px;
@@ -247,18 +174,12 @@
     box-shadow:0 0 0 1px rgba(245,197,24,0.4), 0 0 22px rgba(245,197,24,0.15);
   }
   .station.bottleneck::before{
-    content:"GARGALO";
+    content:"🐌";
     position:absolute;
-    top:-11px;
+    top:-13px;
     left:50%;
     transform:translateX(-50%);
-    background:var(--yellow);
-    color:#1a1a1a;
-    font-size:10px;
-    font-weight:800;
-    letter-spacing:0.08em;
-    padding:2px 8px;
-    border-radius:5px;
+    font-size:16px;
   }
   .station.just-changed{ animation:bottleneckShift .7s ease-out; }
   @keyframes bottleneckShift{
@@ -322,10 +243,6 @@
     width:0%;
     transition:width .25s;
   }
-  .util-label{
-    font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em;
-    display:flex; justify-content:space-between; margin-bottom:6px;
-  }
 
   .rate-row{
     display:flex;
@@ -348,9 +265,10 @@
   }
 
   .out{
-    width:70px;
+    width:76px;
     text-align:center;
     padding-bottom:10px;
+    position:relative;
   }
   .out .box{
     background:var(--panel);
@@ -358,42 +276,66 @@
     border-radius:10px;
     padding:14px 6px;
     transition:transform .15s;
+    position:relative;
+    overflow:visible;
   }
   .out .box.bump{ animation:bump .25s ease-out; }
   @keyframes bump{ 0%{transform:scale(1.15);} 100%{transform:scale(1);} }
   .out .num{
     font-family:"Courier New", monospace;
-    font-size:20px;
+    font-size:22px;
     font-weight:800;
     color:var(--green);
   }
   .out .lab{
-    font-size:9px;
-    color:var(--muted);
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    margin-top:4px;
+    font-size:18px;
+    margin-top:2px;
+  }
+  .float-plus{
+    position:absolute;
+    top:-4px; left:50%;
+    transform:translateX(-50%);
+    color:var(--green);
+    font-weight:800;
+    font-size:14px;
+    font-family:"Courier New", monospace;
+    pointer-events:none;
+    animation:floatUp .7s ease-out forwards;
+  }
+  @keyframes floatUp{
+    from{ opacity:1; transform:translate(-50%, 0); }
+    to{ opacity:0; transform:translate(-50%, -28px); }
+  }
+
+  .click-pop{
+    position:absolute;
+    top:-8px; left:50%;
+    transform:translateX(-50%);
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:2px 8px;
+    font-family:"Courier New", monospace;
+    font-size:12px;
+    font-weight:700;
+    color:var(--text);
+    pointer-events:none;
+    animation:floatUp .8s ease-out forwards;
+    z-index:5;
   }
 
   .chart{
     background:var(--panel);
     border:1px solid var(--border);
     border-radius:10px;
-    padding:16px 18px 10px;
-    margin:22px 0;
-  }
-  .chart .label{
-    font-size:11px;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--muted);
-    margin-bottom:10px;
+    padding:14px 18px 10px;
+    margin:18px 0;
   }
   .bars{
     display:flex;
     align-items:flex-end;
     gap:4px;
-    height:90px;
+    height:70px;
   }
   .bar{
     flex:1;
@@ -415,7 +357,6 @@
     font-size:13px;
     font-weight:700;
     letter-spacing:0.03em;
-    text-transform:uppercase;
     padding:11px 20px;
     border-radius:8px;
     border:1px solid var(--border);
@@ -440,102 +381,90 @@
   }
   .speed-group button{
     padding:6px 10px; font-size:11px; border:none; background:transparent;
-    border-radius:6px;
   }
   .speed-group button.active{ background:var(--yellow); color:#1a1a1a; }
 
-  .hint{
-    color:var(--muted);
-    font-size:12.5px;
-    margin-top:14px;
-    line-height:1.6;
+  .win-overlay{
+    position:fixed; inset:0;
+    background:rgba(10,12,14,0.72);
+    display:flex; align-items:center; justify-content:center;
+    z-index:60;
+    opacity:0; pointer-events:none;
+    transition:opacity .25s;
   }
+  .win-overlay.show{ opacity:1; pointer-events:auto; }
+  .win-card{
+    background:var(--panel);
+    border:1px solid var(--yellow);
+    border-radius:16px;
+    padding:32px 40px;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    transform:scale(.85);
+    transition:transform .25s;
+  }
+  .win-overlay.show .win-card{ transform:scale(1); }
+  .win-card .trophy{ font-size:48px; margin-bottom:6px; }
+  .win-card .time{
+    font-family:"Courier New", monospace;
+    font-size:34px; font-weight:800; color:var(--yellow);
+    margin:6px 0;
+  }
+  .win-card .record{
+    font-size:12.5px; color:var(--muted); margin-bottom:18px;
+  }
+  .win-card .record b{ color:var(--green); }
 
-  .toast-stack{
-    position:fixed; right:18px; bottom:18px;
-    display:flex; flex-direction:column; gap:8px;
-    z-index:50; max-width:320px;
+  .confetti{
+    position:fixed; inset:0; pointer-events:none; z-index:61; overflow:hidden;
   }
-  .toast{
-    background:var(--panel-2);
-    border:1px solid var(--border);
-    border-left:3px solid var(--yellow);
-    border-radius:8px;
-    padding:10px 14px;
-    font-size:12.5px;
-    line-height:1.5;
-    box-shadow:0 8px 24px rgba(0,0,0,0.35);
-    animation:toastIn .25s ease-out, toastOut .3s ease-in 3.2s forwards;
+  .confetti span{
+    position:absolute; top:-20px;
+    width:8px; height:14px;
+    animation:confettiFall linear forwards;
   }
-  .toast.good{ border-left-color:var(--green); }
-  .toast.bad{ border-left-color:var(--red); }
-  @keyframes toastIn{ from{opacity:0; transform:translateX(16px);} to{opacity:1; transform:translateX(0);} }
-  @keyframes toastOut{ to{opacity:0; transform:translateX(16px); height:0; padding-top:0; padding-bottom:0; margin:0; overflow:hidden;} }
+  @keyframes confettiFall{
+    to{ transform:translateY(110vh) rotate(540deg); opacity:0.4; }
+  }
 
   @media (max-width:700px){
-    h1{font-size:22px;}
     .line{ flex-direction:column; align-items:stretch; }
     .cell{ flex-direction:row; }
     .arrow{ display:none; }
     .station{ width:100%; }
-    .toast-stack{ left:12px; right:12px; max-width:none; }
+    .hud{ flex-direction:column; }
+    .hud-title{ order:-1; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <header>
-    <div class="logo">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2l2.2 4.5 4.9.7-3.6 3.5.9 4.9L12 13.3 7.6 15.6l.9-4.9L4.9 7.2l4.9-.7L12 2z" fill="#1a1a1a"/>
-      </svg>
+  <div class="hud">
+    <div class="hud-title"><span class="icon">🏭</span> Linha de Produção</div>
+    <div class="chip">
+      <div class="lab">⏱ Tempo</div>
+      <div class="val" id="simTime">00:00</div>
     </div>
-    <div>
-      <div class="eyebrow">Teoria das Restrições — Simulador de Linha</div>
-      <h1>A produção anda no ritmo do gargalo</h1>
-      <p class="sub">Ajuste a velocidade de cada estação e observe: melhorar qualquer estação que não seja o gargalo não muda a produção final — só acumula estoque na frente dela.</p>
+    <div class="chip gold">
+      <div class="lab">🏆 Recorde</div>
+      <div class="val" id="bestTime">--:--</div>
     </div>
-  </header>
-
-  <div class="status">
-    <div class="stat">
-      <div class="label">Peças prontas <span class="info-tip">i</span></div>
-      <div class="value" id="finishedCount">0</div>
-      <div class="tip-text">Total de peças que saíram pela última estação desde o início.</div>
+    <div class="chip goal">
+      <div class="lab"><span id="finishedCount">0</span> / <span id="goalVal">60</span> peças</div>
+      <div class="goal-bar"><div class="fill" id="goalFill"></div></div>
     </div>
-    <div class="stat warn">
-      <div class="label">Ritmo real do sistema <span class="info-tip">i</span></div>
-      <div class="value" id="systemRate">0 <small>un/min</small></div>
-      <div class="tip-text">Sempre igual à velocidade do gargalo — o resto da linha não importa.</div>
-    </div>
-    <div class="stat">
-      <div class="label">Tempo de simulação</div>
-      <div class="value" id="simTime">00:00</div>
-    </div>
-  </div>
-
-  <div class="insight" id="insight">
-    Clique em <b>Iniciar</b> e depois tente aumentar a velocidade de uma estação que <b>não</b> é o gargalo. Veja o que acontece com o ritmo do sistema.
-  </div>
-
-  <div class="legend">
-    <div class="item"><span class="swatch" style="background:var(--blue);"></span> Peça em estoque (buffer)</div>
-    <div class="item"><span class="dot" style="background:var(--green);box-shadow:0 0 6px rgba(62,207,142,.8);"></span> Estação trabalhando</div>
-    <div class="item"><span class="dot" style="background:var(--red);"></span> Estação parada (sem peça de entrada)</div>
-    <div class="item"><span class="swatch" style="background:var(--yellow);border-radius:50%;"></span> Estação gargalo (a mais lenta)</div>
   </div>
 
   <div class="line" id="line"><!-- gerado via JS --></div>
 
   <div class="chart">
-    <div class="label">Produção por intervalo (últimos 20 registros)</div>
     <div class="bars" id="bars"></div>
   </div>
 
   <div class="controls">
-    <button class="primary" id="playBtn">Iniciar</button>
-    <button class="ghost" id="resetBtn">Reiniciar</button>
+    <button class="primary" id="playBtn">▶ Iniciar</button>
+    <button class="ghost" id="resetBtn">↺ Reiniciar</button>
     <div class="speed-group" id="speedGroup">
       <button data-speed="1" class="active">1x</button>
       <button data-speed="2">2x</button>
@@ -543,11 +472,17 @@
     </div>
   </div>
 
-  <div class="hint">Clique em uma estação para ver o quanto ela trabalhou vs. ficou parada. Estação com moldura amarela e listras = gargalo. O estoque (retângulos azuis) se acumula na fila de entrada dela.</div>
-
 </div>
 
-<div class="toast-stack" id="toastStack"></div>
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card">
+    <div class="trophy">🏆</div>
+    <div class="time" id="winTime">00:00</div>
+    <div class="record" id="winRecord"></div>
+    <button class="primary" id="winPlayAgain">🔁 De novo</button>
+  </div>
+</div>
+<div class="confetti" id="confetti"></div>
 
 <script>
 (function(){
@@ -556,6 +491,8 @@
   const DEFAULT_RATES = [8, 8, 3, 8, 8]; // estação 3 = gargalo proposital
   const MAX_VISIBLE_BUFFER = 10;
   const OVERLOAD_THRESHOLD = 8;
+  const GOAL = 60;
+  const BEST_KEY = 'toc_best_time_seconds';
 
   let rates = DEFAULT_RATES.slice(); // un/min
   let progress = new Array(NUM_STATIONS).fill(0);
@@ -573,29 +510,37 @@
   const DT = 0.1; // segundos por tick
   let speedMult = 1;
   let prevBottleneck = null;
+  let won = false;
 
   const lineEl = document.getElementById('line');
   const barsEl = document.getElementById('bars');
   const finishedEl = document.getElementById('finishedCount');
-  const finishedStatEl = finishedEl.closest('.stat');
-  const systemRateEl = document.getElementById('systemRate');
+  const goalFillEl = document.getElementById('goalFill');
   const simTimeEl = document.getElementById('simTime');
-  const insightEl = document.getElementById('insight');
+  const bestTimeEl = document.getElementById('bestTime');
   const playBtn = document.getElementById('playBtn');
   const resetBtn = document.getElementById('resetBtn');
   const speedGroup = document.getElementById('speedGroup');
-  const toastStack = document.getElementById('toastStack');
+  const winOverlay = document.getElementById('winOverlay');
+  const winTimeEl = document.getElementById('winTime');
+  const winRecordEl = document.getElementById('winRecord');
+  const winPlayAgain = document.getElementById('winPlayAgain');
+  const confettiEl = document.getElementById('confetti');
 
-  function toast(msg, kind){
-    const t = document.createElement('div');
-    t.className = 'toast' + (kind ? ' ' + kind : '');
-    t.textContent = msg;
-    toastStack.appendChild(t);
-    setTimeout(() => t.remove(), 3600);
-    while(toastStack.children.length > 3){
-      toastStack.removeChild(toastStack.firstChild);
-    }
+  document.getElementById('goalVal').textContent = GOAL;
+
+  function fmtTime(s){
+    const m = Math.floor(s/60).toString().padStart(2,'0');
+    const ss = Math.floor(s%60).toString().padStart(2,'0');
+    return m + ':' + ss;
   }
+
+  function loadBest(){
+    const v = localStorage.getItem(BEST_KEY);
+    bestTimeEl.textContent = v ? fmtTime(parseFloat(v)) : '--:--';
+    return v ? parseFloat(v) : null;
+  }
+  let bestSeconds = loadBest();
 
   function bottleneckIndex(){
     let idx = 0;
@@ -603,11 +548,18 @@
     return idx;
   }
 
+  function popNumber(anchorEl, text, cls){
+    const p = document.createElement('div');
+    p.className = cls;
+    p.textContent = text;
+    anchorEl.appendChild(p);
+    setTimeout(() => p.remove(), 800);
+  }
+
   function buildLine(){
     lineEl.innerHTML = '';
 
     for(let i=0;i<NUM_STATIONS;i++){
-      // buffer de entrada (não mostra antes da estação 0, que tem matéria-prima infinita)
       const bufCell = document.createElement('div');
       bufCell.className = 'cell';
       if(i > 0){
@@ -622,22 +574,19 @@
         bufCell.appendChild(count);
       } else {
         const raw = document.createElement('div');
-        raw.style.cssText = 'width:52px;min-height:110px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:10px;text-align:center;';
-        raw.textContent = 'MATÉRIA-PRIMA';
+        raw.style.cssText = 'width:52px;min-height:110px;display:flex;align-items:center;justify-content:center;font-size:22px;';
+        raw.textContent = '📦';
         bufCell.appendChild(raw);
       }
       lineEl.appendChild(bufCell);
 
-      // estação
       const st = document.createElement('div');
       st.className = 'station';
       st.id = 'station-' + i;
-      st.title = 'Clique para ver desempenho da Estação ' + (i+1);
       st.innerHTML = `
         <div class="hazard"></div>
-        <div class="name">Estação ${i+1} <span class="status-dot" id="dot-${i}"></span></div>
+        <div class="name">${i+1} <span class="status-dot" id="dot-${i}"></span></div>
         <div class="gear-wrap"><div class="gear" id="gear-${i}" style="animation-duration:${(2 - rates[i]/RATE_MAX*1.5).toFixed(2)}s"></div></div>
-        <div class="util-label"><span>Ocupação</span><span id="util-val-${i}">0%</span></div>
         <div class="util-bar"><div class="fill" id="util-fill-${i}"></div></div>
         <div class="rate-row">
           <span class="rv" id="rate-val-${i}">${rates[i]}</span>
@@ -649,12 +598,7 @@
       st.addEventListener('click', (e) => {
         if(e.target.tagName === 'INPUT') return;
         const pct = simSeconds > 0 ? Math.round((busyTime[i]/simSeconds)*100) : 0;
-        const bIdx = bottleneckIndex();
-        if(i === bIdx){
-          toast('Estação ' + (i+1) + ' é o gargalo: ocupada ' + pct + '% do tempo. É ela quem trava o ritmo de todo o sistema.', 'bad');
-        } else {
-          toast('Estação ' + (i+1) + ' ficou ocupada ' + pct + '% do tempo — o resto esperou pelo gargalo.');
-        }
+        popNumber(st, pct + '%', 'click-pop');
       });
 
       const arrow = document.createElement('div');
@@ -664,29 +608,22 @@
       lineEl.appendChild(arrow);
     }
 
-    // saída
     const outCell = document.createElement('div');
     outCell.className = 'cell out';
     outCell.innerHTML = `
       <div class="box" id="out-box">
         <div class="num" id="out-num">0</div>
-        <div class="lab">Prontas</div>
+        <div class="lab">✅</div>
       </div>
     `;
     lineEl.appendChild(outCell);
 
-    // listeners dos sliders
     for(let i=0;i<NUM_STATIONS;i++){
       document.getElementById('rate-slider-' + i).addEventListener('input', (e) => {
-        const before = bottleneckIndex();
         rates[i] = parseInt(e.target.value, 10);
         document.getElementById('rate-val-' + i).textContent = rates[i];
         document.getElementById('gear-' + i).style.animationDuration = (2 - rates[i]/RATE_MAX*1.5).toFixed(2) + 's';
         refreshBottleneckStyling();
-        const after = bottleneckIndex();
-        if(after === before && i !== after && running){
-          toast('Você acelerou a Estação ' + (i+1) + ', mas ela não é o gargalo — a produção final não muda, só o estoque na frente da Estação ' + (after+1) + ' pode aumentar.');
-        }
       });
     }
     refreshBottleneckStyling();
@@ -695,15 +632,13 @@
   function refreshBottleneckStyling(){
     const bIdx = bottleneckIndex();
     for(let i=0;i<NUM_STATIONS;i++){
-      const el = document.getElementById('station-' + i);
-      el.classList.toggle('bottleneck', i === bIdx);
+      document.getElementById('station-' + i).classList.toggle('bottleneck', i === bIdx);
     }
     if(prevBottleneck !== null && prevBottleneck !== bIdx){
       const el = document.getElementById('station-' + bIdx);
       el.classList.remove('just-changed');
       void el.offsetWidth;
       el.classList.add('just-changed');
-      if(running) toast('Novo gargalo: Estação ' + (bIdx+1) + ' agora é a mais lenta da linha.', 'bad');
     }
     prevBottleneck = bIdx;
   }
@@ -731,12 +666,6 @@
     }
   }
 
-  function fmtTime(s){
-    const m = Math.floor(s/60).toString().padStart(2,'0');
-    const ss = Math.floor(s%60).toString().padStart(2,'0');
-    return m + ':' + ss;
-  }
-
   function renderBars(){
     barsEl.innerHTML = '';
     const bIdx = bottleneckIndex();
@@ -745,26 +674,40 @@
     historyBuckets.slice(-20).forEach(v => {
       const bar = document.createElement('div');
       bar.className = 'bar' + (v <= bottleneckRatePerBucket + 0.5 ? ' bottleneck-limited' : '');
-      bar.style.height = Math.max(2, (v / maxVal) * 90) + 'px';
+      bar.style.height = Math.max(2, (v / maxVal) * 70) + 'px';
       barsEl.appendChild(bar);
     });
   }
 
-  function updateInsight(flash){
-    const bIdx = bottleneckIndex();
-    const sysRate = rates[bIdx];
-    insightEl.innerHTML = `O ritmo do sistema é <b>${sysRate} un/min</b>, ditado pela <b>Estação ${bIdx+1}</b> (a mais lenta). Aumente qualquer outra estação e o número de peças prontas por minuto não vai mudar — só o estoque antes do gargalo vai crescer.`;
-    if(flash){
-      insightEl.classList.remove('flash');
-      void insightEl.offsetWidth;
-      insightEl.classList.add('flash');
+  function launchConfetti(){
+    const colors = ['#f5c518', '#3ecf8e', '#5aa9e6', '#e0524b', '#ffffff'];
+    for(let i=0;i<80;i++){
+      const s = document.createElement('span');
+      s.style.left = Math.random()*100 + 'vw';
+      s.style.background = colors[Math.floor(Math.random()*colors.length)];
+      s.style.animationDuration = (1.6 + Math.random()*1.4) + 's';
+      s.style.animationDelay = (Math.random()*0.4) + 's';
+      s.style.opacity = 0.85;
+      confettiEl.appendChild(s);
+      setTimeout(() => s.remove(), 3500);
     }
   }
 
-  function pulseStat(el){
-    el.classList.remove('pulse');
-    void el.offsetWidth;
-    el.classList.add('pulse');
+  function checkWin(){
+    if(won || finished < GOAL) return;
+    won = true;
+    pause();
+    launchConfetti();
+    winTimeEl.textContent = fmtTime(simSeconds);
+    if(bestSeconds === null || simSeconds < bestSeconds){
+      localStorage.setItem(BEST_KEY, simSeconds.toString());
+      bestSeconds = simSeconds;
+      bestTimeEl.textContent = fmtTime(bestSeconds);
+      winRecordEl.innerHTML = '🎉 <b>Novo recorde!</b>';
+    } else {
+      winRecordEl.innerHTML = 'Recorde: <b>' + fmtTime(bestSeconds) + '</b>';
+    }
+    winOverlay.classList.add('show');
   }
 
   function tick(){
@@ -794,6 +737,7 @@
               box.classList.remove('bump');
               void box.offsetWidth;
               box.classList.add('bump');
+              popNumber(box, '+1', 'float-plus');
             } else {
               buffer[i+1] += 1;
             }
@@ -813,14 +757,12 @@
     finishedEl.textContent = finished;
     document.getElementById('out-num').textContent = finished;
     simTimeEl.textContent = fmtTime(simSeconds);
-    const bIdx = bottleneckIndex();
-    systemRateEl.innerHTML = rates[bIdx] + ' <small>un/min (Estação ' + (bIdx+1) + ')</small>';
+    goalFillEl.style.width = Math.min(100, (finished/GOAL)*100) + '%';
 
     for(let i=0;i<NUM_STATIONS;i++){
       document.getElementById('dot-' + i).className = 'status-dot ' + (busy[i] ? 'busy' : 'idle');
       document.getElementById('gear-' + i).classList.toggle('idle', !busy[i]);
       const pct = simSeconds > 0 ? Math.min(100, Math.round((busyTime[i]/simSeconds)*100)) : 0;
-      document.getElementById('util-val-' + i).textContent = pct + '%';
       const fill = document.getElementById('util-fill-' + i);
       fill.style.width = pct + '%';
       fill.style.background = pct >= 85 ? 'var(--yellow)' : (pct <= 40 ? 'var(--red)' : 'var(--green)');
@@ -828,24 +770,24 @@
 
     renderBuffers();
     renderBars();
-    updateInsight(false);
     refreshBottleneckStyling();
+    checkWin();
   }
 
   function start(){
-    if(running) return;
+    if(running || won) return;
     running = true;
-    playBtn.textContent = 'Pausar';
+    playBtn.textContent = '⏸ Pausar';
     tickHandle = setInterval(tick, DT*1000);
   }
   function pause(){
     running = false;
-    playBtn.textContent = 'Continuar';
+    playBtn.textContent = '▶ Continuar';
     clearInterval(tickHandle);
   }
   function reset(){
     pause();
-    playBtn.textContent = 'Iniciar';
+    playBtn.textContent = '▶ Iniciar';
     rates = DEFAULT_RATES.slice();
     progress = new Array(NUM_STATIONS).fill(0);
     buffer = new Array(NUM_STATIONS).fill(0);
@@ -857,17 +799,20 @@
     lastFinishedAtBucket = 0;
     bucketTimer = 0;
     prevBottleneck = null;
+    won = false;
+    winOverlay.classList.remove('show');
     buildLine();
     renderBuffers();
     renderBars();
     finishedEl.textContent = '0';
     document.getElementById('out-num').textContent = '0';
     simTimeEl.textContent = '00:00';
-    insightEl.textContent = 'Clique em Iniciar e depois tente aumentar a velocidade de uma estação que não é o gargalo. Veja o que acontece com o ritmo do sistema.';
+    goalFillEl.style.width = '0%';
   }
 
   playBtn.addEventListener('click', () => running ? pause() : start());
   resetBtn.addEventListener('click', reset);
+  winPlayAgain.addEventListener('click', () => { reset(); start(); });
   speedGroup.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-speed]');
     if(!btn) return;
