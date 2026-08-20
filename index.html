@@ -536,15 +536,19 @@
 
   <div class="hud">
     <div class="hud-title"><span class="icon">🔮</span> FÁBRICA DE POÇÕES</div>
-    <div class="chip">
+    <div class="chip" style="display:none;">
       <div class="lab">TEMPO</div>
       <div class="val" id="simTime">00:00</div>
     </div>
-    <div class="chip gold">
+    <div class="chip gold" style="display:none;">
       <div class="lab">RECORDE</div>
       <div class="val" id="bestTime">--:--</div>
     </div>
-    <div class="chip goal">
+    <div class="chip">
+      <div class="lab">RITMO</div>
+      <div class="val" id="paceVal">0 <span style="font-size:8px;">UN/MIN</span></div>
+    </div>
+    <div class="chip goal" style="display:none;">
       <div class="lab"><span id="finishedCount">0</span> / <span id="goalVal">60</span> POÇÕES</div>
       <div class="goal-bar"><div class="fill" id="goalFill"></div></div>
     </div>
@@ -621,6 +625,7 @@
   const goalFillEl = document.getElementById('goalFill');
   const simTimeEl = document.getElementById('simTime');
   const bestTimeEl = document.getElementById('bestTime');
+  const paceValEl = document.getElementById('paceVal');
   const playBtn = document.getElementById('playBtn');
   const resetBtn = document.getElementById('resetBtn');
   const speedGroup = document.getElementById('speedGroup');
@@ -910,6 +915,7 @@
     document.getElementById('out-num').textContent = finished;
     simTimeEl.textContent = fmtTime(simSeconds);
     goalFillEl.style.width = Math.min(100, (finished/GOAL)*100) + '%';
+    paceValEl.innerHTML = rates[bottleneckIndex()] + ' <span style="font-size:8px;">UN/MIN</span>';
 
     for(let i=0;i<NUM_STATIONS;i++){
       document.getElementById('dot-' + i).className = 'status-dot ' + (busy[i] ? 'busy' : 'idle');
