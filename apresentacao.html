@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teoria das Restrições — Apresentação</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;700;800&display=swap');
+  :root{
+    --bg:#fff3e6;
+    --panel:#ffffff;
+    --ink:#073b4c;
+    --muted:#4d7a8c;
+    --red:#ef476f;
+    --teal:#118ab2;
+    --green:#06d6a0;
+    --yellow:#ffd166;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Nunito",-apple-system,"Segoe UI",Arial,sans-serif;
+    overflow:hidden;
+  }
+  .deck{ position:relative; width:100vw; height:100vh; counter-reset:slidenum; }
+  .slide{
+    counter-increment:slidenum;
+    position:absolute; inset:0;
+    background:var(--bg);
+    display:flex; flex-direction:column;
+    justify-content:center; align-items:flex-start;
+    padding:6vh 8vw;
+    opacity:0;
+    transform:translateX(24px);
+    transition:opacity .4s ease, transform .4s ease;
+    pointer-events:none;
+    overflow-y:auto; overflow-x:hidden;
+  }
+  .slide.active{ opacity:1; transform:translateX(0); pointer-events:auto; }
+  .slide > *{ position:relative; z-index:2; }
+
+  /* blobs decorativos flutuando sozinhos */
+  .blob{ position:absolute; border-radius:50%; z-index:1; animation:float 7s ease-in-out infinite; }
+  @keyframes float{
+    0%,100%{ transform:translate(0,0); }
+    50%{ transform:translate(14px,-18px); }
+  }
+  .slide::before{
+    content: counter(slidenum, decimal-leading-zero);
+    position:absolute; right:3vw; bottom:-6vh;
+    font-family:"Baloo 2",sans-serif; font-weight:800;
+    font-size:min(38vh, 26vw); line-height:1; color:var(--ink);
+    opacity:.05; z-index:0; pointer-events:none;
+  }
+
+  .eyebrow{
+    display:inline-block; background:var(--ink); color:#fff;
+    font-weight:800; font-size:15px; letter-spacing:.04em;
+    padding:9px 22px; border-radius:999px; margin-bottom:26px;
+  }
+  h1{
+    font-family:"Baloo 2",sans-serif; font-weight:800;
+    font-size:clamp(46px,6.4vw,78px);
+    line-height:1.04; margin:0 0 26px; max-width:1000px;
+  }
+  h1 .hl{
+    color:#fff; background:var(--red); padding:2px 18px; border-radius:14px;
+    display:inline-block; box-shadow:6px 6px 0 var(--ink);
+  }
+  p{
+    font-size:clamp(20px,2.1vw,27px); color:var(--muted); font-weight:700;
+    max-width:820px; line-height:1.5; margin:0 0 16px;
+  }
+  p b{ color:var(--ink); }
+  ul{ list-style:none; padding:0; margin:8px 0 0; max-width:880px; }
+  li{
+    font-size:clamp(19px,1.9vw,24px); font-weight:700; color:var(--ink);
+    line-height:1.5; margin-bottom:16px; padding-left:36px; position:relative;
+  }
+  li::before{
+    content:"●"; position:absolute; left:0; top:2px; color:var(--red); font-size:16px;
+  }
+  li b{ color:var(--red); }
+
+  /* -------- title -------- */
+  .title-slide{ justify-content:center; }
+  .title-slide h1{ font-size:clamp(58px,9vw,108px); }
+  .sub{ font-size:22px; color:var(--muted); font-weight:800; margin-top:16px; }
+  .squeeze{ position:absolute; right:9vw; top:50%; transform:translateY(-50%); z-index:1; }
+  .pipe{ display:flex; align-items:center; height:120px; }
+  .seg{ height:110px; }
+  .seg1{ width:90px; background:var(--teal); border-radius:20px 0 0 20px; }
+  .seg2{ width:70px; height:44px; background:var(--red); border-radius:8px; }
+  .seg3{ width:90px; background:var(--teal); border-radius:0 20px 20px 0; }
+  .balls{ position:relative; width:280px; height:16px; margin-top:14px; }
+  .ball{
+    position:absolute; top:0; width:16px; height:16px; border-radius:50%;
+    background:var(--yellow); border:3px solid var(--ink);
+    animation:rolar 2.6s linear infinite;
+  }
+  .ball:nth-child(2){ animation-delay:.65s; }
+  .ball:nth-child(3){ animation-delay:1.3s; }
+  .ball:nth-child(4){ animation-delay:1.95s; }
+  @keyframes rolar{
+    0%{ left:0; }
+    38%{ left:110px; }
+    62%{ left:130px; }
+    100%{ left:280px; }
+  }
+
+  /* -------- divider -------- */
+  .divider{ align-items:center; text-align:center; justify-content:center; }
+  .divider.c1{ background:var(--teal) !important; }
+  .divider.c2{ background:var(--red) !important; }
+  .divider.c3{ background:var(--ink) !important; }
+  .divider::before{ color:rgba(255,255,255,0.08); }
+  .divider .chapnum{
+    font-family:"Baloo 2",sans-serif; font-size:20px; font-weight:800; color:#fff;
+    background:rgba(255,255,255,0.18); padding:8px 20px; border-radius:999px; margin-bottom:22px;
+  }
+  .divider h1{ color:#fff; max-width:900px; }
+  .divider .chapsub{ color:rgba(255,255,255,0.85); font-size:22px; font-weight:700; max-width:640px; }
+  .divider .shape{
+    position:absolute; border-radius:50%; background:rgba(255,255,255,0.12); z-index:1;
+    animation:float 6s ease-in-out infinite;
+  }
+
+  /* -------- timeline (origem) -------- */
+  .timeline{ display:flex; gap:26px; margin-top:20px; max-width:1200px; width:100%; flex-wrap:wrap; }
+  .tl-card{
+    flex:1 1 260px; background:var(--panel); border-radius:22px; padding:26px 24px;
+    box-shadow:7px 7px 0 var(--ink);
+  }
+  .tl-icon{
+    width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:26px; margin-bottom:14px;
+  }
+  .tl-card:nth-child(1) .tl-icon{ background:var(--yellow); }
+  .tl-card:nth-child(2) .tl-icon{ background:#ffd9e4; }
+  .tl-card:nth-child(3) .tl-icon{ background:#c8f5e9; }
+  .tl-year{ font-family:"Baloo 2",sans-serif; font-weight:800; font-size:16px; color:var(--red); margin-bottom:6px; }
+  .tl-title{ font-family:"Baloo 2",sans-serif; font-weight:700; font-size:23px; margin-bottom:10px; }
+  .tl-desc{ font-size:16.5px; color:var(--muted); font-weight:700; line-height:1.5; }
+
+  /* -------- chain (objetivo) -------- */
+  .chain{ display:flex; align-items:center; gap:0; margin:30px 0 16px; }
+  .link{
+    width:70px; height:42px; border:7px solid var(--teal); border-radius:22px; margin-right:-16px;
+  }
+  .link.weak{ border-color:var(--red); animation:pulseW 1.6s ease-in-out infinite; }
+  @keyframes pulseW{
+    0%,100%{ box-shadow:0 0 0 0 rgba(239,71,111,0.45); transform:scale(1); }
+    50%{ box-shadow:0 0 0 14px rgba(239,71,111,0); transform:scale(1.08); }
+  }
+  .chain-lab{ font-size:19px; color:var(--muted); font-weight:700; max-width:860px; line-height:1.5; }
+  .chain-lab b{ color:var(--red); }
+
+  /* -------- ciclo 5 passos -------- */
+  .cycle-wrap{ position:relative; width:100%; max-width:430px; margin-top:0; }
+  .cycle-svg{ width:100%; height:auto; display:block; }
+  .orbit-token{
+    animation:orbitar 6s linear infinite;
+  }
+  @keyframes orbitar{
+    0%{ offset-distance:0%; }
+    100%{ offset-distance:100%; }
+  }
+
+  .toc-metrics{ display:flex; gap:20px; flex-wrap:wrap; margin-top:20px; max-width:1080px; width:100%; }
+  .metric{
+    flex:1 1 260px; background:var(--panel); border-radius:20px; padding:22px 24px;
+    box-shadow:6px 6px 0 var(--ink);
+  }
+  .metric .icon{
+    width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:"Baloo 2",sans-serif; font-weight:800; font-size:18px; color:#fff; margin-bottom:12px;
+  }
+  .metric:nth-child(1) .icon{ background:var(--teal); }
+  .metric:nth-child(2) .icon{ background:var(--red); }
+  .metric:nth-child(3) .icon{ background:var(--green); }
+  .metric .t{ font-family:"Baloo 2",sans-serif; font-weight:700; font-size:19px; margin-bottom:8px; }
+  .metric .d{ font-size:16px; color:var(--muted); font-weight:700; line-height:1.45; }
+
+  /* -------- split (STP x TOC) -------- */
+  .split{ display:grid; grid-template-columns:1fr 1.2fr; gap:30px; margin-top:14px; max-width:1180px; width:100%; }
+  .split-col{ border-radius:22px; padding:28px 26px; }
+  .split-col.stp{ background:var(--panel); box-shadow:6px 6px 0 var(--ink); }
+  .split-col.toc{ background:var(--red); box-shadow:6px 6px 0 var(--ink); }
+  .split-col .lab{ font-family:"Baloo 2",sans-serif; font-weight:800; font-size:18px; margin-bottom:14px; }
+  .split-col.stp .lab{ color:var(--teal); }
+  .split-col.toc .lab{ color:#fff; }
+  .split-col.toc li{ color:#fff; }
+  .split-col.toc li b{ color:#ffe1e9; }
+  .split-col.toc li::before{ color:#fff; }
+  .split-note{
+    margin-top:20px; max-width:1080px; font-size:17px; color:var(--muted); font-weight:700;
+    background:var(--panel); border-radius:16px; padding:18px 22px; box-shadow:5px 5px 0 var(--ink);
+  }
+  .split-note b{ color:var(--ink); }
+
+  /* -------- DBR -------- */
+  .dbr-tabs{ display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
+  .dbr-tab{
+    background:var(--panel); border:none; border-radius:999px; box-shadow:4px 4px 0 var(--ink);
+    padding:12px 22px; font-family:"Baloo 2",sans-serif; font-weight:700; font-size:17px; color:var(--muted);
+    cursor:pointer; transition:background .2s, color .2s, transform .15s;
+  }
+  .dbr-tab.active{ color:#fff; transform:translateY(-2px); }
+  .dbr-tab.active[data-part="tambor"]{ background:var(--red); }
+  .dbr-tab.active[data-part="pulmao"]{ background:var(--teal); }
+  .dbr-tab.active[data-part="corda"]{ background:var(--yellow); color:var(--ink); }
+  .dbr-diagram{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    background:var(--panel); border-radius:22px; padding:30px 26px 26px;
+    max-width:1040px; width:100%; position:relative; box-shadow:7px 7px 0 var(--ink);
+  }
+  .dbr-box{
+    width:92px; height:64px; border-radius:14px; border:4px solid #e4ecef;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:"Baloo 2",sans-serif; font-size:13.5px; font-weight:700; color:var(--muted);
+    flex:0 0 auto; transition:all .25s;
+  }
+  .dbr-arrow{ color:#c9d6db; font-size:20px; font-weight:800; }
+  .dbr-box.pulmao{ background:#e6f6fb; }
+  .dbr-box.tambor{ background:#fde6ec; }
+  .dbr-diagram.show-tambor .dbr-box.tambor{ border-color:var(--red); color:var(--red); transform:scale(1.12); box-shadow:0 0 0 6px rgba(239,71,111,0.15); }
+  .dbr-diagram.show-pulmao .dbr-box.pulmao{ border-color:var(--teal); color:var(--teal); transform:scale(1.12); box-shadow:0 0 0 6px rgba(17,138,178,0.15); }
+  .dbr-rope{ position:absolute; left:26px; right:26px; bottom:6px; height:4px; background:#e4ecef; border-radius:2px; }
+  .dbr-diagram.show-corda .dbr-rope{
+    background-image:linear-gradient(to right, var(--yellow) 50%, transparent 50%);
+    background-size:18px 4px; background-repeat:repeat-x; background-color:transparent;
+    animation:puxar .5s linear infinite reverse;
+  }
+  @keyframes puxar{ from{ background-position:0 0; } to{ background-position:18px 0; } }
+  .dbr-flow{ position:absolute; left:26px; right:26px; bottom:4px; height:8px; pointer-events:none; }
+  .dbr-packet{
+    position:absolute; top:50%; width:9px; height:9px; border-radius:50%;
+    background:var(--teal); transform:translateY(-50%); opacity:0;
+    animation:fluir 3s linear infinite;
+  }
+  .dbr-packet:nth-child(2){ animation-delay:1s; }
+  .dbr-packet:nth-child(3){ animation-delay:2s; }
+  @keyframes fluir{
+    0%{ left:0%; opacity:0; }
+    15%{ left:25%; opacity:1; }
+    60%{ left:35%; opacity:1; }
+    95%{ left:80%; opacity:1; }
+    100%{ left:100%; opacity:0; }
+  }
+  .dbr-desc{
+    margin-top:24px; max-width:940px; font-size:19px; font-weight:700; color:var(--ink); line-height:1.55;
+    background:var(--panel); border-radius:16px; padding:18px 22px; box-shadow:5px 5px 0 var(--ink);
+    min-height:64px;
+  }
+  .dbr-desc b{ color:var(--red); }
+
+  /* -------- embed -------- */
+  .slide.embed{ padding:0; }
+  .slide.embed iframe{ width:100%; height:100%; border:none; }
+
+  /* -------- app grid -------- */
+  .app-grid{ display:flex; gap:20px; flex-wrap:wrap; margin-top:22px; max-width:1100px; width:100%; }
+  .app-slot{
+    flex:1 1 240px; background:var(--panel); border:4px dashed #d8c9b8; border-radius:20px;
+    padding:24px; min-height:120px; color:var(--muted); font-weight:700; font-size:17px; line-height:1.5;
+  }
+  .app-slot b{ display:block; color:var(--ink); font-family:"Baloo 2",sans-serif; font-size:18px; margin-bottom:8px; }
+
+  /* -------- refs -------- */
+  .refs{ padding-top:8vh; }
+  .refs ul{ list-style:none; padding:0; margin:24px 0 0; max-width:1200px; width:100%; }
+  .refs li{
+    font-size:18px; font-weight:600; line-height:1.65; color:var(--muted);
+    background:var(--panel); border-radius:14px; padding:18px 22px; margin-bottom:14px;
+    box-shadow:4px 4px 0 var(--ink); padding-left:22px;
+  }
+  .refs li::before{ content:none; }
+  .refs li b{ color:var(--ink); }
+  .refs-note{ margin-top:14px; font-size:14px; color:var(--muted); font-weight:700; }
+
+  /* -------- nav / progress -------- */
+  .progress-track{ position:fixed; top:0; left:0; right:0; height:6px; background:#e9d9c4; z-index:20; }
+  .progress-fill{ height:100%; width:0%; background:var(--red); transition:width .35s ease; }
+  .nav{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+    display:flex; gap:10px; align-items:center; z-index:10;
+    background:var(--ink); border-radius:999px; padding:10px 16px;
+    box-shadow:0 8px 24px rgba(7,59,76,0.25);
+  }
+  .nav button{ background:transparent; border:none; color:#fff; font-size:20px; cursor:pointer; padding:4px 10px; }
+  .nav button:hover{ color:var(--yellow); }
+  .dots{ display:flex; gap:6px; flex-wrap:wrap; max-width:340px; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:#3a5a68; cursor:pointer; }
+  .dot.active{ background:var(--yellow); }
+  .counter{ font-size:12px; color:#a9c4cf; min-width:36px; text-align:center; font-weight:700; }
+  .hint{ position:fixed; top:16px; right:20px; font-size:11px; color:var(--muted); font-weight:700; z-index:15; }
+
+  @media (max-width:900px){ .squeeze{ display:none; } }
+</style>
+</head>
+<body>
+<div class="hint">← → ou clique para navegar</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="deck" id="deck">
+
+  <section class="slide title-slide">
+    <div class="blob" style="width:340px;height:340px;background:var(--yellow);top:-120px;right:-80px;opacity:.9;animation-duration:8s;"></div>
+    <div class="blob" style="width:220px;height:220px;background:var(--green);bottom:-90px;left:-60px;opacity:.85;animation-duration:9s;"></div>
+    <div class="blob" style="width:140px;height:140px;background:var(--red);bottom:40px;right:90px;opacity:.9;animation-duration:6.5s;"></div>
+    <div class="eyebrow">FERRAMENTAS DO STP</div>
+    <h1>Teoria das<br><span class="hl">Restrições</span></h1>
+    <div class="sub">Nome do grupo · Nomes dos integrantes · Disciplina</div>
+    <div class="squeeze">
+      <div class="pipe">
+        <div class="seg seg1"></div><div class="seg seg2"></div><div class="seg seg3"></div>
+      </div>
+      <div class="balls"><div class="ball"></div><div class="ball"></div><div class="ball"></div><div class="ball"></div></div>
+    </div>
+  </section>
+
+  <section class="slide divider c1">
+    <div class="shape" style="width:260px;height:260px;top:-100px;left:-60px;"></div>
+    <div class="shape" style="width:180px;height:180px;bottom:-60px;right:60px;animation-duration:8s;"></div>
+    <div class="chapnum">CAPÍTULO 01</div>
+    <h1>Fundamentos</h1>
+    <div class="chapsub">De onde vem a Teoria das Restrições e qual problema ela resolve.</div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">SLIDE 1 — ORIGEM</div>
+    <h1>Quem criou e quando</h1>
+    <p>Eliyahu M. Goldratt, físico israelense, desenvolveu a TOC ao longo de mais de uma década trabalhando com programação da produção.</p>
+    <div class="timeline">
+      <div class="tl-card">
+        <div class="tl-icon">🛠️</div>
+        <div class="tl-year">FIM DOS ANOS 1970</div>
+        <div class="tl-title">Software OPT</div>
+        <div class="tl-desc">Já identificava e protegia o recurso gargalo de uma fábrica.</div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-icon">📖</div>
+        <div class="tl-year">1984</div>
+        <div class="tl-title">"A Meta"</div>
+        <div class="tl-desc">Romance de negócios que populariza a TOC pro mundo todo.</div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-icon">🧩</div>
+        <div class="tl-year">ANOS 1990</div>
+        <div class="tl-title">Consolidação</div>
+        <div class="tl-desc">Drum-Buffer-Rope formaliza a TOC como corpo teórico.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">SLIDE 2 — OBJETIVO</div>
+    <h1>Pra que serve essa ferramenta</h1>
+    <p>Todo sistema tem pelo menos <b>uma restrição</b> que limita o quanto ele entrega como um todo. Melhorar qualquer outra parte não muda o resultado final.</p>
+    <div class="chain">
+      <div class="link"></div><div class="link"></div><div class="link weak"></div><div class="link"></div><div class="link"></div>
+    </div>
+    <div class="chain-lab">A analogia de Goldratt: um sistema é como uma <b>corrente</b> — sua força é definida pelo elo mais fraco, não pela soma de todos os elos.</div>
+  </section>
+
+  <section class="slide divider c2">
+    <div class="shape" style="width:300px;height:300px;top:-110px;right:-80px;animation-duration:7s;"></div>
+    <div class="shape" style="width:160px;height:160px;bottom:-50px;left:100px;"></div>
+    <div class="chapnum">CAPÍTULO 02</div>
+    <h1>Como funciona</h1>
+    <div class="chapsub">O método, a relação com o STP e o mecanismo Tambor-Pulmão-Corda.</div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">SLIDE 3 — DESCRIÇÃO</div>
+    <h1>Os 5 Passos de Focalização</h1>
+    <div class="cycle-wrap">
+      <svg class="cycle-svg" viewBox="-110 -20 610 460" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <path id="orbitPath" d="M 200,85 A 143,143 0 1 1 199,85" fill="none"/>
+        </defs>
+        <line x1="200" y1="85" x2="318.9" y2="171.4" stroke="#d8c9b8" stroke-width="4"/>
+        <line x1="318.9" y1="171.4" x2="273.5" y2="311.1" stroke="#d8c9b8" stroke-width="4"/>
+        <line x1="273.5" y1="311.1" x2="126.5" y2="311.1" stroke="#d8c9b8" stroke-width="4"/>
+        <line x1="126.5" y1="311.1" x2="81.1" y2="171.4" stroke="#d8c9b8" stroke-width="4"/>
+        <path d="M 81.1,171.4 Q 117,96 196,85" fill="none" stroke="var(--red)" stroke-width="4" stroke-dasharray="4 10" stroke-linecap="round"/>
+        <circle r="9" fill="#ffd166" stroke="#073b4c" stroke-width="3">
+          <animateMotion dur="5s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#orbitPath"/>
+          </animateMotion>
+        </circle>
+        <text x="105" y="105" fill="#ef476f" font-size="15" font-weight="800" font-family="Baloo 2, sans-serif">↺ repete</text>
+        <g>
+          <circle cx="200" cy="85" r="34" fill="#fff" stroke="#118ab2" stroke-width="5"/>
+          <text x="200" y="93" text-anchor="middle" fill="#073b4c" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">1</text>
+          <text x="200" y="28" text-anchor="middle" fill="#073b4c" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Identificar</text>
+          <text x="200" y="47" text-anchor="middle" fill="#4d7a8c" font-size="12" font-weight="700">achar o gargalo</text>
+        </g>
+        <g>
+          <circle cx="318.9" cy="171.4" r="34" fill="#fff" stroke="#118ab2" stroke-width="5"/>
+          <text x="318.9" y="179.4" text-anchor="middle" fill="#073b4c" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">2</text>
+          <text x="368" y="150" text-anchor="start" fill="#073b4c" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Explorar</text>
+          <text x="368" y="169" text-anchor="start" fill="#4d7a8c" font-size="12" font-weight="700">tirar o máximo dele</text>
+        </g>
+        <g>
+          <circle cx="273.5" cy="311.1" r="34" fill="#fff" stroke="#118ab2" stroke-width="5"/>
+          <text x="273.5" y="319.1" text-anchor="middle" fill="#073b4c" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">3</text>
+          <text x="305" y="348" text-anchor="start" fill="#073b4c" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Subordinar</text>
+          <text x="305" y="367" text-anchor="start" fill="#4d7a8c" font-size="12" font-weight="700">ajustar o resto</text>
+        </g>
+        <g>
+          <circle cx="126.5" cy="311.1" r="34" fill="#fff" stroke="#118ab2" stroke-width="5"/>
+          <text x="126.5" y="319.1" text-anchor="middle" fill="#073b4c" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">4</text>
+          <text x="94" y="348" text-anchor="end" fill="#073b4c" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Elevar</text>
+          <text x="94" y="367" text-anchor="end" fill="#4d7a8c" font-size="12" font-weight="700">investir se precisar</text>
+        </g>
+        <g>
+          <circle cx="81.1" cy="171.4" r="34" fill="#fff" stroke="#ef476f" stroke-width="5"/>
+          <text x="81.1" y="179.4" text-anchor="middle" fill="#073b4c" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">5</text>
+          <text x="30" y="150" text-anchor="end" fill="#073b4c" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Repetir</text>
+          <text x="30" y="169" text-anchor="end" fill="#4d7a8c" font-size="12" font-weight="700">o ciclo recomeça</text>
+        </g>
+      </svg>
+    </div>
+    <div class="toc-metrics">
+      <div class="metric"><div class="icon">G</div><div class="t">Ganho</div><div class="d">Dinheiro que entra pela venda — só conta quando o cliente paga.</div></div>
+      <div class="metric"><div class="icon">I</div><div class="t">Inventário</div><div class="d">Dinheiro parado no sistema: matéria-prima, estoque, produto acabado.</div></div>
+      <div class="metric"><div class="icon">D</div><div class="t">Despesa</div><div class="d">O que se gasta pra transformar inventário em ganho.</div></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">SLIDE 4 — RELAÇÃO COM O STP</div>
+    <h1>TOC e o Sistema Toyota de Produção</h1>
+    <div class="split">
+      <div class="split-col stp">
+        <div class="lab">SISTEMA TOYOTA</div>
+        <ul>
+          <li>Ataca os <b>7 desperdícios</b> de forma ampla, por toda a fábrica.</li>
+          <li>Busca <b>fluxo contínuo</b> eliminando qualquer desperdício.</li>
+        </ul>
+      </div>
+      <div class="split-col toc">
+        <div class="lab">TEORIA DAS RESTRIÇÕES</div>
+        <ul>
+          <li>Ataca primeiro e só <b>o gargalo</b> — foco cirúrgico.</li>
+          <li>Melhorar uma parte isolada não melhora o sistema todo.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="split-note">Usadas juntas: depois de achar o gargalo com a TOC, dá pra aplicar <b>Kaizen, Poka-Yoke ou Troca Rápida de Ferramenta</b> nele. O <b>Kanban</b> limita estoque; a TOC formaliza isso com o <b>Drum-Buffer-Rope</b> — a seguir.</div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">COMO FUNCIONA NA PRÁTICA</div>
+    <h1>Tambor · Pulmão · Corda</h1>
+    <div class="dbr-tabs">
+      <div class="dbr-tab active" data-part="tambor">🥁 Tambor</div>
+      <div class="dbr-tab" data-part="pulmao">🛡️ Pulmão</div>
+      <div class="dbr-tab" data-part="corda">🪢 Corda</div>
+    </div>
+    <div class="dbr-diagram show-tambor" id="dbrDiagram">
+      <div class="dbr-box">Liberação</div>
+      <div class="dbr-arrow">→</div>
+      <div class="dbr-box">Est. 1</div>
+      <div class="dbr-arrow">→</div>
+      <div class="dbr-box pulmao">PULMÃO<br>fila</div>
+      <div class="dbr-arrow">→</div>
+      <div class="dbr-box tambor">TAMBOR</div>
+      <div class="dbr-arrow">→</div>
+      <div class="dbr-box">Est. 4</div>
+      <div class="dbr-arrow">→</div>
+      <div class="dbr-box">Pronto</div>
+      <div class="dbr-rope"></div>
+      <div class="dbr-flow"><div class="dbr-packet"></div><div class="dbr-packet"></div><div class="dbr-packet"></div></div>
+    </div>
+    <div class="dbr-desc" id="dbrDesc">
+      <b>Tambor (Drum):</b> é a restrição — a estação mais lenta. Ela dita o ritmo que todo o resto da fábrica precisa seguir.
+    </div>
+  </section>
+
+  <section class="slide divider c3">
+    <div class="shape" style="width:280px;height:280px;bottom:-100px;right:-60px;animation-duration:8.5s;"></div>
+    <div class="shape" style="width:150px;height:150px;top:60px;left:80px;"></div>
+    <div class="chapnum">CAPÍTULO 03</div>
+    <h1>Na prática</h1>
+    <div class="chapsub">Estratégia de produção, simulação ao vivo e aplicação real.</div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">SLIDE 5 — RELAÇÃO COM ESTRATÉGIA DE PRODUÇÃO</div>
+    <h1>TOC nas decisões de produção</h1>
+    <div class="toc-metrics">
+      <div class="metric"><div class="icon">1</div><div class="t">Capacidade</div><div class="d">Investir só faz sentido na restrição — em outro lugar não muda o resultado.</div></div>
+      <div class="metric"><div class="icon">2</div><div class="t">Programação</div><div class="d">O DBR usa a restrição como ponto único de controle da fábrica.</div></div>
+      <div class="metric"><div class="icon">3</div><div class="t">Trade-offs</div><div class="d">Vale sacrificar eficiência local pra ganhar throughput global.</div></div>
+    </div>
+  </section>
+
+  <section class="slide embed">
+    <iframe src="index.html" title="Diagrama visual e aplicação prática — simulador de linha de produção"></iframe>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">CASOS DE APLICAÇÃO</div>
+    <h1>💡 Um exemplo por integrante</h1>
+    <p>Cada integrante traz um exemplo real de onde a TOC se aplica — evitar case genérico; focar em algo que vocês dominam.</p>
+    <div class="app-grid">
+      <div class="app-slot"><b>Integrante 1</b>preencher</div>
+      <div class="app-slot"><b>Integrante 2</b>preencher</div>
+      <div class="app-slot"><b>Integrante 3</b>preencher</div>
+      <div class="app-slot"><b>Integrante 4</b>preencher</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">APLICAÇÃO PRÁTICA EM SALA</div>
+    <h1>🎓 Agora é com a turma</h1>
+    <p>Volte ao slide do simulador (ou reabra <code>index.html</code>) e deixe a turma sugerir onde mexer nos controles de velocidade — mostre ao vivo que só acelerar a estação-gargalo muda o resultado.</p>
+  </section>
+
+  <section class="slide refs">
+    <div class="eyebrow">REFERÊNCIAS</div>
+    <h1>Bibliografia</h1>
+    <ul>
+      <li>ANTUNES JÚNIOR, José Antônio Valle; RODRIGUES, Luís Henrique. <b>A Teoria das Restrições como Balizadora para as Ações Visando a Troca Rápida de Ferramentas</b>. Revista Produção, Porto Alegre, v. 3, n. 2, p. 73-86, 1993.</li>
+      <li>NOREEN, E.; SMITH, D.; MACKEY, J. T. <b>A Teoria das Restrições e suas Implicações na Contabilidade Gerencial: um Relatório Independente</b>. São Paulo: Educator, 1996.</li>
+      <li>RODRIGUES, L. H. <b>Análise Crítica da Teoria da Produção Otimizada e da Teoria das Restrições</b>. In: ENCONTRO ANUAL DA ANPAD, 14., 1990, Florianópolis. Anais [...]. Florianópolis: ANPAD, 1990.</li>
+    </ul>
+    <div class="refs-note">Formatadas conforme ABNT NBR 6023 — conferir volume/número da revista Produção antes da entrega final.</div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prevBtn">‹</button>
+  <div class="dots" id="dots"></div>
+  <div class="counter" id="counter">1/14</div>
+  <button id="nextBtn">›</button>
+</div>
+
+<script>
+(function(){
+  const slides = [...document.querySelectorAll('.slide')];
+  const dotsEl = document.getElementById('dots');
+  const counterEl = document.getElementById('counter');
+  const progressFill = document.getElementById('progressFill');
+  let idx = 0;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.addEventListener('click', () => go(i));
+    dotsEl.appendChild(d);
+  });
+  const dots = [...dotsEl.children];
+
+  function go(i){
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, j) => s.classList.toggle('active', j === idx));
+    dots.forEach((d, j) => d.classList.toggle('active', j === idx));
+    counterEl.textContent = (idx+1) + '/' + slides.length;
+    progressFill.style.width = ((idx+1) / slides.length * 100) + '%';
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => go(idx - 1));
+  document.getElementById('nextBtn').addEventListener('click', () => go(idx + 1));
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'ArrowRight' || e.key === ' ') go(idx + 1);
+    if(e.key === 'ArrowLeft') go(idx - 1);
+  });
+  document.querySelector('.deck').addEventListener('click', (e) => {
+    if(e.target.closest('.nav') || e.target.closest('iframe') || e.target.closest('.dbr-tabs')) return;
+    go(idx + 1);
+  });
+
+  // Tambor-Pulmão-Corda: passa sozinho por cada parte, sem precisar clicar
+  // (clicar numa aba também funciona e reinicia o ciclo automático)
+  const dbrDesc = document.getElementById('dbrDesc');
+  const dbrDiagram = document.getElementById('dbrDiagram');
+  const dbrTabs = [...document.querySelectorAll('.dbr-tab')];
+  const dbrText = {
+    tambor: '<b>Tambor (Drum):</b> é a restrição — a estação mais lenta. Ela dita o ritmo que todo o resto da fábrica precisa seguir.',
+    pulmao: '<b>Pulmão (Buffer):</b> um estoque de segurança antes da restrição, pra garantir que ela nunca fique parada esperando material.',
+    corda: '<b>Corda (Rope):</b> um sinal que "puxa" a liberação de matéria-prima no ritmo do tambor — evita acumular estoque em excesso.'
+  };
+  const parts = ['tambor', 'pulmao', 'corda'];
+  let dbrIdx = 0;
+  let dbrTimer = null;
+
+  function showDbrPart(part){
+    dbrTabs.forEach(t => t.classList.toggle('active', t.dataset.part === part));
+    dbrDiagram.className = 'dbr-diagram show-' + part;
+    dbrDesc.innerHTML = dbrText[part];
+  }
+  function startDbrCycle(){
+    clearInterval(dbrTimer);
+    dbrTimer = setInterval(() => {
+      dbrIdx = (dbrIdx + 1) % parts.length;
+      showDbrPart(parts[dbrIdx]);
+    }, 3200);
+  }
+  dbrTabs.forEach((tab, i) => {
+    tab.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dbrIdx = i;
+      showDbrPart(parts[dbrIdx]);
+      startDbrCycle();
+    });
+  });
+  startDbrCycle();
+
+  go(0);
+})();
+</script>
+</body>
+</html>
