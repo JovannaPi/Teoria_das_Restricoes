@@ -187,7 +187,27 @@
   .badge.acc-ink{background:rgba(245,234,208,0.14); color:var(--ink);}
 
   .station .body{flex:1; min-width:0;}
-  .station .name{font-family:'Baloo 2'; font-weight:700; font-size:14.5px;}
+  .station .name{font-family:'Baloo 2'; font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:6px;}
+  .flow-dot{width:8px; height:8px; border-radius:50%; flex:none; box-shadow:0 0 0 3px transparent;}
+  .flow-dot.green{background:var(--green); box-shadow:0 0 6px var(--green);}
+  .flow-dot.yellow{background:var(--yellow); box-shadow:0 0 6px var(--yellow);}
+  .flow-dot.red{background:var(--red); box-shadow:0 0 6px var(--red); animation:dotPulse .8s ease-in-out infinite;}
+  @keyframes dotPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+  /* ================= ENCOMENDAS ================= */
+  .orders-row{display:flex; gap:8px; margin:10px 2px 2px; overflow-x:auto; padding-bottom:2px;}
+  .order-chip{
+    flex:none; width:56px; text-align:center; position:relative;
+  }
+  .order-ring{width:44px; height:44px; border-radius:50%; margin:0 auto; display:flex; align-items:center; justify-content:center; position:relative;}
+  .order-ring .fill{position:absolute; inset:0; border-radius:50%;}
+  .order-ring .hole{position:absolute; inset:4px; border-radius:50%; background:var(--paper); display:flex; align-items:center; justify-content:center;}
+  .order-ring svg{width:20px; height:20px; color:var(--ink);}
+  .order-chip .ol{font-size:8.5px; font-weight:800; color:var(--ink-soft); margin-top:3px; white-space:nowrap;}
+  .order-chip.late .order-ring .hole{background:var(--red-dim);}
+  .order-chip.late .ol{color:var(--red);}
+  .order-chip.fulfilled{animation:orderPop .4s ease-out forwards;}
+  @keyframes orderPop{0%{transform:scale(1);}50%{transform:scale(1.25);}100%{transform:scale(0); opacity:0;}}
   .station .status{font-size:11.6px; font-weight:700; color:var(--ink-soft); margin-top:1px; min-height:14px;}
   .ptrack{height:5px; border-radius:4px; background:rgba(245,234,208,0.14); margin-top:6px; overflow:hidden;}
   .pfill{height:100%; background:var(--teal); width:0%; transition:width .1s linear;}
@@ -342,7 +362,7 @@
       <li><span class="num">1</span><div><b>Identificar</b><div class="desc">observe a fila rodando sozinha e aponte onde ela mais se acumula.</div></div></li>
       <li><span class="num">2</span><div><b>Explorar</b><div class="desc">toque na restri&ccedil;&atilde;o sempre que ela terminar &mdash; nunca a deixe esperando.</div></div></li>
       <li><span class="num">3</span><div><b>Subordinar</b><div class="desc">o resto da linha j&aacute; se ajusta ao ritmo dela sozinho.</div></div></li>
-      <li><span class="num">4</span><div><b>Elevar</b><div class="desc">gaste as moedas ganhas num fornecedor melhor pra ela.</div></div></li>
+      <li><span class="num">4</span><div><b>Elevar</b><div class="desc">gaste as moedas ganhas num fornecedor melhor — ou até numa segunda estação em paralelo.</div></div></li>
       <li><span class="num">5</span><div><b>Repetir</b><div class="desc">a restri&ccedil;&atilde;o pode ter mudado de lugar &mdash; o ciclo recome&ccedil;a.</div></div></li>
     </ol>
 
@@ -406,6 +426,7 @@
       </div>
     </div>
 
+    <div class="orders-row hidden" id="ordersRow"></div>
     <div class="watch-line" id="stockWatch"></div>
     <div class="flow" id="flowZone"></div>
     <div class="hint-line" id="hintLine"></div>
@@ -517,10 +538,12 @@ try{
   var COMBO_WINDOW=2600;
 
   var SUPPLIERS=[
-    {id:'local',    icon:'i-coin',  name:'Fornecedor Local',    cost:50,  factor:0.80, susc:1.0, desc:'Barato, rápido de achar — mas continua vulnerável a Murphy.'},
-    {id:'regional', icon:'i-shield',name:'Fornecedor Regional', cost:130, factor:0.65, susc:0.5, desc:'Mais caro, reduz o tempo e corta a chance de ataque pela metade.'},
-    {id:'premium',  icon:'i-arrowup',name:'Fornecedor Premium', cost:220, factor:0.50, susc:0.0, desc:'Caro, rápido, praticamente imune à Lei de Murphy.'}
+    {id:'local',    icon:'i-coin',  name:'Fornecedor Local',    cost:50,  factor:0.80, susc:1.0, bufferBonus:0, desc:'Barato, rápido de achar — mas continua vulnerável a Murphy.'},
+    {id:'regional', icon:'i-shield',name:'Fornecedor Regional', cost:130, factor:0.65, susc:0.5, bufferBonus:0, desc:'Mais caro, reduz o tempo e corta a chance de ataque pela metade.'},
+    {id:'premium',  icon:'i-arrowup',name:'Fornecedor Premium', cost:220, factor:0.50, susc:0.0, bufferBonus:0, desc:'Caro, rápido, praticamente imune à Lei de Murphy.'},
+    {id:'paralela', icon:'i-st-cauldron', name:'Linha Paralela', cost:340, factor:0.42, susc:0.0, bufferBonus:2, desc:'Abre uma segunda estação lado a lado — muito mais capacidade e resistente a Murphy.'}
   ];
+  var ORDER_MIN_GAP=4200, ORDER_MAX_GAP=7000, ORDER_WINDOW=[7000,10000], ORDER_MAX_ACTIVE=3;
 
   var PHASE_META = {
     identify:    {step:1, icon:'i-search',  title:'Identificar',  desc:'Observe a linha rodando sozinha. Onde a fila mais se acumula?'},
@@ -535,6 +558,17 @@ try{
 
   var stations=[], score=0, coins=0, cycle=1, phase='identify', phaseTimer=0, running=false, paused=false, currentOnDone=null;
   var tickHandle=null, murphyHandle=null, hintHandle=null, identifiedIdx=-1, lastDeliverTs=0, streak=0, streakHandle=null;
+  var orders=[], orderSpawnTimer=0;
+  function resetOrders(){ orders=[]; orderSpawnTimer=ORDER_MIN_GAP+Math.random()*(ORDER_MAX_GAP-ORDER_MIN_GAP); }
+  function fulfillOrder(){
+    var best=-1, bestRemain=Infinity;
+    for(var k=0;k<orders.length;k++){ if(!orders[k].late && orders[k].remaining<bestRemain){ bestRemain=orders[k].remaining; best=k; } }
+    if(best<0) return null;
+    var o=orders[best];
+    var onTime = o.remaining > o.total*0.35;
+    orders.splice(best,1);
+    return {onTime:onTime};
+  }
 
   /* ---------------- persistence / prefs ---------------- */
   var BEST_KEY='oficina_gargalo_best_v1', MUTE_KEY='oficina_gargalo_muted_v1';
@@ -682,6 +716,7 @@ try{
     score=0; coins=0; cycle=1; identifiedIdx=-1; streak=0;
   }
   function resetStationsForCycle(){
+    resetOrders();
     stations.forEach(function(st){ st.status='idle'; st.timer=0; st.buffer=0; st.murphy=false; st.murphyTimer=0; st.golden=false; st.stats={processing:0,idle:0,blocked:0}; });
   }
   function needsManualHarvest(){ return phase==='subordinate'; }
@@ -737,10 +772,19 @@ try{
 
       var statusText='';
       var pct=0;
-      if(st.murphy){ statusText='Travada por Murphy!'; }
-      else if(st.status==='idle'){ statusText = st.cfg.isSource ? (needsManualHarvest()?'toque para colher':'colhendo…') : (st.buffer>0?'a começar':'aguardando'); }
+      var dot='green';
+      if(st.murphy){ statusText='Travada por Murphy!'; dot='red'; }
+      else if(st.status==='idle'){
+        statusText = st.cfg.isSource ? (needsManualHarvest()?'toque para colher':'colhendo…') : (st.buffer>0?'a começar':'aguardando');
+        if(!st.cfg.isSource && st.buffer===0) dot='yellow';
+        if(st.cfg.isSource && needsManualHarvest()) dot='yellow';
+      }
       else if(st.status==='processing'){ statusText='processando…'; pct=100-(st.timer/st.cfg.time*100); }
-      else if(st.status==='done'){ statusText=clickable?(st.golden?'✨ poção dourada — rápido!':'pronto — toque!'):'pronto (auto)'; pct=100-Math.min(100, st.timer/SPILL_MS*100); }
+      else if(st.status==='done'){
+        statusText=clickable?(st.golden?'✨ poção dourada — rápido!':'pronto — toque!'):'pronto (auto)';
+        pct=100-Math.min(100, st.timer/SPILL_MS*100);
+        if(!autoAdvances(i)) dot='red';
+      }
 
       var gaugeHtml='';
       if(!st.cfg.isSource){
@@ -754,7 +798,7 @@ try{
         + (st.murphy ? '<span class="murphy-badge"><svg class="icon" width="12" height="12"><use href="#i-bolt"/></svg></span>' : '')
         + '<span class="shield-flash" id="shield'+i+'"></span>'
         + '<div class="badge acc-'+st.cfg.acc+'"><svg class="icon" width="26" height="26"><use href="#'+st.cfg.icon+'"/></svg></div>'
-        + '<div class="body"><div class="name">'+st.cfg.name+'</div><div class="status">'+statusText+'</div><div class="ptrack"><div class="pfill" style="width:'+pct+'%"></div></div></div>'
+        + '<div class="body"><div class="name"><span class="flow-dot '+dot+'"></span>'+st.cfg.name+'</div><div class="status">'+statusText+'</div><div class="ptrack"><div class="pfill" style="width:'+pct+'%"></div></div></div>'
         + gaugeHtml
         + (clickable ? '<span class="chev"><svg class="icon" width="19" height="19"><use href="#i-chevron"/></svg></span>' : (isPulmao ? '<span class="chev" style="color:var(--teal)"><svg class="icon" width="17" height="17"><use href="#i-shield"/></svg></span>' : ''))
         + '</div>';
@@ -767,7 +811,24 @@ try{
       }
     });
     $('hudScore').textContent=score; $('hudCoins').textContent=coins; $('hudCycle').textContent=cycle+'/'+TOTAL_CYCLES;
-    updateStockWatch();
+    updateStockWatch(); renderOrders();
+  }
+  function renderOrders(){
+    var row=$('ordersRow'); if(!row) return;
+    if((phase!=='explore' && phase!=='subordinate') || !orders.length){ row.classList.add('hidden'); row.innerHTML=''; return; }
+    row.classList.remove('hidden');
+    var html='';
+    orders.forEach(function(o){
+      var frac = o.total>0 ? Math.max(0,o.remaining/o.total) : 0;
+      var deg = frac*360;
+      var color = o.late ? 'var(--red)' : (frac<0.3 ? 'var(--yellow)' : 'var(--teal)');
+      html += '<div class="order-chip'+(o.late?' late':'')+'">'
+        + '<div class="order-ring" style="background:conic-gradient('+color+' '+deg+'deg, rgba(245,234,208,0.14) 0deg)">'
+        + '<div class="hole"><svg class="icon"><use href="#i-st-owl"/></svg></div></div>'
+        + '<div class="ol">'+(o.late?'perdida':Math.ceil(o.remaining/1000)+'s')+'</div>'
+        + '</div>';
+    });
+    row.innerHTML = html;
   }
   function updateStockWatch(){
     var watch=$('stockWatch');
@@ -807,10 +868,12 @@ try{
     if(st.cfg.isSink){
       var bonus = streak>=2 ? Math.min(streak-1,3) : 0;
       score += 1+bonus; coins += (1+bonus)*COIN_PER_POTION;
+      var orderResult=fulfillOrder();
+      if(orderResult && orderResult.onTime){ coins+=8; sfx.combo(3); }
       st.status='idle'; st.timer=0;
       hitStop();
       sfx.deliver();
-      var pop=document.createElement('div'); pop.className='float-pop'; pop.textContent='+'+(1+bonus);
+      var pop=document.createElement('div'); pop.className='float-pop'; pop.textContent='+'+(1+bonus)+(orderResult&&orderResult.onTime?' · encomenda!':'');
       el.appendChild(pop); setTimeout(function(){ pop.remove(); }, 850);
       updateRoom({score:score, cycle:cycle});
       renderFlow(); return;
@@ -823,7 +886,12 @@ try{
   function pushForwardSilent(i){
     var st=stations[i];
     st.golden=false;
-    if(st.cfg.isSink){ score++; coins+=COIN_PER_POTION; st.status='idle'; st.timer=0; return; }
+    if(st.cfg.isSink){
+      score++; coins+=COIN_PER_POTION;
+      var orderResult=fulfillOrder();
+      if(orderResult && orderResult.onTime) coins+=8;
+      st.status='idle'; st.timer=0; return;
+    }
     var next=stations[i+1];
     if(next.buffer<next.cfg.bufferCap){ next.buffer++; st.status='idle'; st.timer=0; }
   }
@@ -855,6 +923,21 @@ try{
         }
       }
     });
+    tickOrders();
+  }
+  function tickOrders(){
+    if(phase!=='explore' && phase!=='subordinate'){ return; }
+    orderSpawnTimer -= TICK_MS;
+    if(orderSpawnTimer<=0 && orders.length<ORDER_MAX_ACTIVE){
+      var win=ORDER_WINDOW[0]+Math.random()*(ORDER_WINDOW[1]-ORDER_WINDOW[0]);
+      orders.push({total:win, remaining:win, late:false, lateTicks:0});
+      orderSpawnTimer=ORDER_MIN_GAP+Math.random()*(ORDER_MAX_GAP-ORDER_MIN_GAP);
+    }
+    orders.forEach(function(o){
+      if(!o.late){ o.remaining-=TICK_MS; if(o.remaining<=0){ o.remaining=0; o.late=true; } }
+      else { o.lateTicks+=TICK_MS; }
+    });
+    orders=orders.filter(function(o){ return !(o.late && o.lateTicks>2500); });
   }
 
   /* ---------------- murphy's law (fica mais bravo a cada ciclo) ---------------- */
@@ -892,7 +975,7 @@ try{
     var m=PHASE_META[phase];
     $('phaseStep').textContent='Passo '+m.step+' de 5';
     $('phaseTitle').textContent=m.title;
-    if(phase==='explore') $('phaseDesc').textContent='Foque só n'+genderSuffix()+' '+stations[identifiedIdx].cfg.name+': toque nela sempre que terminar.';
+    if(phase==='explore') $('phaseDesc').textContent='Foque só n'+genderSuffix()+' '+stations[identifiedIdx].cfg.name+': toque nela sempre que terminar. Encomendas com prazo vão aparecer — cada entrega alimenta a mais urgente.';
     else if(phase==='elevate') $('phaseDesc').textContent='Invista as moedas ganhas na restrição pra aumentar a capacidade dela.';
     else if(phase==='repeat') $('phaseDesc').textContent='A restrição pode ter mudado de lugar. Hora de descobrir qual é a nova.';
     else $('phaseDesc').textContent=m.desc;
@@ -1001,6 +1084,7 @@ try{
         div.addEventListener('click', function(){
           ensureAudio();
           st.cfg.time=Math.round(st.cfg.time*sup.factor); st.cfg.susc=sup.susc;
+          if(sup.bufferBonus) st.cfg.bufferCap += sup.bufferBonus;
           coins -= sup.cost; if(coins<0) coins=0;
           sfx.buy(); div.classList.add('picked');
           Array.prototype.forEach.call(grid.children, function(c){ c.style.pointerEvents='none'; });
