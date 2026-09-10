@@ -3,15 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Oficina do Gargalo</title>
+<title>Confraria do Gargalo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&family=Pirata+One&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
-    --cream:#fff3e6; --paper:#ffffff; --ink:#073b4c; --ink-soft:#4d7a8c;
-    --red:#ef476f; --teal:#118ab2; --green:#06d6a0; --yellow:#ffd166;
-    --red-dim:#fbdbe2; --teal-dim:#d7ecf3; --green-dim:#d4f5ea; --yellow-dim:#fff1cf;
+    --cream:#1b1030; --paper:#2a1c4d; --ink:#f5ead0; --ink-soft:#b6a7d9;
+    --red:#ff5d78; --teal:#57c7e8; --green:#6fe7b3; --yellow:#ffcb5c;
+    --red-dim:rgba(255,93,120,0.16); --teal-dim:rgba(87,199,232,0.16); --green-dim:rgba(111,231,179,0.16); --yellow-dim:rgba(255,203,92,0.16);
+    --line:rgba(245,234,208,0.14); --line-2:rgba(245,234,208,0.22); --panel-edge:rgba(245,234,208,0.09);
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%;}
@@ -19,8 +21,16 @@
     margin:0; background:var(--cream); color:var(--ink);
     font-family:'Nunito',sans-serif; min-height:100vh;
     padding:env(safe-area-inset-top) 0 max(24px,env(safe-area-inset-bottom));
-    background-image:radial-gradient(rgba(7,59,76,0.05) 1.4px, transparent 1.4px);
-    background-size:22px 22px;
+    background-image:
+      radial-gradient(1.6px 1.6px at 20% 12%, rgba(245,234,208,0.55), transparent),
+      radial-gradient(1.3px 1.3px at 68% 26%, rgba(245,234,208,0.4), transparent),
+      radial-gradient(1.6px 1.6px at 85% 8%, rgba(245,234,208,0.5), transparent),
+      radial-gradient(1.2px 1.2px at 40% 60%, rgba(245,234,208,0.35), transparent),
+      radial-gradient(1.4px 1.4px at 12% 78%, rgba(245,234,208,0.4), transparent),
+      radial-gradient(1.3px 1.3px at 92% 68%, rgba(245,234,208,0.35), transparent),
+      radial-gradient(900px 500px at 85% -8%, rgba(199,125,255,0.18), transparent),
+      radial-gradient(700px 420px at -10% 90%, rgba(87,199,232,0.12), transparent);
+    background-repeat:no-repeat; background-size:100% 100%;
   }
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
@@ -39,7 +49,7 @@
     font-family:'Baloo 2',sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.08em;
     text-transform:uppercase; color:var(--red); display:flex; align-items:center; gap:6px;
   }
-  .card{background:var(--paper); border-radius:20px; padding:18px 18px 16px; box-shadow:0 3px 0 rgba(7,59,76,0.08), 0 10px 22px rgba(7,59,76,0.06);}
+  .card{background:var(--paper); border-radius:20px; padding:18px 18px 16px; box-shadow:0 3px 0 rgba(0,0,0,0.34), 0 10px 22px rgba(0,0,0,0.25);}
   .btn-main{
     width:100%; padding:16px; border-radius:16px; background:var(--red); color:#fff;
     font-size:17px; font-weight:700; box-shadow:0 5px 0 #b6304a; display:flex; align-items:center; justify-content:center; gap:8px;
@@ -52,27 +62,28 @@
   }
   .btn-ghost:active{transform:scale(.98);}
   input[type=text].field{
-    width:100%; padding:13px 14px; border-radius:13px; border:2px solid #e7ddcd; background:#fffdf9;
+    width:100%; padding:13px 14px; border-radius:13px; border:2px solid var(--line-2); background:rgba(255,255,255,0.05);
     color:var(--ink); font-weight:700; font-size:15px;
   }
   input[type=text].field:focus{outline:none; border-color:var(--red);}
 
   /* ================= HERO / START ================= */
-  .hero{padding:8px 2px 4px;}
+  .hero{padding:8px 2px 4px; position:relative;}
   .hero-mark{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
   .hero-mark .badge{
-    width:46px; height:46px; border-radius:14px; background:var(--ink); color:var(--yellow);
-    display:flex; align-items:center; justify-content:center; font-size:23px; flex:none;
+    width:46px; height:46px; border-radius:14px; background:rgba(255,203,92,0.14); color:var(--yellow);
+    display:flex; align-items:center; justify-content:center; font-size:23px; flex:none; border:1.5px solid var(--yellow-dim);
   }
-  .hero h1{font-size:30px; line-height:1.04; letter-spacing:-.01em;}
-  .hero h1 span{color:var(--red);}
-  .hero .tag{font-size:13.5px; color:var(--ink-soft); font-weight:700; margin-top:2px;}
+  .spell-title{font-family:'Pirata One',cursive; font-weight:400; font-size:34px; line-height:1.05; letter-spacing:.01em; text-shadow:0 2px 0 rgba(0,0,0,0.35);}
+  .spell-title.small{font-size:27px;}
+  .spell-title span{color:var(--red);}
+  .hero .tag{font-size:13.5px; color:var(--ink-soft); font-weight:700; margin-top:2px; display:flex; align-items:center;}
   .hero p.lead{font-size:14.5px; line-height:1.55; color:var(--ink-soft); margin:14px 0 0; font-weight:600;}
 
   .steps-list{list-style:none; margin:16px 0 0; padding:0; display:flex; flex-direction:column; gap:9px;}
   .steps-list li{
     display:flex; gap:11px; align-items:flex-start; background:var(--paper); border-radius:14px;
-    padding:11px 13px; box-shadow:0 2px 0 rgba(7,59,76,0.06);
+    padding:11px 13px; box-shadow:0 2px 0 rgba(0,0,0,0.25);
   }
   .steps-list .num{
     flex:none; width:26px; height:26px; border-radius:8px; background:var(--yellow-dim); color:var(--ink);
@@ -89,16 +100,43 @@
 
   .name-card{margin-top:14px;}
   .name-card label{font-family:'Baloo 2'; font-weight:700; font-size:14px; display:block; margin-bottom:8px;}
+  .name-row{display:flex; gap:8px;}
+  .name-row .field{flex:1;}
+  .dice-btn{
+    flex:none; width:48px; border-radius:13px; background:rgba(255,203,92,0.14); color:var(--yellow);
+    border:2px solid var(--yellow-dim); display:flex; align-items:center; justify-content:center;
+  }
+  .dice-btn:active{transform:scale(.92) rotate(-8deg);}
+
+  /* ================= TELÃO (host lobby) ================= */
+  #screen-telao{padding-top:6px;}
+  .telao-head{text-align:center; margin-bottom:16px;}
+  .telao-head .tag{font-size:13px;}
+  .qr-card{background:var(--paper); border-radius:20px; padding:20px; display:flex; justify-content:center; box-shadow:0 3px 0 rgba(0,0,0,0.3);}
+  .qr-card #qrHolder{background:var(--ink); padding:12px; border-radius:12px; line-height:0;}
+  .qr-fallback{text-align:center; font-size:13px; color:var(--ink-soft); font-weight:700;}
+  .room-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:9px;}
+  .witch-card{
+    background:var(--paper); border-radius:15px; padding:12px 8px 10px; text-align:center;
+    box-shadow:0 2px 0 rgba(0,0,0,0.3); animation:witchJoin .35s cubic-bezier(.3,1.4,.5,1);
+    border:1.5px solid transparent;
+  }
+  .witch-card.done{border-color:var(--green);}
+  @keyframes witchJoin{from{opacity:0; transform:scale(.6) translateY(8px);}to{opacity:1; transform:scale(1) translateY(0);}}
+  .witch-card .wc-icon{width:34px; height:34px; border-radius:50%; background:var(--red-dim); color:var(--red); display:flex; align-items:center; justify-content:center; margin:0 auto 6px;}
+  .witch-card.done .wc-icon{background:var(--green-dim); color:var(--green);}
+  .witch-card .wc-name{font-family:'Baloo 2'; font-weight:700; font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .witch-card .wc-score{font-size:10.5px; color:var(--ink-soft); font-weight:800; margin-top:2px; font-variant-numeric:tabular-nums;}
 
   /* ================= HUD ================= */
   .hud{
     position:sticky; top:0; z-index:30; background:var(--cream); padding:8px 0 10px;
     display:flex; gap:8px;
   }
-  .hud::after{content:''; position:absolute; left:-16px; right:-16px; bottom:0; height:1px; background:rgba(7,59,76,0.08);}
+  .hud::after{content:''; position:absolute; left:-16px; right:-16px; bottom:0; height:1px; background:rgba(0,0,0,0.34);}
   .chip{
     flex:1; background:var(--paper); border-radius:13px; padding:7px 4px 6px; text-align:center;
-    box-shadow:0 2px 0 rgba(7,59,76,0.06);
+    box-shadow:0 2px 0 rgba(0,0,0,0.25);
   }
   .chip .icon{color:var(--ink-soft); font-size:13px;}
   .chip .v{font-family:'Baloo 2'; font-weight:800; font-size:16px; font-variant-numeric:tabular-nums; margin-top:1px;}
@@ -121,21 +159,21 @@
   .phase-banner h2{font-size:19px; margin-top:1px;}
   .phase-banner p{font-size:12.8px; color:var(--ink-soft); font-weight:600; line-height:1.45; margin:4px 0 0;}
   .phase-dots{display:flex; gap:5px; margin-top:8px;}
-  .phase-dots i{width:16px; height:5px; border-radius:3px; background:#e9e0d0; display:block;}
+  .phase-dots i{width:16px; height:5px; border-radius:3px; background:rgba(245,234,208,0.14); display:block;}
   .phase-dots i.on{background:var(--red);}
 
   /* ================= STATION FLOW (vertical) ================= */
   .flow{margin-top:14px; position:relative;}
   .pipe{height:22px; display:flex; justify-content:center; position:relative;}
   .pipe svg{width:6px; height:100%;}
-  .pipe .track{stroke:#e9e0d0; stroke-width:5; fill:none; stroke-linecap:round;}
+  .pipe .track{stroke:rgba(245,234,208,0.14); stroke-width:5; fill:none; stroke-linecap:round;}
   .pipe .fill{stroke:var(--green); stroke-width:5; fill:none; stroke-linecap:round; stroke-dasharray:2 7; animation:pipeflow .5s linear infinite;}
   .pipe.jammed .fill{stroke:var(--red); animation-duration:1.6s;}
   @keyframes pipeflow{to{stroke-dashoffset:-18;}}
 
   .station{
     display:flex; align-items:center; gap:13px; background:var(--paper); border-radius:18px;
-    padding:13px 14px; position:relative; border:2.5px solid transparent; box-shadow:0 2px 0 rgba(7,59,76,0.06);
+    padding:13px 14px; position:relative; border:2.5px solid transparent; box-shadow:0 2px 0 rgba(0,0,0,0.25);
     transition:border-color .2s, box-shadow .2s, opacity .2s;
   }
   .station.dim{opacity:.45;}
@@ -146,17 +184,17 @@
   .badge.acc-green{background:var(--green-dim); color:#0a7a5c;}
   .badge.acc-yellow{background:var(--yellow-dim); color:#a9720f;}
   .badge.acc-teal{background:var(--teal-dim); color:var(--teal);}
-  .badge.acc-ink{background:#e7edef; color:var(--ink);}
+  .badge.acc-ink{background:rgba(245,234,208,0.14); color:var(--ink);}
 
   .station .body{flex:1; min-width:0;}
   .station .name{font-family:'Baloo 2'; font-weight:700; font-size:14.5px;}
   .station .status{font-size:11.6px; font-weight:700; color:var(--ink-soft); margin-top:1px; min-height:14px;}
-  .ptrack{height:5px; border-radius:4px; background:#eee3d1; margin-top:6px; overflow:hidden;}
+  .ptrack{height:5px; border-radius:4px; background:rgba(245,234,208,0.14); margin-top:6px; overflow:hidden;}
   .pfill{height:100%; background:var(--teal); width:0%; transition:width .1s linear;}
   .station.done .pfill{background:var(--yellow);}
 
   .gauge{flex:none; width:34px; text-align:center;}
-  .gauge .bar{height:44px; width:9px; border-radius:5px; background:#eee3d1; margin:0 auto; position:relative; overflow:hidden;}
+  .gauge .bar{height:44px; width:9px; border-radius:5px; background:rgba(245,234,208,0.14); margin:0 auto; position:relative; overflow:hidden;}
   .gauge .bar i{position:absolute; left:0; right:0; bottom:0; background:var(--teal); border-radius:5px; transition:height .25s;}
   .gauge.full .bar i{background:var(--red);}
   .gauge .n{font-size:9.5px; font-weight:800; color:var(--ink-soft); margin-top:3px; font-variant-numeric:tabular-nums;}
@@ -165,7 +203,7 @@
   @keyframes readyPulse{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
   .station.ready .chev{color:var(--yellow); animation:chevNudge .8s ease-in-out infinite;}
   @keyframes chevNudge{0%,100%{transform:translateX(0);}50%{transform:translateX(4px);}}
-  .chev{flex:none; font-size:19px; color:#ddd0b8;}
+  .chev{flex:none; font-size:19px; color:rgba(245,234,208,0.35);}
 
   .station.bottleneck{border-color:var(--red);}
   .bnk-tag{
@@ -211,13 +249,13 @@
   .feedback{margin-top:12px; font-size:12.8px; font-weight:700; color:var(--ink-soft); line-height:1.5;}
 
   .supplier{
-    display:flex; align-items:center; gap:12px; background:#fffdf9; border:2px solid #eee3d1; border-radius:15px;
+    display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.05); border:2px solid var(--line-2); border-radius:15px;
     padding:12px 13px; margin-top:9px;
   }
-  .supplier .sicon{flex:none; width:36px; height:36px; border-radius:10px; background:var(--yellow-dim); color:#a9720f; display:flex; align-items:center; justify-content:center; font-size:17px;}
+  .supplier .sicon{flex:none; width:36px; height:36px; border-radius:10px; background:var(--yellow-dim); color:#ffcb5c; display:flex; align-items:center; justify-content:center; font-size:17px;}
   .supplier .sname{font-family:'Baloo 2'; font-weight:700; font-size:14px;}
   .supplier .sdesc{font-size:11.6px; color:var(--ink-soft); font-weight:600; margin-top:2px; line-height:1.35;}
-  .supplier .scost{font-family:'Baloo 2'; font-weight:800; font-size:13px; color:#a9720f; white-space:nowrap; display:flex; align-items:center; gap:3px;}
+  .supplier .scost{font-family:'Baloo 2'; font-weight:800; font-size:13px; color:#ffcb5c; white-space:nowrap; display:flex; align-items:center; gap:3px;}
   .supplier.disabled{opacity:.4;}
   .supplier.picked{border-color:var(--green); background:var(--green-dim);}
 
@@ -233,7 +271,7 @@
   @keyframes livePulse{0%,100%{opacity:1;}50%{opacity:.3;}}
   .lb-row{
     display:flex; align-items:center; gap:11px; background:var(--paper); padding:10px 13px; border-radius:13px; margin-bottom:7px;
-    box-shadow:0 2px 0 rgba(7,59,76,0.05);
+    box-shadow:0 2px 0 rgba(0,0,0,0.21);
   }
   .lb-row .rk{font-family:'Baloo 2'; font-weight:800; font-size:14px; width:22px; color:var(--ink-soft); flex:none;}
   .lb-row.top1 .rk{color:var(--red);}
@@ -244,17 +282,17 @@
 
   /* ================= controls / pause / rank / confetti ================= */
   .ctrl-bar{position:fixed; top:calc(env(safe-area-inset-top) + 12px); right:14px; z-index:40; display:flex; gap:8px;}
-  .ctrl-btn{width:34px; height:34px; border-radius:50%; background:var(--paper); box-shadow:0 2px 6px rgba(7,59,76,.18); display:flex; align-items:center; justify-content:center; color:var(--ink-soft);}
+  .ctrl-btn{width:34px; height:34px; border-radius:50%; background:var(--paper); box-shadow:0 2px 6px rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; color:var(--ink-soft);}
   .ctrl-btn:active{transform:scale(.9);}
   .ctrl-btn.hidden{display:none;}
 
-  #pauseOverlay{position:fixed; inset:0; background:rgba(7,59,76,.55); z-index:55; display:flex; align-items:center; justify-content:center; padding:20px;}
+  #pauseOverlay{position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:55; display:flex; align-items:center; justify-content:center; padding:20px;}
   .pause-card{background:var(--paper); border-radius:20px; padding:28px 24px; text-align:center; max-width:300px;}
   .pause-card h3{font-size:19px; margin-bottom:14px;}
 
-  .best-note{display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:800; color:#a9720f; margin-top:10px;}
+  .best-note{display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:800; color:#ffcb5c; margin-top:10px;}
   .rank-row{display:flex; gap:4px; margin:10px 0 2px;}
-  .rank-row svg{width:22px; height:22px; color:#e3dcc9;}
+  .rank-row svg{width:22px; height:22px; color:rgba(245,234,208,0.25);}
   .rank-row svg.on{color:var(--yellow);}
   .rank-label{font-size:13px; font-weight:800; color:var(--ink-soft);}
   .record-badge{display:inline-flex; align-items:center; gap:5px; background:var(--yellow); color:#5c3d0a; font-family:'Baloo 2'; font-weight:800; font-size:11.5px; padding:4px 10px; border-radius:999px; margin-top:8px;}
@@ -284,11 +322,11 @@
       <div class="hero-mark">
         <span class="badge"><svg class="icon" width="24" height="24"><use href="#i-st-cauldron"/></svg></span>
         <div>
-          <h1>Oficina do <span>Gargalo</span></h1>
-          <div class="tag">um jogo sobre os 5 Passos de Focaliza&ccedil;&atilde;o</div>
+          <h1 class="spell-title">Confraria do <span>Gargalo</span></h1>
+          <div class="tag"><svg class="icon" width="12" height="12" style="color:var(--yellow)"><use href="#i-moon"/></svg>&nbsp; um jogo de bruxas sobre os 5 Passos de Focaliza&ccedil;&atilde;o</div>
         </div>
       </div>
-      <p class="lead">Voc&ecirc; toca s&oacute; onde importa: a linha roda sozinha, sua miss&atilde;o &eacute; achar e proteger a restri&ccedil;&atilde;o. Quanto melhor voc&ecirc; aplica a teoria, mais poss&otilde;es saem &mdash; e mais alto voc&ecirc; sobe no placar da turma.</p>
+      <p class="lead">Sua bruxa toca s&oacute; onde importa: a linha da oficina flui sozinha, sua miss&atilde;o &eacute; achar e proteger a restri&ccedil;&atilde;o. Quanto melhor voc&ecirc; aplica a teoria, mais po&ccedil;&otilde;es saem do caldeir&atilde;o &mdash; e mais alto sua bruxa sobe na confraria.</p>
       <div class="best-note hidden" id="bestNote"><svg class="icon" width="13" height="13"><use href="#i-star"/></svg><span id="bestNoteText"></span></div>
     </div>
 
@@ -306,15 +344,38 @@
     </div>
 
     <div class="card name-card">
-      <label for="playerName">Nome da sua equipe</label>
-      <input type="text" id="playerName" class="field" placeholder="Ex: Turma 3A &mdash; Grupo 2" maxlength="24">
+      <label for="playerName">Seu nome de bruxa (ou bruxo)</label>
+      <div class="name-row">
+        <input type="text" id="playerName" class="field" placeholder="Ex: Bruxa das Bolhas" maxlength="24">
+        <button class="dice-btn" id="diceBtn" type="button" title="Sortear nome"><svg class="icon" width="18" height="18"><use href="#i-dice"/></svg></button>
+      </div>
     </div>
 
     <div style="margin-top:14px;">
-      <button class="btn-main" id="startBtn">Come&ccedil;ar a produ&ccedil;&atilde;o <svg class="icon" width="16" height="16"><use href="#i-chevron"/></svg></button>
+      <button class="btn-main" id="startBtn">Entrar na confraria <svg class="icon" width="16" height="16"><use href="#i-chevron"/></svg></button>
       <div style="height:9px;"></div>
-      <button class="btn-ghost" id="viewLbFromStart">Ver placar ao vivo da turma</button>
+      <button class="btn-ghost" id="viewLbFromStart">Ver grim&oacute;rio da turma</button>
     </div>
+  </div>
+
+  <!-- ============ TELÃO (host) ============ -->
+  <div id="screen-telao" class="hidden">
+    <div class="telao-head">
+      <h1 class="spell-title small">Confraria do <span>Gargalo</span></h1>
+      <p class="tag">escaneie pra entrar na confraria e jogar no seu celular</p>
+    </div>
+    <div class="qr-card">
+      <div id="qrHolder"></div>
+      <div class="qr-fallback hidden" id="qrFallback">
+        <p>N&atilde;o deu pra desenhar o c&oacute;digo aqui &mdash; copie o link:</p>
+        <button class="btn-ghost" id="copyLinkBtn">Copiar link</button>
+      </div>
+    </div>
+    <div class="lb-head">
+      <h3>Bruxas na sala</h3>
+      <span class="live-dot" id="liveDotTelao"><i></i>ao vivo</span>
+    </div>
+    <div id="roomBox"></div>
   </div>
 
   <!-- ============ GAME ============ -->
@@ -358,8 +419,8 @@
       </div>
     </div>
     <div class="card name-card" id="saveCard" style="margin-top:12px;">
-      <label for="endPlayerName">Salvar no placar da turma</label>
-      <input type="text" id="endPlayerName" class="field" placeholder="Nome da equipe" maxlength="24">
+      <label for="endPlayerName">Salvar no grim&oacute;rio da turma</label>
+      <input type="text" id="endPlayerName" class="field" placeholder="Ex: Bruxa das Bolhas" maxlength="24">
       <div style="height:10px;"></div>
       <button class="btn-main" id="saveScoreBtn">Salvar pontua&ccedil;&atilde;o</button>
     </div>
@@ -393,6 +454,19 @@
   <symbol id="i-play" viewBox="0 0 28 28"><path d="M8 5 L23 14 L8 23 Z" fill="currentColor"/></symbol>
   <symbol id="i-share" viewBox="0 0 28 28"><circle cx="21" cy="7" r="3.2" fill="currentColor"/><circle cx="21" cy="21" r="3.2" fill="currentColor"/><circle cx="7" cy="14" r="3.2" fill="currentColor"/><line x1="9.7" y1="12.6" x2="18.3" y2="8.4" stroke="currentColor" stroke-width="2"/><line x1="9.7" y1="15.4" x2="18.3" y2="19.6" stroke="currentColor" stroke-width="2"/></symbol>
   <symbol id="i-star" viewBox="0 0 28 28"><path d="M14 2 L17.4 10 L26 11 L19.6 17 L21.5 26 L14 21.3 L6.5 26 L8.4 17 L2 11 L10.6 10 Z" fill="currentColor"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 28 28"><path d="M19 4 C13 4 8.5 9 8.5 15 C8.5 21 13 25 19 25 C13.5 25 9.5 20.5 9.5 15 C9.5 9.5 13.5 5 19 4 Z" fill="currentColor"/><circle cx="21" cy="9" r="1.1" fill="currentColor" opacity=".7"/><circle cx="24" cy="14" r="0.8" fill="currentColor" opacity=".6"/></symbol>
+  <symbol id="i-cat" viewBox="0 0 28 28"><path d="M8 12 L6 5 L11 9 Z" fill="currentColor"/><path d="M20 12 L22 5 L17 9 Z" fill="currentColor"/><ellipse cx="14" cy="15" rx="8" ry="7" fill="currentColor"/><path d="M10.5 15 L8 14 M17.5 15 L20 14 M10.5 17 L8 18 M17.5 17 L20 18" stroke="var(--cream)" stroke-width="0.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-dice" viewBox="0 0 28 28"><rect x="4" y="4" width="20" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="10" cy="10" r="1.7" fill="currentColor"/><circle cx="18" cy="10" r="1.7" fill="currentColor"/><circle cx="14" cy="14" r="1.7" fill="currentColor"/><circle cx="10" cy="18" r="1.7" fill="currentColor"/><circle cx="18" cy="18" r="1.7" fill="currentColor"/></symbol>
+  <symbol id="i-st-owl" viewBox="0 0 40 40">
+    <ellipse cx="20" cy="24" rx="11.5" ry="11" fill="none" stroke="currentColor" stroke-width="2.2"/>
+    <circle cx="20" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2.2"/>
+    <circle cx="16.3" cy="12.2" r="2.1" fill="currentColor"/><circle cx="23.7" cy="12.2" r="2.1" fill="currentColor"/>
+    <path d="M18.5 16 L20 18.3 L21.5 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M13.5 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M26.5 6.5 L23.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M9 25 C11.5 20 14 32 17 27" stroke="currentColor" stroke-width="1.8" fill="none" opacity="0.65"/>
+    <path d="M31 25 C28.5 20 26 32 23 27" stroke="currentColor" stroke-width="1.8" fill="none" opacity="0.65"/>
+  </symbol>
 
   <symbol id="i-st-leaf" viewBox="0 0 40 40">
     <path d="M20 35 C20 25 20 16 20 8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/>
@@ -428,7 +502,7 @@ try{
     {key:'colheita',  name:'Colheita',        icon:'i-st-leaf',     acc:'green',  baseTime:1100, bufferCap:3, isSource:true},
     {key:'caldeirao', name:'Caldeirão',       icon:'i-st-cauldron', acc:'yellow', baseTime:2500, bufferCap:3},
     {key:'engarraf',  name:'Engarrafamento',  icon:'i-st-flask',    acc:'teal',   baseTime:1000, bufferCap:3},
-    {key:'entrega',   name:'Entrega',         icon:'i-st-package',  acc:'ink',    baseTime:850,  bufferCap:0, isSink:true}
+    {key:'entrega',   name:'Entrega',         icon:'i-st-owl',      acc:'ink',    baseTime:850,  bufferCap:0, isSink:true}
   ];
   var TICK_MS=100, SPILL_MS=2600, T_IDENTIFY=8000, T_EXPLORE=13000, T_SUBORDINATE=13000, TOTAL_CYCLES=2;
   var MURPHY_STUN=[2000,3200], MURPHY_GAP=[5000,9000], COIN_PER_POTION=10;
@@ -496,10 +570,11 @@ try{
     if(window.claude && window.claude.use){
       window.claude.use('db').then(function(d){
         db=d;
-        if(db) attachLeaderboard(); else renderLeaderboard(null);
-      }).catch(function(){ renderLeaderboard(null); });
+        if(db){ attachLeaderboard(); if(location.hash==='#telao') attachRoom(); }
+        else { renderLeaderboard(null); renderRoom(null); }
+      }).catch(function(){ renderLeaderboard(null); renderRoom(null); });
     } else {
-      renderLeaderboard(null);
+      renderLeaderboard(null); renderRoom(null);
     }
   }
   function attachLeaderboard(){
@@ -529,6 +604,66 @@ try{
       html += '<div class="lb-row '+(i===0?'top1':'')+'"><span class="rk">'+(i+1)+'</span><span class="nm">'+esc(e.name||'Equipe')+'</span><span class="sc">'+e.score+'</span></div>';
     });
     box.innerHTML = html;
+  }
+
+  /* ---------------- db (live room / who's playing) ---------------- */
+  var PLAYER_ID_KEY='oficina_gargalo_player_id';
+  function getPlayerId(){
+    try{
+      var id=sessionStorage.getItem(PLAYER_ID_KEY);
+      if(!id){ id='p_'+Math.random().toString(36).slice(2,10); sessionStorage.setItem(PLAYER_ID_KEY,id); }
+      return id;
+    }catch(e){ return 'p_'+Math.random().toString(36).slice(2,10); }
+  }
+  var playerId=getPlayerId(), roomUnsub=null;
+  function joinRoom(name){
+    if(!db) return;
+    try{ db.collection('players').doc(playerId).set({name:name, status:'jogando', score:0, cycle:1, updatedAt:Date.now()}); }catch(e){}
+  }
+  function updateRoom(patch){
+    if(!db) return;
+    try{ db.collection('players').doc(playerId).update(Object.assign({updatedAt:Date.now()}, patch)); }catch(e){
+      try{ db.collection('players').doc(playerId).set(Object.assign({name:$('playerName').value||'Bruxa sem nome', updatedAt:Date.now()}, patch)); }catch(e2){}
+    }
+  }
+  function attachRoom(){
+    try{
+      if(roomUnsub) roomUnsub();
+      roomUnsub = db.collection('players').orderBy('updatedAt','desc').limit(40).onSnapshot(function(snap){
+        renderRoom(snap.docs.map(function(d){ return d.data(); }));
+      }, function(){ renderRoom(null); });
+    }catch(e){ renderRoom(null); }
+  }
+  function renderRoom(list){
+    var box=$('roomBox'); if(!box) return;
+    $('liveDotTelao').style.display = db ? '' : 'none';
+    if(list===null){ box.innerHTML='<div class="lb-empty">Sala ao vivo indispon&iacute;vel por aqui.</div>'; return; }
+    if(!list.length){ box.innerHTML='<div class="lb-empty">Nenhuma bruxa entrou ainda. Escaneie o c&oacute;digo acima!</div>'; return; }
+    list.sort(function(a,b){
+      var ao=a.status==='concluido'?1:0, bo=b.status==='concluido'?1:0;
+      if(ao!==bo) return (b.score||0)-(a.score||0);
+      return (b.score||0)-(a.score||0);
+    });
+    var html='<div class="room-grid">';
+    list.forEach(function(p){
+      var done=p.status==='concluido';
+      html += '<div class="witch-card'+(done?' done':'')+'">'
+        + '<div class="wc-icon"><svg class="icon" width="17" height="17"><use href="#'+(done?'i-star':'i-st-cauldron')+'"/></svg></div>'
+        + '<div class="wc-name">'+esc(p.name||'Bruxa')+'</div>'
+        + '<div class="wc-score">'+(p.score||0)+' po&ccedil;&otilde;es'+(done?'':' &middot; ciclo '+(p.cycle||1))+'</div>'
+        + '</div>';
+    });
+    html += '</div>';
+    box.innerHTML = html;
+  }
+  function initQr(){
+    try{
+      if(window.QRCode){
+        new QRCode($('qrHolder'), {text: location.href.split('#')[0], width:200, height:200, colorDark:'#f5ead0', colorLight:'#1b1030'});
+      } else { throw new Error('no qrcode lib'); }
+    }catch(e){
+      $('qrFallback').classList.remove('hidden');
+    }
   }
 
   /* ---------------- game state ---------------- */
@@ -659,6 +794,7 @@ try{
       sfx.deliver();
       var pop=document.createElement('div'); pop.className='float-pop'; pop.textContent='+'+(1+bonus);
       el.appendChild(pop); setTimeout(function(){ pop.remove(); }, 850);
+      updateRoom({score:score, cycle:cycle});
       renderFlow(); return;
     }
     var next=stations[i+1];
@@ -871,7 +1007,7 @@ try{
     return r;
   }
   function spawnConfetti(){
-    var colors=['#ef476f','#118ab2','#06d6a0','#ffd166'];
+    var colors=['#ff5d78','#57c7e8','#6fe7b3','#ffcb5c'];
     for(var i=0;i<26;i++){
       (function(){
         var p=document.createElement('div'); p.className='confetti-piece';
@@ -886,10 +1022,10 @@ try{
     }
   }
   function shareResult(){
-    var text='Consegui '+score+' poções na Oficina do Gargalo! Bora competir?';
+    var text='Minha bruxa fez '+score+' poções na Confraria do Gargalo! Bora competir?';
     var btn=$('shareBtn');
     if(navigator.share){
-      navigator.share({title:'Oficina do Gargalo', text:text, url:location.href}).catch(function(){});
+      navigator.share({title:'Confraria do Gargalo', text:text, url:location.href.split('#')[0]}).catch(function(){});
     } else if(navigator.clipboard){
       navigator.clipboard.writeText(text+' '+location.href).then(function(){
         var old=btn.innerHTML; btn.textContent='Link copiado!';
@@ -901,16 +1037,19 @@ try{
   /* ---------------- lifecycle ---------------- */
   function startGame(){
     ensureAudio(); initGame();
+    var witchName=$('playerName').value.trim()||'Bruxa sem nome';
     $('screen-start').classList.add('hidden'); $('screen-end').classList.add('hidden'); $('screen-game').classList.remove('hidden');
     document.querySelector('#screen-end .result').classList.remove('hidden');
     $('saveCard').classList.remove('hidden');
     running=true; paused=false; $('pauseOverlay').classList.add('hidden');
+    joinRoom(witchName);
     goToPhase('identify'); scheduleMurphy();
   }
   function endGame(){
     running=false; clearInterval(tickHandle); clearTimeout(murphyHandle);
     $('pauseBtn').classList.add('hidden');
     $('screen-game').classList.add('hidden'); $('screen-end').classList.remove('hidden');
+    updateRoom({status:'concluido', score:score, cycle:TOTAL_CYCLES});
     $('finalScore').textContent=score; $('finalSummary').textContent='poções entregues em '+TOTAL_CYCLES+' ciclos';
     $('endPlayerName').value=$('playerName').value||'';
     var r=renderRank(score);
@@ -925,7 +1064,7 @@ try{
     refreshBestNote();
   });
   $('saveScoreBtn').addEventListener('click', function(){
-    var name=$('endPlayerName').value.trim()||'Equipe sem nome';
+    var name=$('endPlayerName').value.trim()||'Bruxa sem nome';
     var btn=this; btn.disabled=true; btn.textContent='Salvando…';
     saveScoreToDb(name, score).then(function(ok){
       if(ok){ btn.textContent='Salvo!'; }
@@ -944,6 +1083,16 @@ try{
   });
   $('pauseBtn').addEventListener('click', pauseGame);
   $('resumeBtn').addEventListener('click', resumeGame);
+  var WITCH_NAMES=['Bruxa das Bolhas','Feiticeira do Vapor','Encantadora da Névoa','Bruxa do Caldeirão Torto','Senhora das Ervas','Dama da Lua Cheia','Bruxa Trapalhona','Coruja Sábia','Gata Preta Encantada','Bruxa do Sétimo Selo','Feiticeira Desalinhada','Bruxa da Meia-Noite'];
+  $('diceBtn').addEventListener('click', function(){
+    $('playerName').value = WITCH_NAMES[Math.floor(Math.random()*WITCH_NAMES.length)];
+  });
+  $('copyLinkBtn').addEventListener('click', function(){
+    var url=location.href.split('#')[0];
+    if(navigator.clipboard) navigator.clipboard.writeText(url).then(function(){
+      var b=$('copyLinkBtn'); var old=b.textContent; b.textContent='Copiado!'; setTimeout(function(){ b.textContent=old; }, 1500);
+    });
+  });
   function updateMuteIcon(){ $('muteBtn').innerHTML='<svg class="icon" width="17" height="17"><use href="#'+(muted?'i-mute':'i-sound')+'"/></svg>'; }
   function refreshBestNote(){
     var best=getBest();
@@ -955,12 +1104,15 @@ try{
     $('screen-start').classList.add('hidden'); $('screen-end').classList.remove('hidden');
     document.querySelector('#screen-end .result').classList.add('hidden');
     $('saveCard').classList.add('hidden');
+  } else if(location.hash==='#telao'){
+    $('screen-start').classList.add('hidden'); $('screen-telao').classList.remove('hidden');
+    initQr();
   }
 
   initDb();
 
 }catch(err){
-  document.body.innerHTML='<div style="padding:24px;font-family:sans-serif;color:#073b4c;"><h2>Ops, algo quebrou</h2><p>'+(err&&err.message?err.message:String(err))+'</p></div>';
+  document.body.innerHTML='<div style="padding:24px;font-family:sans-serif;color:#f5ead0;"><h2>Ops, algo quebrou</h2><p>'+(err&&err.message?err.message:String(err))+'</p></div>';
   console.error(err);
 }
 })();
