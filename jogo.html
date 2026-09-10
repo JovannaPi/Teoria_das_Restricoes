@@ -136,7 +136,7 @@
   .telao-head{text-align:center; margin-bottom:16px;}
   .telao-head .tag{font-size:13px;}
   .qr-card{background:var(--paper); border-radius:20px; padding:20px; display:flex; justify-content:center; box-shadow:0 3px 0 rgba(0,0,0,0.3);}
-  .qr-card #qrHolder{background:var(--ink); padding:12px; border-radius:12px; line-height:0;}
+  .qr-card #qrHolder{background:#ffffff; padding:12px; border-radius:12px; line-height:0;}
   .qr-fallback{text-align:center; font-size:13px; color:var(--ink-soft); font-weight:700;}
   .room-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:9px;}
   .witch-card{
@@ -731,7 +731,7 @@ try{
   function initQr(){
     try{
       if(window.QRCode){
-        new QRCode($('qrHolder'), {text: location.href.split('#')[0], width:200, height:200, colorDark:'#f5ead0', colorLight:'#1b1030'});
+        new QRCode($('qrHolder'), {text: location.href.split('#')[0], width:200, height:200, colorDark:'#000000', colorLight:'#ffffff'});
       } else { throw new Error('no qrcode lib'); }
     }catch(e){
       $('qrFallback').classList.remove('hidden');
