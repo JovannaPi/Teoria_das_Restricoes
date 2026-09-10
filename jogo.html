@@ -204,6 +204,11 @@
   .station.ready .chev{color:var(--yellow); animation:chevNudge .8s ease-in-out infinite;}
   @keyframes chevNudge{0%,100%{transform:translateX(0);}50%{transform:translateX(4px);}}
   .chev{flex:none; font-size:19px; color:rgba(245,234,208,0.35);}
+  .station.golden{border-color:#ffe27a; box-shadow:0 4px 0 #c98f2f, 0 0 26px rgba(255,226,122,.45); animation:goldenPulse .45s ease-in-out infinite;}
+  .station.golden .badge{background:rgba(255,226,122,.28); color:#ffe27a;}
+  @keyframes goldenPulse{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-2px) scale(1.015);}}
+  .station.squash{animation:squashPop .16s ease-out;}
+  @keyframes squashPop{0%{transform:scale(1);}40%{transform:scale(.94,1.05);}100%{transform:scale(1);}}
 
   .station.bottleneck{border-color:var(--red);}
   .bnk-tag{
@@ -216,6 +221,7 @@
   @keyframes wiggle{from{transform:rotate(-9deg);}to{transform:rotate(9deg);}}
 
   .float-pop{position:absolute; right:14px; top:8px; font-family:'Baloo 2'; font-weight:800; font-size:15px; color:var(--green); animation:popUp .8s ease-out forwards; pointer-events:none;}
+  .float-pop.gold{color:#ffe27a; right:auto; left:14px; top:-6px; font-size:13px;}
   @keyframes popUp{0%{opacity:0; transform:translateY(4px);}25%{opacity:1;}100%{opacity:0; transform:translateY(-22px);}}
   .shield-flash{position:absolute; inset:-2px; border-radius:18px; border:3px solid var(--teal); opacity:0; pointer-events:none;}
   .shield-flash.on{animation:shieldOut .5s forwards;}
@@ -669,12 +675,12 @@ try{
   /* ---------------- game state ---------------- */
   function initGame(){
     stations = STATIONS_DEF.map(function(cfg){
-      return {cfg:Object.assign({},cfg,{time:cfg.baseTime, susc:1.0}), status:'idle', timer:0, buffer:0, murphy:false, murphyTimer:0, stats:{processing:0,idle:0,blocked:0}};
+      return {cfg:Object.assign({},cfg,{time:cfg.baseTime, susc:1.0}), status:'idle', timer:0, buffer:0, murphy:false, murphyTimer:0, golden:false, stats:{processing:0,idle:0,blocked:0}};
     });
     score=0; coins=0; cycle=1; identifiedIdx=-1; streak=0;
   }
   function resetStationsForCycle(){
-    stations.forEach(function(st){ st.status='idle'; st.timer=0; st.buffer=0; st.murphy=false; st.murphyTimer=0; st.stats={processing:0,idle:0,blocked:0}; });
+    stations.forEach(function(st){ st.status='idle'; st.timer=0; st.buffer=0; st.murphy=false; st.murphyTimer=0; st.golden=false; st.stats={processing:0,idle:0,blocked:0}; });
   }
   function needsManualHarvest(){ return phase==='subordinate'; }
   function isClickable(i){
@@ -722,6 +728,7 @@ try{
       var isPulmao = isBnk && !st.cfg.isSource;
       var cls='station'
         + (clickable?' ready':'')
+        + (clickable && st.golden?' golden':'')
         + (isBnk?' bottleneck':'')
         + (st.murphy?' murphy':'')
         + (phase==='explore' && identifiedIdx>=0 && i!==identifiedIdx ? ' dim':'');
@@ -731,7 +738,7 @@ try{
       if(st.murphy){ statusText='Travada por Murphy!'; }
       else if(st.status==='idle'){ statusText = st.cfg.isSource ? (needsManualHarvest()?'toque para colher':'colhendo…') : (st.buffer>0?'a começar':'aguardando'); }
       else if(st.status==='processing'){ statusText='processando…'; pct=100-(st.timer/st.cfg.time*100); }
-      else if(st.status==='done'){ statusText=clickable?'pronto — toque!':'pronto (auto)'; pct=100-Math.min(100, st.timer/SPILL_MS*100); }
+      else if(st.status==='done'){ statusText=clickable?(st.golden?'✨ poção dourada — rápido!':'pronto — toque!'):'pronto (auto)'; pct=100-Math.min(100, st.timer/SPILL_MS*100); }
 
       var gaugeHtml='';
       if(!st.cfg.isSource){
@@ -781,16 +788,25 @@ try{
   }
   function pushForward(i, el){
     var st=stations[i];
-    sfx.pop(); vibrate(12);
+    var wasGolden=st.golden; st.golden=false;
+    sfx.pop(); vibrate(wasGolden?[10,30,10,30,10]:12);
+    el.classList.add('squash'); setTimeout(function(){ el.classList.remove('squash'); }, 160);
     var now=Date.now();
     if(now-lastDeliverTs < COMBO_WINDOW){ streak++; } else { streak=1; }
     lastDeliverTs=now;
     if(streak>=2){ showStreak(streak); sfx.combo(Math.min(streak,6)); }
 
+    if(wasGolden){
+      coins += 15; sfx.buy();
+      var goldPop=document.createElement('div'); goldPop.className='float-pop gold'; goldPop.textContent='+15 moedas!';
+      el.appendChild(goldPop); setTimeout(function(){ goldPop.remove(); }, 950);
+    }
+
     if(st.cfg.isSink){
       var bonus = streak>=2 ? Math.min(streak-1,3) : 0;
-      score += 1+bonus; coins = score*COIN_PER_POTION - 0;
+      score += 1+bonus; coins += (1+bonus)*COIN_PER_POTION;
       st.status='idle'; st.timer=0;
+      hitStop(70);
       sfx.deliver();
       var pop=document.createElement('div'); pop.className='float-pop'; pop.textContent='+'+(1+bonus);
       el.appendChild(pop); setTimeout(function(){ pop.remove(); }, 850);
@@ -798,15 +814,19 @@ try{
       renderFlow(); return;
     }
     var next=stations[i+1];
-    if(next.buffer<next.cfg.bufferCap){ next.buffer++; st.status='idle'; st.timer=0; }
+    if(next.buffer<next.cfg.bufferCap){ next.buffer++; st.status='idle'; st.timer=0; hitStop(45); }
     else { setHint('A próxima estação está cheia!', 1000); }
     renderFlow();
   }
   function pushForwardSilent(i){
     var st=stations[i];
-    if(st.cfg.isSink){ score++; coins=score*COIN_PER_POTION; st.status='idle'; st.timer=0; return; }
+    st.golden=false;
+    if(st.cfg.isSink){ score++; coins+=COIN_PER_POTION; st.status='idle'; st.timer=0; return; }
     var next=stations[i+1];
     if(next.buffer<next.cfg.bufferCap){ next.buffer++; st.status='idle'; st.timer=0; }
+  }
+  function hitStop(ms){
+    if(tickHandle){ clearInterval(tickHandle); setTimeout(startTicking, ms); }
   }
 
   /* ---------------- sim tick ---------------- */
@@ -820,20 +840,25 @@ try{
         else st.stats.idle+=TICK_MS;
       } else if(st.status==='processing'){
         st.timer-=TICK_MS; st.stats.processing+=TICK_MS;
-        if(st.timer<=0){ st.status='done'; st.timer=0; }
+        if(st.timer<=0){
+          st.status='done'; st.timer=0;
+          if(i===identifiedIdx && phase==='explore' && Math.random()<0.22){ st.golden=true; }
+        }
       } else if(st.status==='done'){
         if(autoAdvances(i)){ pushForwardSilent(i); }
         else {
           st.timer+=TICK_MS; st.stats.blocked+=TICK_MS;
-          if(phase!=='identify' && st.timer>SPILL_MS){ st.status='idle'; st.timer=0; setHint('A restrição ficou parada tempo demais e perdeu uma poção!', 1400); }
+          if(phase!=='identify' && st.timer>SPILL_MS){ st.status='idle'; st.timer=0; st.golden=false; setHint('A restrição ficou parada tempo demais e perdeu uma poção!', 1400); }
         }
       }
     });
   }
 
-  /* ---------------- murphy's law ---------------- */
+  /* ---------------- murphy's law (fica mais bravo a cada ciclo) ---------------- */
+  function difficultyFactor(){ return Math.max(0.55, 1-(cycle-1)*0.22); }
   function scheduleMurphy(){
-    var delay=MURPHY_GAP[0]+Math.random()*(MURPHY_GAP[1]-MURPHY_GAP[0]);
+    var f=difficultyFactor();
+    var delay=(MURPHY_GAP[0]+Math.random()*(MURPHY_GAP[1]-MURPHY_GAP[0]))*f;
     murphyHandle=setTimeout(function(){
       if(!running || phase==='identify'){ scheduleMurphy(); return; }
       strikeMurphy(); scheduleMurphy();
@@ -844,7 +869,7 @@ try{
     if(!candidates.length) return;
     var idx=candidates[Math.floor(Math.random()*candidates.length)];
     var st=stations[idx], isBnk=idx===identifiedIdx;
-    var stun=MURPHY_STUN[0]+Math.random()*(MURPHY_STUN[1]-MURPHY_STUN[0]);
+    var stun=(MURPHY_STUN[0]+Math.random()*(MURPHY_STUN[1]-MURPHY_STUN[0]))*(1+(cycle-1)*0.2);
 
     if(isBnk && st.buffer>0){
       st.buffer--; screenShake(); sfx.shield();
