@@ -209,6 +209,8 @@
   @keyframes goldenPulse{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-2px) scale(1.015);}}
   .station.squash{animation:squashPop .16s ease-out;}
   @keyframes squashPop{0%{transform:scale(1);}40%{transform:scale(.94,1.05);}100%{transform:scale(1);}}
+  body.hitstop{animation:hitstopFlash .14s ease-out;}
+  @keyframes hitstopFlash{0%{filter:brightness(1.4);}100%{filter:brightness(1);}}
 
   .station.bottleneck{border-color:var(--red);}
   .bnk-tag{
@@ -806,7 +808,7 @@ try{
       var bonus = streak>=2 ? Math.min(streak-1,3) : 0;
       score += 1+bonus; coins += (1+bonus)*COIN_PER_POTION;
       st.status='idle'; st.timer=0;
-      hitStop(70);
+      hitStop();
       sfx.deliver();
       var pop=document.createElement('div'); pop.className='float-pop'; pop.textContent='+'+(1+bonus);
       el.appendChild(pop); setTimeout(function(){ pop.remove(); }, 850);
@@ -814,7 +816,7 @@ try{
       renderFlow(); return;
     }
     var next=stations[i+1];
-    if(next.buffer<next.cfg.bufferCap){ next.buffer++; st.status='idle'; st.timer=0; hitStop(45); }
+    if(next.buffer<next.cfg.bufferCap){ next.buffer++; st.status='idle'; st.timer=0; hitStop(); }
     else { setHint('A próxima estação está cheia!', 1000); }
     renderFlow();
   }
@@ -825,8 +827,9 @@ try{
     var next=stations[i+1];
     if(next.buffer<next.cfg.bufferCap){ next.buffer++; st.status='idle'; st.timer=0; }
   }
-  function hitStop(ms){
-    if(tickHandle){ clearInterval(tickHandle); setTimeout(startTicking, ms); }
+  function hitStop(){
+    /* puramente visual — nunca mexe no timer da fase, só dá um "peso" ao toque */
+    document.body.classList.remove('hitstop'); void document.body.offsetWidth; document.body.classList.add('hitstop');
   }
 
   /* ---------------- sim tick ---------------- */
@@ -855,7 +858,7 @@ try{
   }
 
   /* ---------------- murphy's law (fica mais bravo a cada ciclo) ---------------- */
-  function difficultyFactor(){ return Math.max(0.55, 1-(cycle-1)*0.22); }
+  function difficultyFactor(){ return Math.max(0.72, 1-(cycle-1)*0.13); }
   function scheduleMurphy(){
     var f=difficultyFactor();
     var delay=(MURPHY_GAP[0]+Math.random()*(MURPHY_GAP[1]-MURPHY_GAP[0]))*f;
@@ -869,7 +872,7 @@ try{
     if(!candidates.length) return;
     var idx=candidates[Math.floor(Math.random()*candidates.length)];
     var st=stations[idx], isBnk=idx===identifiedIdx;
-    var stun=(MURPHY_STUN[0]+Math.random()*(MURPHY_STUN[1]-MURPHY_STUN[0]))*(1+(cycle-1)*0.2);
+    var stun=(MURPHY_STUN[0]+Math.random()*(MURPHY_STUN[1]-MURPHY_STUN[0]))*(1+(cycle-1)*0.1);
 
     if(isBnk && st.buffer>0){
       st.buffer--; screenShake(); sfx.shield();
