@@ -6,39 +6,37 @@
 <title>Confraria do Gargalo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&family=Pirata+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
-    --cream:#1b1030; --paper:#2a1c4d; --ink:#f5ead0; --ink-soft:#b6a7d9;
-    --red:#ff5d78; --teal:#57c7e8; --green:#6fe7b3; --yellow:#ffcb5c;
-    --red-dim:rgba(255,93,120,0.16); --teal-dim:rgba(87,199,232,0.16); --green-dim:rgba(111,231,179,0.16); --yellow-dim:rgba(255,203,92,0.16);
-    --line:rgba(245,234,208,0.14); --line-2:rgba(245,234,208,0.22); --panel-edge:rgba(245,234,208,0.09);
+    --cream:#120a1f; --paper:#1e1233; --ink:#f4e9ff; --ink-soft:#a892d6;
+    --red:#ff4d6d; --teal:#4ec9ff; --green:#39e6a4; --yellow:#ffd23f;
+    --purple:#b48bff; --pink:#ff6fc7; --orange:#ff9f45;
+    --red-dim:rgba(255,77,109,0.18); --teal-dim:rgba(78,201,255,0.18); --green-dim:rgba(57,230,164,0.18); --yellow-dim:rgba(255,210,63,0.18);
+    --line:rgba(244,233,255,0.3); --line-2:var(--ink); --panel-edge:rgba(244,233,255,0.16);
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%;}
   body{
-    margin:0; background:var(--cream); color:var(--ink);
-    font-family:'Nunito',sans-serif; min-height:100vh;
+    margin:0; background-color:var(--cream); color:var(--ink);
+    font-family:"Press Start 2P", "Courier New", monospace; min-height:100vh; line-height:1.6;
     padding:env(safe-area-inset-top) 0 max(24px,env(safe-area-inset-bottom));
     background-image:
-      radial-gradient(1.6px 1.6px at 20% 12%, rgba(245,234,208,0.55), transparent),
-      radial-gradient(1.3px 1.3px at 68% 26%, rgba(245,234,208,0.4), transparent),
-      radial-gradient(1.6px 1.6px at 85% 8%, rgba(245,234,208,0.5), transparent),
-      radial-gradient(1.2px 1.2px at 40% 60%, rgba(245,234,208,0.35), transparent),
-      radial-gradient(1.4px 1.4px at 12% 78%, rgba(245,234,208,0.4), transparent),
-      radial-gradient(1.3px 1.3px at 92% 68%, rgba(245,234,208,0.35), transparent),
-      radial-gradient(900px 500px at 85% -8%, rgba(199,125,255,0.18), transparent),
-      radial-gradient(700px 420px at -10% 90%, rgba(87,199,232,0.12), transparent);
-    background-repeat:no-repeat; background-size:100% 100%;
+      linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.35) 50%),
+      radial-gradient(600px 380px at 10% 0%, rgba(255,111,199,0.20), transparent 60%),
+      radial-gradient(700px 420px at 95% 10%, rgba(78,201,255,0.18), transparent 60%),
+      radial-gradient(600px 400px at 40% 100%, rgba(180,139,255,0.18), transparent 60%);
+    background-size:100% 4px, auto, auto, auto;
+    background-attachment:fixed;
   }
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
   }
-  h1,h2,h3{font-family:'Baloo 2',sans-serif; margin:0;}
-  button{font-family:'Baloo 2',sans-serif; cursor:pointer; border:none; background:none; -webkit-tap-highlight-color:transparent; transition:transform .1s ease-out;}
+  h1,h2,h3{font-family:"Press Start 2P", "Courier New", monospace; margin:0;}
+  button{font-family:"Press Start 2P", "Courier New", monospace; cursor:pointer; border:none; background:none; -webkit-tap-highlight-color:transparent; transition:transform .1s ease-out;}
   button:active{transform:scale(.95);}
-  input[type=text]{font-family:'Nunito',sans-serif;}
+  input[type=text]{font-family:"Press Start 2P", "Courier New", monospace;}
   .hidden{display:none !important;}
   #screen-start:not(.hidden), #screen-game:not(.hidden), #screen-end:not(.hidden), #screen-telao:not(.hidden){
     animation:screenIn .32s cubic-bezier(.2,.8,.3,1);
@@ -54,13 +52,13 @@
   .mascot-bubble.show{opacity:1; transform:translateY(0) scale(1);}
   .mascot-bubble .mface{
     width:38px; height:38px; border-radius:50%; background:var(--paper); border:2px solid var(--yellow-dim);
-    display:flex; align-items:center; justify-content:center; color:var(--yellow); box-shadow:0 3px 0 rgba(0,0,0,.3);
+    display:flex; align-items:center; justify-content:center; color:var(--yellow); box-shadow:3px 3px 0 rgba(0,0,0,.3);
   }
   .mascot-bubble.worried .mface{color:var(--red); border-color:var(--red-dim);}
   .mascot-bubble.happy .mface{color:var(--green); border-color:var(--green-dim);}
   .mascot-bubble .mtext{
     background:var(--paper); padding:7px 12px; border-radius:12px; font-size:11.5px; font-weight:800; color:var(--ink);
-    box-shadow:0 2px 0 rgba(0,0,0,.3); max-width:180px; line-height:1.3;
+    box-shadow:2px 2px 0 rgba(0,0,0,.3); max-width:180px; line-height:1.3;
   }
   .icon{width:1em; height:1em; display:inline-block; vertical-align:-0.15em;}
   svg{overflow:visible;}
@@ -69,24 +67,24 @@
 
   /* ---------- shared bits ---------- */
   .eyebrow{
-    font-family:'Baloo 2',sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.08em;
+    font-family:"Press Start 2P", "Courier New", monospace; font-weight:700; font-size:12.5px; letter-spacing:.08em;
     text-transform:uppercase; color:var(--red); display:flex; align-items:center; gap:6px;
   }
-  .card{background:var(--paper); border-radius:20px; padding:18px 18px 16px; box-shadow:0 3px 0 rgba(0,0,0,0.34), 0 10px 22px rgba(0,0,0,0.25);}
+  .card{background:var(--paper); border-radius:0; border:3px solid var(--ink); padding:18px 18px 16px; box-shadow:6px 6px 0 #000;}
   .btn-main{
     width:100%; padding:16px; border-radius:16px; background:var(--red); color:#fff;
-    font-size:17px; font-weight:700; box-shadow:0 5px 0 #b6304a; display:flex; align-items:center; justify-content:center; gap:8px;
+    font-size:12px; font-weight:700; box-shadow:5px 5px 0 #b6304a; display:flex; align-items:center; justify-content:center; gap:8px;
   }
-  .btn-main:active{transform:translateY(4px); box-shadow:0 1px 0 #b6304a;}
+  .btn-main:active{transform:translateY(4px); box-shadow:1px 1px 0 #b6304a;}
   .btn-main:disabled{opacity:.35; box-shadow:none;}
   .btn-ghost{
     width:100%; padding:13px; border-radius:14px; background:var(--teal-dim); color:var(--teal);
-    font-size:14.5px; font-weight:700;
+    font-size:10.5px; font-weight:700;
   }
   .btn-ghost:active{transform:scale(.98);}
   input[type=text].field{
     width:100%; padding:13px 14px; border-radius:13px; border:2px solid var(--line-2); background:rgba(255,255,255,0.05);
-    color:var(--ink); font-weight:700; font-size:16px;
+    color:var(--ink); font-weight:700; font-size:11.5px;
   }
   input[type=text].field:focus{outline:none; border-color:var(--red);}
 
@@ -95,22 +93,22 @@
   .hero-mark{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
   .hero-mark .badge{
     width:46px; height:46px; border-radius:14px; background:rgba(255,203,92,0.14); color:var(--yellow);
-    display:flex; align-items:center; justify-content:center; font-size:23px; flex:none; border:1.5px solid var(--yellow-dim);
+    display:flex; align-items:center; justify-content:center; font-size:16.5px; flex:none; border:1.5px solid var(--yellow-dim);
   }
-  .spell-title{font-family:'Pirata One',cursive; font-weight:400; font-size:34px; line-height:1.05; letter-spacing:.01em; text-shadow:0 2px 0 rgba(0,0,0,0.35);}
-  .spell-title.small{font-size:27px;}
+  .spell-title{font-family:"Press Start 2P", "Courier New", monospace; font-weight:400; font-size:18px; line-height:1.3; letter-spacing:.01em; text-shadow:3px 3px 0 #000;}
+  .spell-title.small{font-size:19.5px;}
   .spell-title span{color:var(--red);}
-  .hero .tag{font-size:13.5px; color:var(--ink-soft); font-weight:700; margin-top:2px; display:flex; align-items:center;}
-  .hero p.lead{font-size:14.5px; line-height:1.55; color:var(--ink-soft); margin:14px 0 0; font-weight:600;}
+  .hero .tag{font-size:9.5px; color:var(--ink-soft); font-weight:700; margin-top:2px; display:flex; align-items:center;}
+  .hero p.lead{font-size:10.5px; line-height:1.55; color:var(--ink-soft); margin:14px 0 0; font-weight:600;}
 
   .steps-list{list-style:none; margin:16px 0 0; padding:0; display:flex; flex-direction:column; gap:9px;}
   .steps-list li{
     display:flex; gap:11px; align-items:flex-start; background:var(--paper); border-radius:14px;
-    padding:11px 13px; box-shadow:0 2px 0 rgba(0,0,0,0.25);
+    padding:11px 13px; box-shadow:2px 2px 0 rgba(0,0,0,0.25);
   }
   .steps-list .num{
     flex:none; width:26px; height:26px; border-radius:8px; background:var(--yellow-dim); color:var(--ink);
-    font-family:'Baloo 2'; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center;
+    font-family:"Press Start 2P","Courier New",monospace; font-weight:800; font-size:9.5px; display:flex; align-items:center; justify-content:center;
   }
   .steps-list b{color:var(--ink);} .steps-list .desc{font-size:12.8px; color:var(--ink-soft); font-weight:600; line-height:1.4;}
 
@@ -122,7 +120,7 @@
   .murphy-note b{color:#fff;}
 
   .name-card{margin-top:14px;}
-  .name-card label{font-family:'Baloo 2'; font-weight:700; font-size:14px; display:block; margin-bottom:8px;}
+  .name-card label{font-family:"Press Start 2P","Courier New",monospace; font-weight:700; font-size:10px; display:block; margin-bottom:8px;}
   .name-row{display:flex; gap:8px;}
   .name-row .field{flex:1;}
   .dice-btn{
@@ -134,21 +132,21 @@
   /* ================= TELÃO (host lobby) ================= */
   #screen-telao{padding-top:6px;}
   .telao-head{text-align:center; margin-bottom:16px;}
-  .telao-head .tag{font-size:13px;}
-  .qr-card{background:var(--paper); border-radius:20px; padding:20px; display:flex; justify-content:center; box-shadow:0 3px 0 rgba(0,0,0,0.3);}
+  .telao-head .tag{font-size:9.5px;}
+  .qr-card{background:var(--paper); border-radius:20px; padding:20px; display:flex; justify-content:center; box-shadow:3px 3px 0 rgba(0,0,0,0.3);}
   .qr-card #qrHolder{background:#ffffff; padding:12px; border-radius:12px; line-height:0;}
-  .qr-fallback{text-align:center; font-size:13px; color:var(--ink-soft); font-weight:700;}
+  .qr-fallback{text-align:center; font-size:9.5px; color:var(--ink-soft); font-weight:700;}
   .room-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:9px;}
   .witch-card{
     background:var(--paper); border-radius:15px; padding:12px 8px 10px; text-align:center;
-    box-shadow:0 2px 0 rgba(0,0,0,0.3); animation:witchJoin .35s cubic-bezier(.3,1.4,.5,1);
+    box-shadow:2px 2px 0 rgba(0,0,0,0.3); animation:witchJoin .35s cubic-bezier(.3,1.4,.5,1);
     border:1.5px solid transparent;
   }
   .witch-card.done{border-color:var(--green);}
   @keyframes witchJoin{from{opacity:0; transform:scale(.6) translateY(8px);}to{opacity:1; transform:scale(1) translateY(0);}}
   .witch-card .wc-icon{width:34px; height:34px; border-radius:50%; background:var(--red-dim); color:var(--red); display:flex; align-items:center; justify-content:center; margin:0 auto 6px;}
   .witch-card.done .wc-icon{background:var(--green-dim); color:var(--green);}
-  .witch-card .wc-name{font-family:'Baloo 2'; font-weight:700; font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .witch-card .wc-name{font-family:"Press Start 2P","Courier New",monospace; font-weight:700; font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .witch-card .wc-score{font-size:10.5px; color:var(--ink-soft); font-weight:800; margin-top:2px; font-variant-numeric:tabular-nums;}
 
   /* ================= HUD ================= */
@@ -159,15 +157,15 @@
   .hud::after{content:''; position:absolute; left:-16px; right:-16px; bottom:0; height:1px; background:rgba(0,0,0,0.34);}
   .chip{
     flex:1; background:var(--paper); border-radius:13px; padding:7px 4px 6px; text-align:center;
-    box-shadow:0 2px 0 rgba(0,0,0,0.25);
+    box-shadow:2px 2px 0 rgba(0,0,0,0.25);
   }
-  .chip .icon{color:var(--ink-soft); font-size:13px;}
-  .chip .v{font-family:'Baloo 2'; font-weight:800; font-size:16px; font-variant-numeric:tabular-nums; margin-top:1px;}
+  .chip .icon{color:var(--ink-soft); font-size:9.5px;}
+  .chip .v{font-family:"Press Start 2P","Courier New",monospace; font-weight:800; font-size:11.5px; font-variant-numeric:tabular-nums; margin-top:1px;}
   .chip .l{font-size:8.6px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft);}
   .chip.time .v{color:var(--red);} .chip.score .v{color:var(--green);} .chip.coins .v{color:#c98f2f;}
   .streak-pill{
-    position:absolute; top:50px; right:16px; background:var(--yellow); color:var(--ink); font-family:'Baloo 2';
-    font-weight:800; font-size:11.5px; padding:4px 9px; border-radius:999px; box-shadow:0 3px 0 #c98f2f;
+    position:absolute; top:50px; right:16px; background:var(--yellow); color:var(--ink); font-family:"Press Start 2P","Courier New",monospace;
+    font-weight:800; font-size:11.5px; padding:4px 9px; border-radius:999px; box-shadow:3px 3px 0 #c98f2f;
     opacity:0; transform:translateY(-4px) scale(.8); transition:all .2s; z-index:31;
   }
   .streak-pill.show{opacity:1; transform:translateY(0) scale(1);}
@@ -176,10 +174,10 @@
   .phase-banner{display:flex; gap:13px; align-items:flex-start; padding:15px 16px 14px; margin-top:12px;}
   .phase-banner .pic{
     flex:none; width:44px; height:44px; border-radius:13px; background:var(--red-dim); color:var(--red);
-    display:flex; align-items:center; justify-content:center; font-size:22px;
+    display:flex; align-items:center; justify-content:center; font-size:16px;
   }
   .phase-banner .step-of{font-size:11px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em;}
-  .phase-banner h2{font-size:19px; margin-top:1px;}
+  .phase-banner h2{font-size:13.5px; margin-top:1px;}
   .phase-banner p{font-size:12.8px; color:var(--ink-soft); font-weight:600; line-height:1.45; margin:4px 0 0;}
   .phase-dots{display:flex; gap:5px; margin-top:8px;}
   .phase-dots i{width:16px; height:5px; border-radius:3px; background:rgba(245,234,208,0.14); display:block;}
@@ -196,13 +194,13 @@
 
   .station{
     display:flex; align-items:center; gap:13px; background:var(--paper); border-radius:18px;
-    padding:13px 14px; position:relative; border:2.5px solid transparent; box-shadow:0 2px 0 rgba(0,0,0,0.25);
+    padding:13px 14px; position:relative; border:2.5px solid transparent; box-shadow:2px 2px 0 rgba(0,0,0,0.25);
     transition:border-color .2s, box-shadow .2s, opacity .2s;
   }
   .station.dim{opacity:.45;}
   .station .badge{
     flex:none; width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center;
-    font-size:26px; color:var(--ink);
+    font-size:18.5px; color:var(--ink);
   }
   .badge.acc-green{background:var(--green-dim); color:#0a7a5c;}
   .badge.acc-yellow{background:var(--yellow-dim); color:#a9720f;}
@@ -210,7 +208,7 @@
   .badge.acc-ink{background:rgba(245,234,208,0.14); color:var(--ink);}
 
   .station .body{flex:1; min-width:0;}
-  .station .name{font-family:'Baloo 2'; font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:6px;}
+  .station .name{font-family:"Press Start 2P","Courier New",monospace; font-weight:700; font-size:10.5px; display:flex; align-items:center; gap:6px;}
   .flow-dot{width:8px; height:8px; border-radius:50%; flex:none; box-shadow:0 0 0 3px transparent;}
   .flow-dot.green{background:var(--green); box-shadow:0 0 6px var(--green);}
   .flow-dot.yellow{background:var(--yellow); box-shadow:0 0 6px var(--yellow);}
@@ -242,12 +240,12 @@
   .gauge.full .bar i{background:var(--red);}
   .gauge .n{font-size:9.5px; font-weight:800; color:var(--ink-soft); margin-top:3px; font-variant-numeric:tabular-nums;}
 
-  .station.ready{border-color:var(--yellow); box-shadow:0 4px 0 #e3b23c, 0 10px 20px rgba(232,179,78,.25); animation:readyPulse 1s ease-in-out infinite;}
+  .station.ready{border-color:var(--yellow); box-shadow:4px 4px 0 #000; animation:readyPulse 1s steps(2) infinite;}
   @keyframes readyPulse{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
   .station.ready .chev{color:var(--yellow); animation:chevNudge .8s ease-in-out infinite;}
   @keyframes chevNudge{0%,100%{transform:translateX(0);}50%{transform:translateX(4px);}}
-  .chev{flex:none; font-size:19px; color:rgba(245,234,208,0.35);}
-  .station.golden{border-color:#ffe27a; box-shadow:0 4px 0 #c98f2f, 0 0 26px rgba(255,226,122,.45); animation:goldenPulse .45s ease-in-out infinite;}
+  .chev{flex:none; font-size:13.5px; color:rgba(245,234,208,0.35);}
+  .station.golden{border-color:#ffe27a; box-shadow:4px 4px 0 #000; animation:goldenPulse .3s steps(2) infinite;}
   .station.golden .badge{background:rgba(255,226,122,.28); color:#ffe27a;}
   @keyframes goldenPulse{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-2px) scale(1.015);}}
   .station.squash{animation:squashPop .16s ease-out;}
@@ -257,16 +255,16 @@
 
   .station.bottleneck{border-color:var(--red);}
   .bnk-tag{
-    position:absolute; top:-9px; left:14px; background:var(--red); color:#fff; font-family:'Baloo 2'; font-weight:700;
+    position:absolute; top:-9px; left:14px; background:var(--red); color:#fff; font-family:"Press Start 2P","Courier New",monospace; font-weight:700;
     font-size:9.5px; letter-spacing:.05em; padding:3px 9px; border-radius:999px; box-shadow:0 2px 4px rgba(0,0,0,.15);
   }
   .station.murphy{border-color:var(--ink-soft); animation:jitter .28s;}
   @keyframes jitter{0%,100%{transform:translateX(0);}25%{transform:translateX(-3px);}75%{transform:translateX(3px);}}
-  .murphy-badge{position:absolute; top:-10px; right:10px; width:24px; height:24px; border-radius:50%; background:var(--ink); color:var(--yellow); display:flex; align-items:center; justify-content:center; font-size:13px; animation:wiggle .3s infinite alternate;}
+  .murphy-badge{position:absolute; top:-10px; right:10px; width:24px; height:24px; border-radius:50%; background:var(--ink); color:var(--yellow); display:flex; align-items:center; justify-content:center; font-size:9.5px; animation:wiggle .3s infinite alternate;}
   @keyframes wiggle{from{transform:rotate(-9deg);}to{transform:rotate(9deg);}}
 
-  .float-pop{position:absolute; right:14px; top:8px; font-family:'Baloo 2'; font-weight:800; font-size:15px; color:var(--green); animation:popUp .8s ease-out forwards; pointer-events:none;}
-  .float-pop.gold{color:#ffe27a; right:auto; left:14px; top:-6px; font-size:13px;}
+  .float-pop{position:absolute; right:14px; top:8px; font-family:"Press Start 2P","Courier New",monospace; font-weight:800; font-size:11px; color:var(--green); animation:popUp .8s ease-out forwards; pointer-events:none;}
+  .float-pop.gold{color:#ffe27a; right:auto; left:14px; top:-6px; font-size:9.5px;}
   @keyframes popUp{0%{opacity:0; transform:translateY(4px);}25%{opacity:1;}100%{opacity:0; transform:translateY(-22px);}}
   .shield-flash{position:absolute; inset:-2px; border-radius:18px; border:3px solid var(--teal); opacity:0; pointer-events:none;}
   .shield-flash.on{animation:shieldOut .5s forwards;}
@@ -287,7 +285,7 @@
   #overlayZone{position:relative; margin-top:14px;}
   .sheet{animation:sheetUp .3s cubic-bezier(.2,.8,.3,1);}
   @keyframes sheetUp{from{opacity:0; transform:translateY(14px);}to{opacity:1; transform:translateY(0);}}
-  .sheet h3{font-size:17.5px;}
+  .sheet h3{font-size:12.5px;}
   .sheet p.hint{font-size:12.8px; color:var(--ink-soft); font-weight:600; line-height:1.5; margin:6px 0 14px;}
   .quiz-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
   .quiz-btn{
@@ -303,31 +301,31 @@
     display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.05); border:2px solid var(--line-2); border-radius:15px;
     padding:12px 13px; margin-top:9px;
   }
-  .supplier .sicon{flex:none; width:36px; height:36px; border-radius:10px; background:var(--yellow-dim); color:#ffcb5c; display:flex; align-items:center; justify-content:center; font-size:17px;}
-  .supplier .sname{font-family:'Baloo 2'; font-weight:700; font-size:14px;}
+  .supplier .sicon{flex:none; width:36px; height:36px; border-radius:10px; background:var(--yellow-dim); color:#ffcb5c; display:flex; align-items:center; justify-content:center; font-size:12px;}
+  .supplier .sname{font-family:"Press Start 2P","Courier New",monospace; font-weight:700; font-size:10px;}
   .supplier .sdesc{font-size:11.6px; color:var(--ink-soft); font-weight:600; margin-top:2px; line-height:1.35;}
-  .supplier .scost{font-family:'Baloo 2'; font-weight:800; font-size:13px; color:#ffcb5c; white-space:nowrap; display:flex; align-items:center; gap:3px;}
+  .supplier .scost{font-family:"Press Start 2P","Courier New",monospace; font-weight:800; font-size:9.5px; color:#ffcb5c; white-space:nowrap; display:flex; align-items:center; gap:3px;}
   .supplier.disabled{opacity:.4;}
   .supplier.picked{border-color:var(--green); background:var(--green-dim);}
 
   /* ================= END / LEADERBOARD ================= */
   .result{text-align:left; padding-top:6px;}
-  .result .big{font-family:'Baloo 2'; font-weight:800; font-size:46px; color:var(--red); line-height:1;}
-  .result .sub{font-size:13px; color:var(--ink-soft); font-weight:700; margin-top:4px;}
+  .result .big{font-family:"Press Start 2P","Courier New",monospace; font-weight:800; font-size:33px; color:var(--red); line-height:1;}
+  .result .sub{font-size:9.5px; color:var(--ink-soft); font-weight:700; margin-top:4px;}
 
   .lb-head{display:flex; align-items:center; justify-content:space-between; margin:22px 2px 10px;}
-  .lb-head h3{font-size:16px;}
+  .lb-head h3{font-size:11.5px;}
   .live-dot{display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:800; color:var(--green); text-transform:uppercase; letter-spacing:.05em;}
   .live-dot i{width:7px; height:7px; border-radius:50%; background:var(--green); animation:livePulse 1.4s infinite;}
   @keyframes livePulse{0%,100%{opacity:1;}50%{opacity:.3;}}
   .lb-row{
     display:flex; align-items:center; gap:11px; background:var(--paper); padding:10px 13px; border-radius:13px; margin-bottom:7px;
-    box-shadow:0 2px 0 rgba(0,0,0,0.21);
+    box-shadow:2px 2px 0 rgba(0,0,0,0.21);
   }
-  .lb-row .rk{font-family:'Baloo 2'; font-weight:800; font-size:14px; width:22px; color:var(--ink-soft); flex:none;}
+  .lb-row .rk{font-family:"Press Start 2P","Courier New",monospace; font-weight:800; font-size:10px; width:22px; color:var(--ink-soft); flex:none;}
   .lb-row.top1 .rk{color:var(--red);}
-  .lb-row .nm{flex:1; font-weight:700; font-size:13.6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .lb-row .sc{font-family:'Baloo 2'; font-weight:800; font-size:14.5px; color:var(--green); font-variant-numeric:tabular-nums;}
+  .lb-row .nm{flex:1; font-weight:700; font-size:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .lb-row .sc{font-family:"Press Start 2P","Courier New",monospace; font-weight:800; font-size:10.5px; color:var(--green); font-variant-numeric:tabular-nums;}
   .lb-empty{text-align:center; color:var(--ink-soft); font-size:12.8px; font-weight:700; padding:16px; background:var(--paper); border-radius:13px;}
   .lb-note{font-size:11px; color:var(--ink-soft); font-weight:600; text-align:center; margin-top:10px;}
 
@@ -339,19 +337,36 @@
 
   #pauseOverlay{position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:55; display:flex; align-items:center; justify-content:center; padding:20px;}
   .pause-card{background:var(--paper); border-radius:20px; padding:28px 24px; text-align:center; max-width:300px;}
-  .pause-card h3{font-size:19px; margin-bottom:14px;}
+  .pause-card h3{font-size:13.5px; margin-bottom:14px;}
 
   .best-note{display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:800; color:#ffcb5c; margin-top:10px;}
   .rank-row{display:flex; gap:4px; margin:10px 0 2px;}
   .rank-row svg{width:22px; height:22px; color:rgba(245,234,208,0.25);}
   .rank-row svg.on{color:var(--yellow);}
-  .rank-label{font-size:13px; font-weight:800; color:var(--ink-soft);}
-  .record-badge{display:inline-flex; align-items:center; gap:5px; background:var(--yellow); color:#5c3d0a; font-family:'Baloo 2'; font-weight:800; font-size:11.5px; padding:4px 10px; border-radius:999px; margin-top:8px;}
+  .rank-label{font-size:9.5px; font-weight:800; color:var(--ink-soft);}
+  .record-badge{display:inline-flex; align-items:center; gap:5px; background:var(--yellow); color:#5c3d0a; font-family:"Press Start 2P","Courier New",monospace; font-weight:800; font-size:11.5px; padding:4px 10px; border-radius:999px; margin-top:8px;}
   .end-actions{display:flex; gap:8px; margin-top:12px;}
   .end-actions .btn-ghost{flex:1;}
 
   .confetti-piece{position:fixed; top:-16px; width:8px; height:14px; z-index:65; pointer-events:none; animation:confettiFall linear forwards;}
   @keyframes confettiFall{to{transform:translateY(112vh) rotate(400deg); opacity:.85;}}
+
+  /* ================= visual 8-bit (pareado com o simulador) ================= */
+  .card, .btn-main, .btn-ghost, .station, .supplier, .witch-card, .chip, .quiz-btn,
+  .dice-btn, .ctrl-btn, .badge, .hero-mark .badge, .qr-card, #qrHolder, .name-card,
+  .mascot-bubble .mface, .mascot-bubble .mtext, input[type=text].field, .lb-row,
+  .pause-card, .steps-list li, .steps-list .num, .murphy-note{
+    border-radius:0 !important;
+  }
+  .bnk-tag, .record-badge, .streak-pill, .live-dot, .lb-row.top1{ border-radius:0 !important; }
+  .card{ border:3px solid var(--ink); }
+  .station{ border-width:3px !important; }
+  .station:not(.ready):not(.golden):not(.bottleneck):not(.murphy){ border-color:var(--ink) !important; }
+  .supplier, .witch-card, .chip, .quiz-btn, .lb-row, .name-card, input[type=text].field{ border:2px solid var(--ink); }
+  .btn-main{ border:3px solid #000; }
+  .btn-ghost{ border:2px solid var(--teal); }
+  .ptrack, .pfill, .gauge .bar, .gauge .bar i, .order-ring .hole{ border-radius:0 !important; }
+  ::selection{ background:var(--pink); color:#000; }
 </style>
 
 <div id="murphyFlash"></div>
