@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Confraria do Gargalo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,11 +16,12 @@
     --red-dim:rgba(255,77,109,0.18); --teal-dim:rgba(78,201,255,0.18); --green-dim:rgba(57,230,164,0.18); --yellow-dim:rgba(255,210,63,0.18);
     --line:rgba(244,233,255,0.3); --line-2:var(--ink); --panel-edge:rgba(244,233,255,0.16);
   }
-  *{box-sizing:border-box;}
-  html{-webkit-text-size-adjust:100%;}
+  *{box-sizing:border-box; touch-action:pan-y;}
+  html{-webkit-text-size-adjust:100%; touch-action:pan-y; height:100%;}
   body{
     margin:0; background-color:var(--cream); color:var(--ink);
-    font-family:"Press Start 2P", "Courier New", monospace; min-height:100vh; line-height:1.6;
+    font-family:"Press Start 2P", "Courier New", monospace; min-height:100vh; min-height:100dvh; line-height:1.6;
+    touch-action:pan-y;
     padding:env(safe-area-inset-top) 0 max(24px,env(safe-area-inset-bottom));
     background-image:
       linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.35) 50%),
