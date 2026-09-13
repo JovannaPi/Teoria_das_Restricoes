@@ -581,8 +581,8 @@ try{
     {key:'engarraf',  name:'Engarrafamento',  icon:'i-st-flask',    acc:'teal',   baseTime:1000, bufferCap:3},
     {key:'entrega',   name:'Entrega',         icon:'i-st-owl',      acc:'ink',    baseTime:850,  bufferCap:0, isSink:true}
   ];
-  var TICK_MS=100, SPILL_MS=2600, T_IDENTIFY=8000, T_EXPLORE=13000, T_SUBORDINATE=13000, TOTAL_CYCLES=2;
-  var MURPHY_STUN=[2000,3200], MURPHY_GAP=[5000,9000], COIN_PER_POTION=10;
+  var TICK_MS=100, SPILL_MS=2600, T_IDENTIFY=8000, T_EXPLORE=100000, T_SUBORDINATE=100000, TOTAL_CYCLES=4;
+  var MURPHY_STUN=[2000,3200], MURPHY_GAP=[8000,14000], COIN_PER_POTION=10;
   var COMBO_WINDOW=2600;
 
   var SUPPLIERS=[
@@ -591,7 +591,7 @@ try{
     {id:'premium',  icon:'i-arrowup',name:'Fornecedor Premium', cost:220, factor:0.50, susc:0.0, bufferBonus:0, desc:'Caro, rápido, praticamente imune à Lei de Murphy.'},
     {id:'paralela', icon:'i-st-cauldron', name:'Linha Paralela', cost:340, factor:0.42, susc:0.0, bufferBonus:2, desc:'Abre uma segunda estação lado a lado — muito mais capacidade e resistente a Murphy.'}
   ];
-  var ORDER_MIN_GAP=4200, ORDER_MAX_GAP=7000, ORDER_WINDOW=[7000,10000], ORDER_MAX_ACTIVE=3;
+  var ORDER_MIN_GAP=9000, ORDER_MAX_GAP=16000, ORDER_WINDOW=[8000,13000], ORDER_MAX_ACTIVE=3;
 
   var PHASE_META = {
     identify:    {step:1, icon:'i-search',  title:'Identificar',  desc:'Observe a linha rodando sozinha. Onde a fila mais se acumula?'},
@@ -975,7 +975,7 @@ try{
         st.timer-=TICK_MS; st.stats.processing+=TICK_MS;
         if(st.timer<=0){
           st.status='done'; st.timer=0;
-          if(i===identifiedIdx && phase==='explore' && Math.random()<0.22){ st.golden=true; }
+          if(i===identifiedIdx && phase==='explore' && Math.random()<(cycle>=TOTAL_CYCLES?0.34:0.22)){ st.golden=true; }
         }
       } else if(st.status==='done'){
         if(autoAdvances(i)){ pushForwardSilent(i); }
@@ -1039,7 +1039,10 @@ try{
     var m=PHASE_META[phase];
     $('phaseStep').textContent='Passo '+m.step+' de 5';
     $('phaseTitle').textContent=m.title;
-    if(phase==='explore') $('phaseDesc').textContent='Foque só n'+genderSuffix()+' '+stations[identifiedIdx].cfg.name+': toque nela sempre que terminar. Encomendas com prazo vão aparecer — cada entrega alimenta a mais urgente.';
+    if(phase==='explore'){
+      var climax = cycle>=TOTAL_CYCLES ? ' Último ciclo — Murphy está no auge, mas poções douradas também!' : '';
+      $('phaseDesc').textContent='Foque só n'+genderSuffix()+' '+stations[identifiedIdx].cfg.name+': toque nela sempre que terminar. Encomendas com prazo vão aparecer — cada entrega alimenta a mais urgente.'+climax;
+    }
     else if(phase==='elevate') $('phaseDesc').textContent='Invista as moedas ganhas na restrição pra aumentar a capacidade dela.';
     else if(phase==='repeat') $('phaseDesc').textContent='A restrição pode ter mudado de lugar. Hora de descobrir qual é a nova.';
     else $('phaseDesc').textContent=m.desc;
@@ -1171,7 +1174,11 @@ try{
     phase='repeat'; setPhaseBanner(); $('pauseBtn').classList.add('hidden');
     var zone=$('overlayZone');
     var last=cycle>=TOTAL_CYCLES;
-    zone.innerHTML='<div class="card sheet"><h3>Ciclo '+cycle+' concluído!</h3><p class="hint">Você entregou <b style="color:var(--green)">'+score+'</b> poções até agora. A estação reforcada ficou mais rápida e resistente — mas isso pode ter empurrado o gargalo pra outro lugar.</p><button class="btn-main" id="recapBtn">'+(last?'Ver resultado final':'Começar novo ciclo')+' <svg class="icon" width="15" height="15"><use href="#i-chevron"/></svg></button></div>';
+    var nextIsLast = cycle+1>=TOTAL_CYCLES;
+    var flavor = last
+      ? 'A confraria toda está de olho em você agora.'
+      : (nextIsLast ? 'Último ciclo chegando — é a sua chance de virar lenda da confraria.' : 'A estação reforçada ficou mais rápida e resistente — mas isso pode ter empurrado o gargalo pra outro lugar.');
+    zone.innerHTML='<div class="card sheet"><h3>Ciclo '+cycle+' de '+TOTAL_CYCLES+' concluído!</h3><p class="hint">Você entregou <b style="color:var(--green)">'+score+'</b> poções até agora. '+flavor+'</p><button class="btn-main" id="recapBtn">'+(last?'Ver resultado final':'Começar ciclo '+(cycle+1))+' <svg class="icon" width="15" height="15"><use href="#i-chevron"/></svg></button></div>';
     $('recapBtn').addEventListener('click', function(){
       if(last) endGame(); else { cycle++; identifiedIdx=-1; goToPhase('identify'); }
     });
@@ -1179,9 +1186,9 @@ try{
 
   /* ---------------- rank / confetti / share ---------------- */
   function calcRank(sc){
-    if(sc>=14) return {stars:3, label:'Mestre da Restrição!'};
-    if(sc>=9)  return {stars:2, label:'Bom domínio do fluxo'};
-    if(sc>=5)  return {stars:1, label:'Você pegou o jeito'};
+    if(sc>=70) return {stars:3, label:'Mestre da Restrição!'};
+    if(sc>=40)  return {stars:2, label:'Bom domínio do fluxo'};
+    if(sc>=18)  return {stars:1, label:'Você pegou o jeito'};
     return {stars:0, label:'Jogue de novo pra pegar o ritmo'};
   }
   function renderRank(sc){
