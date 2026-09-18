@@ -360,52 +360,103 @@ function createScene(){
 function ShopVisual(scene){
   this.scene=scene;
   this.nodes=[];
-  this.queueDots=[];
   this.overlay=null;
+  this.loops=[];
   var self=this;
   this.build();
-  onAdvance=function(i){ self.flashDeliverToken(i); };
-  onDeliver=function(i){ self.flashDeliverToken(i, true); };
+  onAdvance=function(i){ self.sendToken(i); };
+  onDeliver=function(i){ self.sendToken(i, true); };
   onMurphy=function(i){ self.hitMurphy(i); };
   onShield=function(i){ self.hitShield(i); };
 }
 ShopVisual.prototype.rebuildStations=function(){
   this.nodes.forEach(function(n){ n.container.destroy(); });
-  this.nodes=[];
+  this.loops.forEach(function(ev){ ev.remove(); });
+  this.loops=[]; this.nodes=[];
   this.build();
 };
+
+/* ---- desenhos vetoriais por tipo de estação (nada de bolinha lisa) ---- */
+function drawColheita(g){
+  g.fillStyle(0x5c3d1e,1); g.fillRoundedRect(-14,10,28,16,4);
+  g.lineStyle(2,0x2f5a3a,1);
+  [[-8,10,-11,-8],[0,10,2,-16],[9,10,12,-6]].forEach(function(p){ g.beginPath(); g.moveTo(p[0],p[1]); g.lineTo(p[2],p[3]); g.strokePath(); });
+  var leafAt=function(x,y,r){ g.fillStyle(0x39e6a4,1); g.fillEllipse(x,y,r*1.9,r); g.fillStyle(0x2fbd88,1); g.fillEllipse(x,y,r*0.9,r*0.5); };
+  leafAt(-11,-10,9); leafAt(2,-18,10); leafAt(12,-8,8);
+}
+function drawCaldeirao(g){
+  g.fillStyle(0x1e1233,1); g.fillEllipse(0,4,50,40);
+  g.fillStyle(0xffd23f,1); g.fillEllipse(0,-8,42,14);
+  g.lineStyle(3,0xf4e9ff,0.9); g.strokeEllipse(0,-8,42,14);
+  g.lineStyle(3,0xf4e9ff,0.9); g.strokeEllipse(0,4,50,40);
+  g.lineStyle(3,0x2c1c4a,1);
+  g.beginPath(); g.moveTo(-16,26); g.lineTo(-22,34); g.strokePath();
+  g.beginPath(); g.moveTo(16,26); g.lineTo(22,34); g.strokePath();
+}
+function drawEntrega(g){
+  g.fillStyle(0x4ec9ff,1); g.fillEllipse(0,8,36,32);
+  g.fillCircle(0,-14,18);
+  g.fillStyle(0xffffff,1); g.fillCircle(-7,-17,4.2); g.fillCircle(7,-17,4.2);
+  g.fillStyle(0x120a1f,1); g.fillCircle(-7,-17,1.8); g.fillCircle(7,-17,1.8);
+  g.fillStyle(0xffd23f,1); g.fillTriangle(-3,-10,3,-10,0,-4);
+  g.fillStyle(0x3badea,1); g.fillTriangle(-30,4,-18,-4,-18,16); g.fillTriangle(30,4,18,-4,18,16);
+  g.fillStyle(0x2f5a6e,1); g.fillTriangle(-13,-30,-7,-30,-10,-22); g.fillTriangle(13,-30,7,-30,10,-22);
+}
+var STATION_DRAW={colheita:drawColheita, caldeirao:drawCaldeirao, entrega:drawEntrega};
+
 ShopVisual.prototype.build=function(){
   var scene=this.scene;
   var w=scene.scale.width, h=scene.scale.height;
   var n=stations.length;
-  var spacing=Math.min(150, Math.max(100,(h-80)/n));
-  var top=70;
+  var spacing=Math.min(160, Math.max(110,(h-90)/n));
+  var top=80;
   var self=this;
   var pipe=scene.add.graphics();
-  pipe.lineStyle(3, 0xffffff, 0.15);
-  pipe.beginPath();
-  pipe.moveTo(w/2, top);
-  pipe.lineTo(w/2, top+spacing*(n-1));
-  pipe.strokePath();
+  pipe.lineStyle(4, 0xffffff, 0.12);
+  pipe.beginPath(); pipe.moveTo(w/2, top); pipe.lineTo(w/2, top+spacing*(n-1)); pipe.strokePath();
+
   stations.forEach(function(st,i){
-    var cy=top+spacing*i;
-    var cx=w/2;
+    var cy=top+spacing*i, cx=w/2;
     var container=scene.add.container(cx,cy);
 
-    var glow=scene.add.circle(0,0,46,st.cfg.color,0.12);
-    var body=scene.add.circle(0,0,34,st.cfg.color,1).setStrokeStyle(3,0xffffff,0.9);
-    var label=scene.add.text(0,50,st.cfg.name,{fontFamily:'Baloo 2, sans-serif', fontSize:'12px', color:'#f4e9ff', fontStyle:'700'}).setOrigin(0.5,0);
-    var statusText=scene.add.text(0,0,'',{fontFamily:'Nunito, sans-serif', fontSize:'9px', color:'#120a1f', fontStyle:'800'}).setOrigin(0.5);
-    var ring=scene.add.circle(0,0,34,0x000000,0).setStrokeStyle(4,0xffd23f,0);
+    var shadow=scene.add.ellipse(0,30,54,14,0x000000,0.35);
+    var glow=scene.add.circle(0,0,50,st.cfg.color,0.10);
+    var ring=scene.add.circle(0,0,40,0x000000,0).setStrokeStyle(4,0xffd23f,0);
 
-    container.add([glow,body,ring,statusText,label]);
-    container.setSize(80,80);
-    container.setInteractive(new Phaser.Geom.Circle(0,0,40), Phaser.Geom.Circle.Contains);
+    var artWrap=scene.add.container(0,0);
+    var art=scene.add.graphics();
+    STATION_DRAW[st.cfg.key](art);
+    artWrap.add(art);
+
+    var label=scene.add.text(0,48,st.cfg.name,{fontFamily:'Baloo 2, sans-serif', fontSize:'12px', color:'#f4e9ff', fontStyle:'700'}).setOrigin(0.5,0);
+    var chev=scene.add.text(46,0,'▸',{fontFamily:'Baloo 2, sans-serif', fontSize:'20px', color:'#ffd23f'}).setOrigin(0.5).setAlpha(0);
+
+    container.add([shadow,glow,ring,artWrap,label,chev]);
+    container.setSize(90,90);
+    container.setInteractive(new Phaser.Geom.Circle(0,0,44), Phaser.Geom.Circle.Contains);
     container.on('pointerdown', function(){ self.onTapStation(i); });
 
-    self.nodes.push({idx:i, container:container, body:body, ring:ring, glow:glow, statusText:statusText, label:label, cx:cx, cy:cy, queueSprites:[]});
+    var node={idx:i, container:container, artWrap:artWrap, ring:ring, glow:glow, chev:chev, label:label, cx:cx, cy:cy, queueSprites:[]};
+    self.nodes.push(node);
+
+    scene.tweens.add({targets:artWrap, y:{from:-3,to:3}, duration:1500+i*120, yoyo:true, repeat:-1, ease:'Sine.InOut'});
+    if(st.cfg.key==='caldeirao'){ self.startCauldronLife(node); }
+    if(st.cfg.key==='colheita'){ scene.tweens.add({targets:artWrap, angle:{from:-4,to:4}, duration:1900, yoyo:true, repeat:-1, ease:'Sine.InOut'}); }
+    if(st.cfg.key==='entrega'){ scene.time.addEvent({delay:2200, loop:true, callback:function(){ scene.tweens.add({targets:artWrap, scaleX:{from:1,to:1.12}, duration:160, yoyo:true}); }}); }
   });
   this.syncVisual();
+};
+ShopVisual.prototype.startCauldronLife=function(node){
+  var scene=this.scene, self=this;
+  var bubbleEv=scene.time.addEvent({delay:550, loop:true, callback:function(){
+    var b=scene.add.circle(node.cx+(Math.random()*24-12), node.cy-4, 2+Math.random()*2, 0xffd23f, 0.85);
+    scene.tweens.add({targets:b, y:b.y-16, alpha:0, duration:650, onComplete:function(){ b.destroy(); }});
+  }});
+  var steamEv=scene.time.addEvent({delay:900, loop:true, callback:function(){
+    var s=scene.add.circle(node.cx+(Math.random()*14-7), node.cy-16, 4, 0xffffff, 0.18);
+    scene.tweens.add({targets:s, y:s.y-30, alpha:0, scale:1.8, duration:1200, onComplete:function(){ s.destroy(); }});
+  }});
+  this.loops.push(bubbleEv, steamEv);
 };
 ShopVisual.prototype.onTapStation=function(i){
   var st=stations[i];
@@ -420,8 +471,11 @@ ShopVisual.prototype.onTapStation=function(i){
   }
 };
 ShopVisual.prototype.punch=function(i){
-  var node=this.nodes[i];
-  this.scene.tweens.add({targets:node.container, scale:{from:1.18, to:1}, duration:180, ease:'Back.Out'});
+  var node=this.nodes[i], scene=this.scene;
+  scene.tweens.add({targets:node.container, scale:{from:1.28, to:1}, duration:220, ease:'Back.Out'});
+  scene.cameras.main.flash(90, 244,233,255, false);
+  var shock=scene.add.circle(node.cx,node.cy,40,0xffd23f,0).setStrokeStyle(3,0xffd23f,0.9);
+  scene.tweens.add({targets:shock, radius:70, alpha:0, duration:340, onUpdate:function(t,tgt){ shock.setRadius(tgt.radius); }, onComplete:function(){ shock.destroy(); }});
 };
 ShopVisual.prototype.syncVisual=function(){
   var self=this;
@@ -430,58 +484,70 @@ ShopVisual.prototype.syncVisual=function(){
     var clickable=isClickable(i);
     var isBnk = i===identifiedIdx && phase!=='identify';
     node.ring.setStrokeStyle(4, isBnk?0xff4d6d:0xffd23f, clickable?1:(isBnk?0.7:0));
-    node.body.setAlpha(st.murphy?0.35:1);
-    var txt = st.status==='processing' ? '…' : (st.status==='done' ? (clickable?'!':'✓') : (st.cfg.isSource && needsManualHarvest() && st.status==='idle' ? '?' : ''));
-    node.statusText.setText(txt);
+    node.artWrap.setAlpha(st.murphy?0.3:1);
+    node.chev.setAlpha(clickable?1:0);
     self.renderQueue(node, st);
     if(clickable && !node.pulsing){
       node.pulsing=true;
-      self.scene.tweens.add({targets:node.container, scale:{from:1, to:1.07}, duration:420, yoyo:true, repeat:-1, ease:'Sine.InOut'});
+      self.scene.tweens.add({targets:node.container, scale:{from:1, to:1.09}, duration:380, yoyo:true, repeat:-1, ease:'Sine.InOut'});
+      self.scene.tweens.add({targets:node.chev, x:{from:40,to:52}, duration:380, yoyo:true, repeat:-1, ease:'Sine.InOut'});
     } else if(!clickable && node.pulsing){
       node.pulsing=false;
       self.scene.tweens.killTweensOf(node.container);
-      node.container.setScale(1);
+      self.scene.tweens.killTweensOf(node.chev);
+      node.container.setScale(1); node.chev.x=46;
     }
   });
 };
 ShopVisual.prototype.renderQueue=function(node, st){
   var cap = st.cfg.bufferCap||0;
   while(node.queueSprites.length<cap){
-    var d=this.scene.add.circle(node.cx-((cap-1)*7)+node.queueSprites.length*14, node.cy+42, 3.5, 0xf4e9ff, 0.9);
+    var d=this.scene.add.circle(node.cx-((cap-1)*7)+node.queueSprites.length*14, node.cy+40, 4, 0xf4e9ff, 0.95).setStrokeStyle(1.5,0x120a1f,0.5);
     node.queueSprites.push(d);
   }
   node.queueSprites.forEach(function(dot,k){ dot.setVisible(k<st.buffer); });
 };
-ShopVisual.prototype.flashDeliverToken=function(i, isFinal){
+ShopVisual.prototype.sendToken=function(i, isFinal){
   var node=this.nodes[i];
   var next=this.nodes[i+1];
   var scene=this.scene;
-  var color = isFinal ? 0xffd23f : 0xf4e9ff;
-  var token=scene.add.circle(node.cx, node.cy, 6, color, 1);
-  var target = next ? {x:next.cx,y:next.cy} : {x:node.cx,y:node.cy-40};
-  scene.tweens.add({targets:token, x:target.x, y:target.y, duration:380, ease:'Cubic.Out', onComplete:function(){
-    if(isFinal){ this.burst(target.x, target.y); }
-    token.destroy();
-  }.bind(this)});
-  if(isFinal){ this.burst(node.cx, node.cy); }
+  var target = next ? {x:next.cx,y:next.cy} : {x:node.cx,y:node.cy-46};
+  var token=scene.add.container(node.cx,node.cy);
+  var neck=scene.add.rectangle(0,-6,5,6,0xffd23f,1);
+  var body=scene.add.ellipse(0,2,11,13,isFinal?0xffd23f:0x39e6a4,1).setStrokeStyle(1.5,0xf4e9ff,0.9);
+  token.add([body,neck]);
+  var midX=(node.cx+target.x)/2, midY=Math.min(node.cy,target.y)-26;
+  scene.tweens.chain({targets:token, tweens:[
+    {x:midX, y:midY, angle:14, duration:190, ease:'Sine.Out'},
+    {x:target.x, y:target.y, angle:-8, duration:210, ease:'Sine.In', onComplete:function(){
+      if(isFinal) this.burst(target.x, target.y, true);
+      token.destroy();
+    }.bind(this)}
+  ]});
+  if(isFinal){
+    var popup=scene.add.text(node.cx, node.cy-40, '+1', {fontFamily:'Baloo 2', fontSize:'16px', color:'#ffd23f', fontStyle:'800'}).setOrigin(0.5);
+    scene.tweens.add({targets:popup, y:popup.y-24, alpha:0, duration:700, onComplete:function(){ popup.destroy(); }});
+  }
 };
-ShopVisual.prototype.burst=function(x,y){
+ShopVisual.prototype.burst=function(x,y,big){
   var scene=this.scene;
-  for(var k=0;k<8;k++){
-    var p=scene.add.circle(x,y,2.5,0xffd23f,1);
-    var ang=Math.random()*Math.PI*2, dist=18+Math.random()*22;
-    scene.tweens.add({targets:p, x:x+Math.cos(ang)*dist, y:y+Math.sin(ang)*dist, alpha:0, duration:420, onComplete:function(){ p.destroy(); }});
+  var count = big?16:8;
+  for(var k=0;k<count;k++){
+    var p=scene.add.circle(x,y,big?3:2.5,0xffd23f,1);
+    var ang=Math.random()*Math.PI*2, dist=(big?26:18)+Math.random()*(big?34:22);
+    scene.tweens.add({targets:p, x:x+Math.cos(ang)*dist, y:y+Math.sin(ang)*dist, alpha:0, scale:0.4, duration:big?560:420, onComplete:function(){ p.destroy(); }});
   }
 };
 ShopVisual.prototype.hitMurphy=function(i){
   var node=this.nodes[i];
-  this.scene.cameras.main.shake(150,0.006);
-  this.scene.tweens.add({targets:node.container, x:node.cx-6, duration:40, yoyo:true, repeat:3});
+  this.scene.cameras.main.shake(180,0.008);
+  this.scene.cameras.main.flash(120, 255,77,109, false);
+  this.scene.tweens.add({targets:node.container, x:node.cx-7, duration:40, yoyo:true, repeat:4});
 };
 ShopVisual.prototype.hitShield=function(i){
   var node=this.nodes[i];
   var ringFx=this.scene.add.circle(node.cx,node.cy,34,0x4ec9ff,0).setStrokeStyle(3,0x4ec9ff,1);
-  this.scene.tweens.add({targets:ringFx, radius:60, alpha:0, duration:420, onUpdate:function(){ ringFx.setRadius && ringFx.setRadius(); }, onComplete:function(){ ringFx.destroy(); }});
+  this.scene.tweens.add({targets:ringFx, radius:64, alpha:0, duration:440, onUpdate:function(t,tgt){ ringFx.setRadius(tgt.radius); }, onComplete:function(){ ringFx.destroy(); }});
 };
 ShopVisual.prototype.showSupplierChoice=function(list, onPick){
   var scene=this.scene;
