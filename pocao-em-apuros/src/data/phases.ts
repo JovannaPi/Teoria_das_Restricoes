@@ -334,7 +334,7 @@ export const PHASES: PhaseDef[] = [
       id: 'fase4',
       seed: 4004,
       startCash: 650,
-      demand: { ...baseDemand, ordersPerMin: 5.0, mix: { cura: 0.4, visao: 0.42, transformacao: 0.18 } },
+      demand: { ...baseDemand, ordersPerMin: 4.7, mix: { cura: 0.5, visao: 0.3, transformacao: 0.2 } },
       stations: { caldeirao: { breakEvery: 45, breakDuration: 9, setupTime: 3 } },
       wipHoldingCost: 0.06,
       spoilTime: 45,
@@ -354,7 +354,7 @@ export const PHASES: PhaseDef[] = [
       events: [{ at: 20, kind: 'feira', recipe: 'visao', duration: 60 }],
     }),
     objectives: [
-      { kind: 'delivered', target: 28, label: 'Entregar pelo menos 28 poções' },
+      { kind: 'delivered', target: 37, label: 'Entregar pelo menos 37 poções' },
       { kind: 'netProfit', target: 900, label: 'Lucro líquido do dia de pelo menos 900 moedas' },
       { kind: 'cash', target: 1000, label: 'Terminar o dia com pelo menos 1000 moedas em caixa' },
     ],
@@ -428,7 +428,7 @@ export const PHASES: PhaseDef[] = [
     }),
     objectives: [
       { kind: 'hypothesis', target: 1, label: 'Identificar a nova restrição' },
-      { kind: 'netProfit', target: 1000, label: 'Lucro líquido do dia de pelo menos 1000 moedas' },
+      { kind: 'netProfit', target: 900, label: 'Lucro líquido do dia de pelo menos 900 moedas' },
       { kind: 'canceled', target: 3, label: 'No máximo 3 pedidos cancelados' },
     ],
     intro: [
