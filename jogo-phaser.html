@@ -37,6 +37,9 @@
   .hero p{font-size:13px; color:var(--ink-soft); line-height:1.5; font-weight:600;}
   .card{background:var(--paper); border-radius:16px; padding:14px 16px; margin-top:12px; border:1.5px solid rgba(244,233,255,0.12);}
   .card label{display:block; font-family:'Baloo 2'; font-weight:700; font-size:12px; margin-bottom:8px;}
+  .swatch-row{display:flex; gap:9px; flex-wrap:wrap;}
+  .swatch{width:30px; height:30px; border-radius:50%; border:3px solid transparent; padding:0; cursor:pointer;}
+  .swatch.selected{border-color:#fff; box-shadow:0 0 0 2px var(--red);}
   input[type=text]{width:100%; padding:12px 13px; border-radius:11px; border:2px solid rgba(244,233,255,0.2); background:rgba(255,255,255,0.05); color:var(--ink); font-weight:700; font-size:16px; font-family:'Nunito';}
   button{font-family:'Baloo 2',sans-serif; cursor:pointer; border:none; -webkit-tap-highlight-color:transparent;}
   .btn-main{width:100%; margin-top:14px; padding:15px; border-radius:14px; background:var(--red); color:#fff; font-size:15px; font-weight:700; box-shadow:0 5px 0 #b6304a;}
@@ -54,6 +57,14 @@
       <h1>Oficina <span>Animada</span></h1>
       <div class="tag">protótipo Phaser — mesma teoria, loja de verdade</div>
       <p>Toque só na restrição quando ela aparecer marcada. Observe a fila crescer antes dela — é aí que o gargalo mora.</p>
+    </div>
+    <div class="card" id="customCard">
+      <label>Personalize sua bruxa</label>
+      <canvas id="witchPreview" width="130" height="160" style="display:block; margin:0 auto 10px; background:rgba(255,255,255,0.03); border-radius:12px;"></canvas>
+      <div style="font-size:9px; color:var(--ink-soft); font-weight:800; text-transform:uppercase; letter-spacing:.05em; margin-bottom:5px;">Cabelo</div>
+      <div class="swatch-row" id="hairSwatches"></div>
+      <div style="font-size:9px; color:var(--ink-soft); font-weight:800; text-transform:uppercase; letter-spacing:.05em; margin:10px 0 5px;">Robe</div>
+      <div class="swatch-row" id="robeSwatches"></div>
     </div>
     <div class="card">
       <label for="playerName">Seu nome</label>
@@ -229,6 +240,64 @@ function setHint(msg){
 
 var $=function(id){ return document.getElementById(id); };
 
+/* ======================= PERSONALIZAÇÃO DA BRUXA ======================= */
+var HAIR_COLORS=['#2a1a12','#6b3a1a','#d4a73b','#e85a5a','#8a4fd6','#3ab0d4'];
+var ROBE_COLORS=['#4a2e7a','#1f6b52','#8a1f3a','#1f4a7a','#2a2a2a','#b85c1f'];
+var WITCH_KEY='oficina_witch_v1';
+var witchOpts=loadWitch();
+function loadWitch(){
+  try{ var v=JSON.parse(localStorage.getItem(WITCH_KEY)); if(v&&v.hair&&v.robe) return v; }catch(e){}
+  return {hair:HAIR_COLORS[1], robe:ROBE_COLORS[0]};
+}
+function saveWitch(){ try{ localStorage.setItem(WITCH_KEY, JSON.stringify(witchOpts)); }catch(e){} }
+
+function drawWitch2D(ctx, cx, cy, opts, scale){
+  scale=scale||1;
+  ctx.save(); ctx.translate(cx,cy); ctx.scale(scale,scale);
+  ctx.fillStyle=opts.robe;
+  ctx.beginPath(); ctx.moveTo(-16,-10); ctx.lineTo(16,-10); ctx.lineTo(30,50); ctx.lineTo(-30,50); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle=opts.robe; ctx.lineWidth=6; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(-16,-4); ctx.lineTo(-27,18); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(16,-4); ctx.lineTo(27,18); ctx.stroke();
+  ctx.fillStyle=opts.hair; ctx.beginPath(); ctx.arc(0,-35,19,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#f0c9a0'; ctx.beginPath(); ctx.arc(0,-35,15,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=opts.hair;
+  ctx.beginPath(); ctx.moveTo(-15,-40); ctx.lineTo(-19,-18); ctx.lineTo(-9,-38); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(15,-40); ctx.lineTo(19,-18); ctx.lineTo(9,-38); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#2a1a3a';
+  ctx.beginPath(); ctx.arc(-5,-34,2,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(5,-34,2,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#241633';
+  ctx.beginPath(); ctx.ellipse(0,-50,26,6,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-14,-52); ctx.lineTo(14,-52); ctx.lineTo(0,-86); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+function renderWitchPreview(){
+  var cv=$('witchPreview'); if(!cv) return;
+  var ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  drawWitch2D(ctx, cv.width/2, cv.height-30, witchOpts, 1);
+}
+function buildSwatches(containerId, colors, key){
+  var box=$(containerId); if(!box) return;
+  box.innerHTML='';
+  colors.forEach(function(c){
+    var b=document.createElement('button');
+    b.className='swatch'+(witchOpts[key]===c?' selected':'');
+    b.style.background=c; b.type='button';
+    b.addEventListener('click', function(){
+      witchOpts[key]=c; saveWitch(); renderWitchPreview();
+      Array.prototype.forEach.call(box.children, function(ch){ ch.classList.remove('selected'); });
+      b.classList.add('selected');
+      if(sceneRef && sceneRef.redrawWitch) sceneRef.redrawWitch();
+    });
+    box.appendChild(b);
+  });
+}
+buildSwatches('hairSwatches', HAIR_COLORS, 'hair');
+buildSwatches('robeSwatches', ROBE_COLORS, 'robe');
+renderWitchPreview();
+
 /* ======================= FASES ======================= */
 function runPhaseTimer(duration, onDone){
   phaseTimer=duration; currentOnDone=onDone;
@@ -365,13 +434,14 @@ function ShopVisual(scene){
   var self=this;
   this.build();
   onAdvance=function(i){ self.sendToken(i); };
-  onDeliver=function(i){ self.sendToken(i, true); };
-  onMurphy=function(i){ self.hitMurphy(i); };
+  onDeliver=function(i){ self.sendToken(i, true); self.jumpWitch(); };
+  onMurphy=function(i){ self.hitMurphy(i); self.flinchWitch(); };
   onShield=function(i){ self.hitShield(i); };
 }
 ShopVisual.prototype.rebuildStations=function(){
   this.nodes.forEach(function(n){ n.container.destroy(); });
   this.loops.forEach(function(ev){ ev.remove(); });
+  if(this.witch){ this.witch.destroy(); this.witch=null; this.witchArt=null; }
   this.loops=[]; this.nodes=[];
   this.build();
 };
@@ -403,6 +473,24 @@ function drawEntrega(g){
   g.fillStyle(0x2f5a6e,1); g.fillTriangle(-13,-30,-7,-30,-10,-22); g.fillTriangle(13,-30,7,-30,10,-22);
 }
 var STATION_DRAW={colheita:drawColheita, caldeirao:drawCaldeirao, entrega:drawEntrega};
+
+function drawWitchGfx(g, opts){
+  var robe=Phaser.Display.Color.HexStringToColor(opts.robe).color;
+  var hair=Phaser.Display.Color.HexStringToColor(opts.hair).color;
+  g.fillStyle(robe,1);
+  g.beginPath(); g.moveTo(-16,-10); g.lineTo(16,-10); g.lineTo(30,50); g.lineTo(-30,50); g.closePath(); g.fillPath();
+  g.lineStyle(6,robe,1);
+  g.beginPath(); g.moveTo(-16,-4); g.lineTo(-27,18); g.strokePath();
+  g.beginPath(); g.moveTo(16,-4); g.lineTo(27,18); g.strokePath();
+  g.fillStyle(hair,1); g.fillCircle(0,-35,19);
+  g.fillStyle(0xf0c9a0,1); g.fillCircle(0,-35,15);
+  g.fillStyle(hair,1);
+  g.beginPath(); g.moveTo(-15,-40); g.lineTo(-19,-18); g.lineTo(-9,-38); g.closePath(); g.fillPath();
+  g.beginPath(); g.moveTo(15,-40); g.lineTo(19,-18); g.lineTo(9,-38); g.closePath(); g.fillPath();
+  g.fillStyle(0x2a1a3a,1); g.fillCircle(-5,-34,2); g.fillCircle(5,-34,2);
+  g.fillStyle(0x241633,1); g.fillEllipse(0,-50,52,12);
+  g.beginPath(); g.moveTo(-14,-52); g.lineTo(14,-52); g.lineTo(0,-86); g.closePath(); g.fillPath();
+}
 
 ShopVisual.prototype.build=function(){
   var scene=this.scene;
@@ -444,7 +532,28 @@ ShopVisual.prototype.build=function(){
     if(st.cfg.key==='colheita'){ scene.tweens.add({targets:artWrap, angle:{from:-4,to:4}, duration:1900, yoyo:true, repeat:-1, ease:'Sine.InOut'}); }
     if(st.cfg.key==='entrega'){ scene.time.addEvent({delay:2200, loop:true, callback:function(){ scene.tweens.add({targets:artWrap, scaleX:{from:1,to:1.12}, duration:160, yoyo:true}); }}); }
   });
+
+  var wx=w/2+70, wy=top+spacing*1;
+  this.witch=scene.add.container(wx,wy).setScale(0.72);
+  this.witchArt=scene.add.graphics();
+  drawWitchGfx(this.witchArt, witchOpts);
+  this.witch.add(this.witchArt);
+  scene.tweens.add({targets:this.witch, y:{from:wy-4,to:wy+4}, duration:1700, yoyo:true, repeat:-1, ease:'Sine.InOut'});
+
   this.syncVisual();
+};
+ShopVisual.prototype.redrawWitch=function(){
+  if(!this.witchArt) return;
+  this.witchArt.clear();
+  drawWitchGfx(this.witchArt, witchOpts);
+};
+ShopVisual.prototype.jumpWitch=function(){
+  if(!this.witch) return;
+  this.scene.tweens.add({targets:this.witch, scale:{from:0.82,to:0.72}, duration:220, ease:'Bounce.Out'});
+};
+ShopVisual.prototype.flinchWitch=function(){
+  if(!this.witch) return;
+  this.scene.tweens.add({targets:this.witch, angle:{from:-10,to:10}, duration:70, yoyo:true, repeat:2});
 };
 ShopVisual.prototype.startCauldronLife=function(node){
   var scene=this.scene, self=this;
