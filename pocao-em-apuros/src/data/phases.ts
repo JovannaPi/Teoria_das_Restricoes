@@ -107,7 +107,8 @@ export const PHASES: PhaseDef[] = [
     scenario: scenario({
       id: 'tutorial',
       seed: 1201,
-      duration: 240,
+      duration: 1800,
+      acceptWindow: 120,
       startCash: 300,
       startReputation: 60,
       recipes: ['cura', 'visao'],
