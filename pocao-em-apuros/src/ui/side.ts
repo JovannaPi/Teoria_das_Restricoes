@@ -40,10 +40,12 @@ export function renderSide(g: Game, force: boolean): void {
   const tabs = (['estacao', 'pedidos', 'despensa', 'fluxo', 'melhorias'] as SideView[])
     .map(
       (v) =>
-        `<button role="tab" aria-selected="${g.side === v}" class="${g.side === v ? 'on' : ''}" data-action="side" data-v="${v}">${{ estacao: 'Estação', pedidos: 'Pedidos', despensa: 'Despensa', fluxo: 'Fluxo', melhorias: 'Melhorias' }[v]}</button>`,
+        `<button role="tab" aria-selected="${g.side === v}" class="${g.side === v ? 'on' : ''}" data-action="side" data-v="${v}">${{ estacao: 'Loja', pedidos: 'Pedidos', despensa: 'Estoque', fluxo: 'Fluxo', melhorias: 'Melhorias' }[v]}</button>`,
     )
     .join('');
-  const html = `<div class="side-tabs" role="tablist">${tabs}<button class="side-x" data-action="close-side" aria-label="Fechar painel">×</button></div><div class="side-body">${body}</div>`;
+  const title = { estacao: g.selected ? STATIONS[g.selected].short : 'Loja', pedidos: 'Pedidos', despensa: 'Estoque', fluxo: 'Fluxo', melhorias: 'Melhorias' }[g.side];
+  const sheet = `<div class="sheet-head"><span class="grab" aria-hidden="true"></span><b>${esc(title)}</b><button class="sheet-x" data-action="close-side" aria-label="Fechar painel">×</button></div>`;
+  const html = sheet + `<div class="side-tabs" role="tablist">${tabs}<button class="side-x" data-action="close-side" aria-label="Fechar painel">×</button></div><div class="side-body">${body}</div>`;
   if (!force && html === lastHtml) return;
   lastHtml = html;
   const scroll = root.querySelector('.side-body')?.scrollTop ?? 0;
@@ -131,12 +133,13 @@ function stationView(g: Game, id: StationId): string {
   <div class="actions">
     <button data-action="toggle-station" data-v="${id}" class="${st.paused ? 'primary' : ''}">${st.paused ? 'Retomar estação' : 'Interromper estação'}</button>
     ${helperHere ? `<button data-action="stop-help">Lina parar de ajudar</button>` : `<button data-action="help-here" data-v="${id}" ${linaWalking ? 'disabled' : ''} title="A Lina caminha até aqui e a estação fica ${Math.round((POLICY_COSTS.helperBonus - 1) * 100)}% mais rápida">Lina ajuda aqui</button>`}
-    ${st.setupTime > 0 ? `<button data-action="station-policy" data-k="setupExternal" data-v="${id}" data-on="${!s.policies.setupExternal[id]}" ${g.policyLocked('setupExternal') ? 'disabled' : ''}>${lockNote(g, 'setupExternal')}${s.policies.setupExternal[id] ? 'Voltar a limpar com a estação parada' : `Limpeza em paralelo (+${policyCost(POLICY_COSTS.setupExternal)})`}</button>` : ''}
-    ${st.breakEvery > 0 ? `<button data-action="station-policy" data-k="breakCover" data-v="${id}" data-on="${!s.policies.breakCover[id]}" ${g.policyLocked('breakCover') ? 'disabled' : ''}>${lockNote(g, 'breakCover')}${s.policies.breakCover[id] ? 'Deixar de cobrir intervalos' : `Cobrir intervalos (+${policyCost(POLICY_COSTS.breakCover)})`}</button>` : ''}
-    ${id !== 'balcao' ? `<button data-action="drum-here" data-v="${id}" ${isDrum || g.policyLocked('drum') ? 'disabled' : ''}>${lockNote(g, 'drum')}${isDrum ? 'A corda está amarrada aqui (tambor)' : 'Amarrar a corda aqui (tambor)'}</button>` : ''}
+    ${st.setupTime > 0 && !g.policyLocked('setupExternal') ? `<button data-action="station-policy" data-k="setupExternal" data-v="${id}" data-on="${!s.policies.setupExternal[id]}">${s.policies.setupExternal[id] ? 'Voltar a limpar com a estação parada' : `Limpeza em paralelo (+${policyCost(POLICY_COSTS.setupExternal)})`}</button>` : ''}
+    ${st.breakEvery > 0 && !g.policyLocked('breakCover') ? `<button data-action="station-policy" data-k="breakCover" data-v="${id}" data-on="${!s.policies.breakCover[id]}">${s.policies.breakCover[id] ? 'Deixar de cobrir intervalos' : `Cobrir intervalos (+${policyCost(POLICY_COSTS.breakCover)})`}</button>` : ''}
+    ${id !== 'balcao' && !g.policyLocked('drum') ? `<button data-action="drum-here" data-v="${id}" ${isDrum ? 'disabled' : ''}>${isDrum ? 'A corda está amarrada aqui (tambor)' : 'Amarrar a corda aqui (tambor)'}</button>` : ''}
     ${g.phase!.hypothesisEnabled ? `<button class="primary" data-action="hypothesis" data-v="${id}">Registrar hipótese: esta estação limita a loja</button>` : ''}
     ${upgradesHere.length ? `<button data-action="side" data-v="melhorias">Ver melhorias desta estação (${upgradesHere.length})</button>` : ''}
   </div>
+  ${(['setupExternal', 'breakCover', 'drum'] as const).some((k) => g.policyLocked(k)) ? '<p class="muted small">Outras decisões aparecem quando fizerem sentido na partida.</p>' : ''}
   <h3>Detalhes</h3>
   <p class="muted">${esc(def.description)}</p>
   <div class="kv">
@@ -223,7 +226,7 @@ function pantryView(g: Game): string {
     .join('');
   const lead = s.supplierLeadTime * mods.leadMult;
   const stockValue = Object.values(s.stockValue).reduce((a, b) => a + b, 0);
-  return `<h2>Despensa</h2>
+  return `<h2>Estoque de ingredientes</h2>
   <p class="muted">A comerciante Madame Trufa entrega em ${shopMinutes(lead)}${mods.leadMult > 1 ? ' <b class="neg">(atrasada pela tempestade)</b>' : ''}. O pagamento é feito na entrega.</p>
   <label class="toggle"><input type="checkbox" data-change="policy-check" data-k="autoReorder" ${s.policies.autoReorder ? 'checked' : ''}> Reposição automática (pede quando o estoque fica abaixo do ponto de reposição)</label>
   <table class="tbl"><thead><tr><th>Ingrediente</th><th>Estoque</th><th>A caminho</th><th>Preço</th><th>Encomendar</th></tr></thead><tbody>${rows}</tbody></table>
@@ -241,6 +244,11 @@ function radio(g: Game, k: string, current: string, options: [string, string, st
     .join('')}</div>`;
 }
 
+/** No celular, Fluxo e Melhorias dividem a mesma aba. */
+function flowSwitch(on: 'fluxo' | 'melhorias'): string {
+  return `<div class="seg" role="tablist"><button role="tab" aria-selected="${on === 'fluxo'}" class="${on === 'fluxo' ? 'on' : ''}" data-action="side" data-v="fluxo">Liberação e prioridades</button><button role="tab" aria-selected="${on === 'melhorias'}" class="${on === 'melhorias' ? 'on' : ''}" data-action="side" data-v="melhorias">Investimentos</button></div>`;
+}
+
 function flowView(g: Game): string {
   const s = g.sim!;
   const p = s.policies;
@@ -248,7 +256,7 @@ function flowView(g: Game): string {
     .map((id) => `<option value="${id}" ${p.drum === id ? 'selected' : ''}>${esc(STATIONS[id].short)}</option>`)
     .join('');
   const rope = ropeCount(s);
-  return `<h2>Fluxo da loja</h2>
+  return `${flowSwitch('fluxo')}<h2>Fluxo da loja</h2>
   <p class="muted small">Como o trabalho entra na loja e em que ordem as estações atendem as filas.</p>
   <h3>Liberação de trabalho ${lockNote(g, 'release')}</h3>
   ${radio(g, 'release', p.release, [
@@ -290,7 +298,7 @@ export function estimateUpgrade(s: SimState, id: UpgradeId) {
 function upgradesView(g: Game): string {
   const s = g.sim!;
   if (!s.upgradesAvailable.length) {
-    return `<h2>Melhorias</h2><p class="muted">Nesta fase não há investimentos disponíveis. ${g.phase!.number === 2 ? 'Antes de comprar, aproveite melhor o que você já tem.' : ''}</p>`;
+    return `${flowSwitch('melhorias')}<h2>Melhorias</h2><p class="muted">Nesta fase não há investimentos disponíveis. ${g.phase!.number === 2 ? 'Antes de comprar, aproveite melhor o que você já tem.' : ''}</p>`;
   }
   const needHyp = s.upgradesNeedHypothesis && !s.hypotheses.some((h) => h.correct);
   const showEst = lensVisible(g);
@@ -319,7 +327,7 @@ function upgradesView(g: Game): string {
       </div>`;
     })
     .join('');
-  return `<h2>Melhorias</h2>
+  return `${flowSwitch('melhorias')}<h2>Melhorias</h2>
   ${needHyp ? '<p class="warnbox">Antes de investir, identifique a restrição: registre uma hipótese e espere a mentora conferir os dados.</p>' : ''}
   <p class="muted small">Investir aumenta a capacidade de uma estação. Só aumenta as entregas da loja se aquela estação for a restrição. Caixa atual: <b>${money(s.cash)}</b>.</p>
   ${!showEst ? '<p class="muted small">A estimativa de efeito aparece depois que a restrição for identificada.</p>' : ''}

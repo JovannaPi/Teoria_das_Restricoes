@@ -109,7 +109,9 @@ export function lineChart(
     ctx.fillText(e.s.name, w - padR + 18, y);
   }
   // dica ao passar o mouse
-  canvas.onmousemove = (ev) => {
+  // dica por toque ou mouse (eventos de ponteiro cobrem os dois)
+  canvas.style.touchAction = 'pan-y';
+  canvas.onpointerdown = canvas.onpointermove = (ev) => {
     const r = canvas.getBoundingClientRect();
     const mx = ev.clientX - r.left;
     let best = 0;
@@ -129,7 +131,9 @@ export function lineChart(
       `<b>${opts.xFmt(xs[best])}</b>` +
       series.map((s) => `<div><i style="background:${s.color}"></i>${s.name}: ${yFmt(s.values[best] ?? 0)}</div>`).join('');
   };
-  canvas.onmouseleave = () => {
+  canvas.onpointerleave = (ev) => {
+    // no toque, o valor fica visível até o próximo toque
+    if (ev.pointerType === 'touch') return;
     const tip = canvas.parentElement?.querySelector('.chart-tip') as HTMLElement | null;
     if (tip) tip.style.display = 'none';
   };

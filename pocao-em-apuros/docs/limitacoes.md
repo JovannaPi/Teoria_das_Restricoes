@@ -9,7 +9,8 @@
 - **Celular**: em pé, a cena da loja é pequena; por isso há a faixa de estações tocáveis e o painel fixo. Deitado, a loja fica maior. O jogo não obriga a girar o aparelho. Travar a orientação só funciona em tela cheia nos navegadores que permitem (Android/Chrome).
 - **Testes em aparelhos físicos** ainda não foram feitos: tudo foi validado no Chromium com emulação de celular e toque (ver `testes.md`, seção "O que ainda NÃO foi testado").
 - **Publicação**: o jogo está pronto em `pocao/`, mas o endereço público só existe depois de mesclar na `main` e ligar o GitHub Pages. O QR Code é gerado a partir do endereço em que o jogo está aberto, para nunca apontar para um endereço inventado ou local.
-- **Desafio da Turma**: os tempos das etapas (dicas aos 70 s, revelação da mentora aos 130 s etc.) foram escolhidos por simulação e ainda precisam ser ajustados com uma turma real.
+- **Modo rápido**: os textos e a espera de ~25 s para medir cada efeito foram ajustados por simulação; ainda precisam ser testados com pessoas que nunca jogaram (o critério de sucesso — entender a primeira decisão sem ajuda — só se confirma assim).
+- O modo rápido mede o efeito de cada decisão numa janela curta (~25 s de jogo); com poucos pedidos nesse intervalo, os números de "entregas por minuto" podem variar bastante.
 - O **salvamento** do progresso é por aparelho (localStorage). Só os resultados das fases vão para o placar online.
 - A **pontuação do placar** é calculada no aparelho do aluno; as regras do Firebase limitam os valores, mas não impedem um resultado inventado dentro do limite (ver `placar-online.md`).
 - O build publicado em `../pocao/` precisa ser servido por http(s) para o modo app/offline funcionar; `pocao-em-apuros.html` funciona aberto direto, mas sem instalação.

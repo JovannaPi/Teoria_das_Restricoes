@@ -157,7 +157,7 @@ try {
   // ---------------------------------------------------------------- fase 1: identificar
   await page.click('[data-action="next-phase"]');
   await skipDialogues(page);
-  await page.click('.modal [data-action="modal-close"]');
+  if (await page.$('.modal [data-action="modal-close"]')) await page.click('.modal [data-action="modal-close"]');
   await page.click('[data-action="speed"][data-v="4"]');
   await fastForward(page, 50);
   // painéis laterais e modais: nenhum botão sem ação
@@ -244,7 +244,7 @@ try {
   await page.click('[data-action="title-phases"]');
   await page.click('.phase-card[data-v="fase4"]');
   await skipDialogues(page);
-  await page.click('.modal [data-action="modal-close"]');
+  if (await page.$('.modal [data-action="modal-close"]')) await page.click('.modal [data-action="modal-close"]');
   await fastForward(page, 5);
   const cash0 = await page.evaluate(() => window.__pocao.game.sim.cash);
   await page.click('.hud-menu [data-action="side"][data-v="melhorias"]');
@@ -351,7 +351,7 @@ try {
       if (!b) break;
       await b.tap();
     }
-    await m.tap('.modal [data-action="modal-close"]');
+    if (await m.$('.modal [data-action="modal-close"]')) await m.tap('.modal [data-action="modal-close"]');
     const stage = await m.evaluate(() => document.querySelector('#shop').getBoundingClientRect().height);
     check('celular deitado: a loja ocupa a maior parte da altura', stage > 390 * 0.7, `${Math.round(stage)} px`);
     await m.tap('#tabbar [data-tab-id="fluxo"]');
@@ -367,72 +367,100 @@ try {
   }
 
 
-  // ---------------------------------------------------------------- DESAFIO DA TURMA no celular (toque), do QR ao resultado
+  // ---------------------------------------------------------------- MODO RÁPIDO no celular (toque), do Jogar ao resultado
   {
     const ctx = await browser.newContext({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
     const m = await ctx.newPage();
-    m.on('pageerror', (e) => errors.push('[turma] ' + String(e)));
+    m.on('pageerror', (e) => errors.push('[rápido] ' + String(e)));
     await m.goto(URL);
     await m.waitForSelector('.play-btn');
     const pb = await m.evaluate(() => {
       const r = document.querySelector('.play-btn').getBoundingClientRect();
       return { h: r.height, bottom: r.bottom, vh: innerHeight };
     });
-    check('turma: botão Jogar grande e visível sem rolar', pb.h >= 56 && pb.bottom <= pb.vh, `${Math.round(pb.h)} px de altura`);
-    await m.screenshot({ path: join(shotsDir, 'turma-01-inicio.png') });
+    check('rápido: botão Jogar grande e visível sem rolar', pb.h >= 56 && pb.bottom <= pb.vh, `${Math.round(pb.h)} px de altura`);
+    await m.screenshot({ path: join(shotsDir, 'rapido-01-inicio.png') });
     await m.tap('.play-btn');
     await m.waitForSelector('.creator');
-    check('turma: nome da bruxa já vem sugerido (sem dado pessoal)', (await m.inputValue('[data-hero-field="name"]')).length > 2);
-    await m.screenshot({ path: join(shotsDir, 'turma-02-bruxa.png') });
+    check('rápido: nome da bruxa já vem sugerido (sem dado pessoal)', (await m.inputValue('[data-hero-field="name"]')).length > 2);
     await m.tap('[data-action="hero-save"]');
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       const b = await m.$('[data-action="dialogue-next"]');
       if (!b) break;
       await b.tap();
     }
     await m.waitForSelector('.turma-coach');
-    check('turma: dica contextual curta aparece', (await m.textContent('.turma-coach')).includes('Toque em uma estação'));
+    check('rápido: sem janela de objetivos em sequência', (await m.$('.modal')) == null);
+    check('rápido: primeira tarefa é tocar numa estação', (await m.textContent('.turma-coach')).includes('Toque em uma estação'));
     const ff = (secs) =>
       m.evaluate((x) => {
         const g = window.__pocao.game;
         const n = Math.ceil(x / (0.1 * g.speed));
         for (let i = 0; i < n; i++) g.tick(0.1);
       }, secs);
-    for (const id of ['caldeirao', 'embalagem', 'destilacao']) await m.tap(`#station-strip [data-strip="${id}"]`);
-    await ff(40);
-    check('turma: etapa de descoberta do gargalo', (await m.textContent('.turma-coach')).includes('Qual estação'));
-    check('turma: decisões de fluxo bloqueadas antes de identificar', await m.evaluate(() => window.__pocao.game.policyLocked('release')));
-    await m.screenshot({ path: join(shotsDir, 'turma-03-identificar.png') });
-    await m.tap('.turma-coach [data-action="hypothesis"]');
-    await m.tap('[data-action="hypothesis-confirm"][data-v="caldeirao"]');
-    await ff(25);
-    await m.waitForSelector('.modal');
-    await m.tap('.modal [data-action="modal-close"]');
-    check('turma: após identificar, a etapa de melhoria libera decisões', (await m.textContent('.turma-coach')).includes('Antes de comprar') && !(await m.evaluate(() => window.__pocao.game.policyLocked('release'))));
-    await m.tap('.turma-coach [data-action="select-station"]');
-    await m.tap('#side [data-action="station-policy"][data-k="breakCover"]');
-    await m.tap('#side [data-action="station-policy"][data-k="setupExternal"]');
-    await m.tap('#side [data-action="help-here"]');
-    await m.tap('#tabbar [data-tab-id="fluxo"]');
-    await m.tap('[data-action="policy"][data-k="release"][data-v="corda"]');
-    await m.screenshot({ path: join(shotsDir, 'turma-04-melhorar.png') });
-    await ff(40);
-    check('turma: procura aumenta e investimentos liberam', (await m.textContent('.turma-coach')).includes('procura aumentou'));
-    await m.tap('.turma-coach [data-action="side"][data-v="melhorias"]');
-    await m.tap('[data-action="upgrade"][data-v="caldeirao_extra"]');
-    await m.tap('[data-confirm="yes"]');
+    const shot = (n) => m.screenshot({ path: join(shotsDir, `rapido-${n}.png`) });
+    const choose = async (v) => {
+      await m.tap(`.turma-coach [data-action="quick-choice"][data-v="${v}"]`);
+      await m.waitForTimeout(60);
+    };
+    const coach = () => m.textContent('.turma-coach');
+    const sheetOpen = () => m.evaluate(() => document.body.classList.contains('side-open'));
+    await m.tap('#station-strip [data-strip="caldeirao"]');
+    check('rápido: tocar numa estação abre o painel de baixo', await sheetOpen());
+    await shot('02-painel');
+    await m.tap('.sheet-x');
+    check('rápido: o painel fecha e volta para a loja', !(await sheetOpen()));
+    await m.tap('#station-strip [data-strip="embalagem"]');
+    await m.tap('.sheet-x');
+    await m.waitForTimeout(1100);
     await ff(30);
-    check('turma: depois do investimento, pede nova análise', (await m.textContent('.turma-coach')).includes('A loja mudou'));
-    await m.tap('.turma-coach [data-action="hypothesis"]');
-    await m.tap('[data-action="hypothesis-confirm"][data-v="destilacao"]');
-    await ff(25);
-    await m.waitForSelector('.modal');
-    check('turma: nova restrição (destilação) confirmada pelos dados', (await m.textContent('.modal')).includes('Confirmado'));
-    await m.tap('.modal [data-action="modal-close"]');
-    await m.tap('#tabbar [data-tab-id="fluxo"]');
-    await m.selectOption('[data-change="drum-select"]', 'destilacao');
-    const simT = await m.evaluate(() => window.__pocao.game.sim.t);
-    await ff(400);
+    check('rápido: pergunta onde está o acúmulo', (await coach()).includes('acumulando'));
+    // resposta errada → explicação com dados; depois a certa (maior fila no momento)
+    await choose('balcao');
+    check('rápido: resposta errada explicada com os números', /fila na frente da estação Balcão tem \d+/.test(await coach()));
+    const top = await m.evaluate(() => {
+      const s = window.__pocao.game.sim;
+      return Object.values(s.stations).sort((a, b) => b.queue.length - a.queue.length)[0].id;
+    });
+    await choose(top);
+    await m.waitForTimeout(1400);
+    check('rápido: passo 1 (identificar) com opções de estação', (await coach()).includes('qual estação está limitando'));
+    await shot('03-identificar');
+    await choose('embalagem');
+    check('rápido: escolher a estação ocupada/parada errada é explicado ("não é o mesmo")', /não é o mesmo/.test(await coach()));
+    await choose('caldeirao');
+    check('rápido: restrição confirmada com evidências', /Isso! Caldeirão está ocupada \d+%/.test(await coach()));
+    check('rápido: sem janela extra para o resultado da hipótese', (await m.$('.modal')) == null);
+    await choose('ok');
+    { const t = await coach(); check('rápido: passo 2 (explorar) com escolhas dentro do cartão', t.includes('nada precisa ser comprado'), t.slice(0, 160)); }
+    await shot('04-explorar');
+    await choose('breakCover');
+    await ff(30);
+    check('rápido: efeito medido depois da decisão', /ficava parado \d+% do tempo; agora \d+%/.test(await coach()));
+    await choose('ok');
+    check('rápido: passo 3 (subordinar)', (await coach()).includes('Como liberar o trabalho'));
+    await choose('corda');
+    await ff(30);
+    check('rápido: corda mostra o estoque em processo antes → depois', /poções espalhadas pela loja: \d+ → \d+/.test(await coach()));
+    await choose('ok');
+    check('rápido: passo 4 (elevar) com preço das opções', /Segundo caldeirão/.test(await coach()));
+    await shot('05-elevar');
+    await choose('caldeirao_extra');
+    check('rápido: compra pede confirmação (segundo toque)', /Toque de novo para confirmar/.test(await coach()));
+    await choose('caldeirao_extra');
+    await ff(30);
+    check('rápido: investimento na restrição mostra o efeito', /Você elevou a restrição/.test(await coach()));
+    await choose('ok');
+    check('rápido: passo 5 (recomeçar)', (await coach()).includes('A loja mudou'));
+    await choose('caldeirao');
+    check('rápido: a restrição antiga não é mais a resposta', /não é o que limita a loja agora/.test(await coach()));
+    await choose('destilacao');
+    check('rápido: nova restrição (destilação) confirmada', /Isso! Destilação/.test(await coach()));
+    await choose('ok');
+    const tSim = await m.evaluate(() => window.__pocao.game.sim.t);
+    check('rápido: os cinco passos cabem no dia de 5 minutos de jogo', tSim < 300, `${Math.round(tSim)} s de jogo`);
+    await choose('fim');
+    await ff(2);
     for (let i = 0; i < 3; i++) {
       const b = await m.$('[data-action="dialogue-next"]');
       if (!b) break;
@@ -440,13 +468,99 @@ try {
     }
     await m.waitForSelector('.debrief .steps5');
     const statuses = await m.$$eval('.steps5 .step .chip', (els) => els.map((e) => e.textContent));
-    check('turma: resultado mostra os 5 passos com dados da partida', statuses.length === 5, statuses.join(' | '));
-    check('turma: jogando pela TOC, os 5 passos aparecem como feitos', statuses.filter((x) => x === 'Feito').length >= 4, statuses.join(' | '));
-    check('turma: duração do dia cabe no seminário (6 min de jogo a 1×)', (await m.evaluate(() => window.__pocao.game.sim.duration)) <= 480, `etapas concluídas em ${Math.round(simT)} s de jogo`);
+    check('rápido: resultado mostra os 5 passos com dados da partida', statuses.length === 5, statuses.join(' | '));
+    check('rápido: passo 1 "em parte" (houve um palpite errado) e passos 2 a 5 feitos', statuses[0] === 'Em parte' && statuses.slice(1).every((x) => x === 'Feito'), statuses.join(' | '));
     await m.tap('.debrief [data-action="quiz"][data-v="0"]');
-    check('turma: reflexão com resposta contextualizada pelos dados', /trabalhou \d+% do dia/.test(await m.textContent('.quiz-exp')));
-    check('turma: nada ultrapassa a largura da tela', await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-    await m.screenshot({ path: join(shotsDir, 'turma-05-resultado.png'), fullPage: false });
+    check('rápido: reflexão com resposta contextualizada pelos dados', /trabalhou \d+% do dia/.test(await m.textContent('.quiz-exp')));
+    check('rápido: nada ultrapassa a largura da tela', await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+    await shot('06-resultado');
+    await m.tap('.debrief [data-action="retry"]');
+    for (let i = 0; i < 3; i++) {
+      const b = await m.$('[data-action="dialogue-next"]');
+      if (!b) break;
+      await b.tap();
+    }
+    await m.waitForSelector('.turma-coach');
+    check('rápido: jogar de novo reinicia a partida', (await m.evaluate(() => window.__pocao.game.sim.t)) < 2);
+    // pular dicas: tudo liberado e a partida segue
+    await m.tap('.turma-coach [data-action="quick-skip"]');
+    check('rápido: pular dicas libera as decisões', !(await m.evaluate(() => window.__pocao.game.policyLocked('release'))));
+    await m.tap('.turma-coach [data-action="quick-unskip"]');
+    check('rápido: dicas podem ser reabertas', (await coach()).includes('Toque em uma estação'));
+    await ctx.close();
+  }
+
+  // ---------------------------------------------------------------- celular em pé no modo completo: painéis, análise, gráficos por toque
+  {
+    const ctx = await browser.newContext({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    const m = await ctx.newPage();
+    m.on('pageerror', (e) => errors.push('[completo] ' + String(e)));
+    await m.goto(URL);
+    await m.waitForSelector('.play-btn');
+    await m.evaluate(() => {
+      const g = window.__pocao.game;
+      g.save.hero = { name: 'Teste', player: 'Teste', skin: '#f3cfa6', hair: '#8a4a22', hairStyle: 'longo', cloth: '#1f2c52', accent: '#46b06e', hat: 'bruxa', hatColor: '#121a33' };
+      g.save.teacherMode = true;
+      void g.startPhase('fase1');
+    });
+    for (let i = 0; i < 6; i++) {
+      const b = await m.$('[data-action="dialogue-next"]');
+      if (!b) break;
+      await b.tap();
+    }
+    check('completo: barra "Agora" mostra o objetivo e a hipótese', (await m.textContent('#phase-bar')).includes('hipótese') && (await m.$('#phase-bar [data-action="hypothesis"]')) != null);
+    await m.evaluate(() => {
+      const g = window.__pocao.game;
+      g.speed = 4;
+      for (let i = 0; i < 300; i++) g.tick(0.1);
+    });
+    const tabs = await m.$$eval('#tabbar button span', (els) => els.map((e) => e.textContent));
+    check('completo: barra inferior Loja, Pedidos, Estoque, Fluxo, Análise, Mais', tabs.join(',') === 'Loja,Pedidos,Estoque,Fluxo,Análise,Mais', tabs.join(','));
+    const small = await m.evaluate(() =>
+      [...document.querySelectorAll('#tabbar button, #station-strip button:not([hidden]), .hud-time button, #phase-bar button')]
+        .map((b) => b.getBoundingClientRect())
+        .filter((r) => r.height < 40 || r.width < 40).length,
+    );
+    check('completo: botões principais com pelo menos 40×40 px', small === 0, `${small} pequenos`);
+    for (const t of ['pedidos', 'despensa', 'fluxo']) {
+      await m.tap(`#tabbar [data-tab-id="${t}"]`);
+      await m.waitForTimeout(250);
+      const ok = await m.evaluate(() => {
+        const r = document.querySelector('#side').getBoundingClientRect();
+        return document.body.classList.contains('side-open') && r.top > 100 && r.bottom <= innerHeight + 1;
+      });
+      check(`completo: aba ${t} abre como painel de baixo, dentro da tela`, ok);
+      await m.tap('.sheet-x');
+    }
+    await m.tap('#tabbar [data-tab-id="fluxo"]');
+    await m.tap('.seg [data-v="melhorias"]');
+    check('completo: Investimentos dentro de Fluxo', (await m.textContent('#side')).includes('Melhorias'));
+    await m.tap('.sheet-x');
+    await m.tap('.hud-stats');
+    check('completo: tocar nos indicadores mostra todos (lucro, entregues)', await m.evaluate(() => getComputedStyle(document.querySelectorAll('.hud-stats .stat')[1]).display !== 'none'));
+    await m.tap('.hud-stats');
+    await m.tap('#tabbar [data-action="open-analysis"]');
+    check('completo: análise em cartões, sem tabela larga', await m.evaluate(() => getComputedStyle(document.querySelector('.st-cards')).display !== 'none' && document.querySelector('.modal-body').scrollWidth <= document.querySelector('.modal-body').clientWidth + 1));
+    await m.screenshot({ path: join(shotsDir, 'completo-analise.png') });
+    await m.tap('[data-action="modal-tab"][data-v="graficos"]');
+    await m.waitForTimeout(150);
+    const c = await m.evaluate(() => {
+      const r = document.querySelector('[data-chart="queues"]').getBoundingClientRect();
+      return { x: r.left + r.width * 0.5, y: r.top + r.height * 0.5 };
+    });
+    await m.touchscreen.tap(c.x, c.y);
+    check('completo: gráfico mostra valores com toque', await m.evaluate(() => getComputedStyle(document.querySelector('[data-chart="queues"]').parentElement.querySelector('.chart-tip')).display !== 'none'));
+    await m.tap('.modal [data-action="modal-close"]');
+    await m.tap('#phase-bar [data-action="hypothesis"]');
+    await m.tap('[data-action="hypothesis-confirm"][data-v="embalagem"]');
+    await m.evaluate(() => {
+      const g = window.__pocao.game;
+      for (let i = 0; i < 80; i++) g.tick(0.1);
+    });
+    await m.waitForSelector('.modal');
+    check('completo: hipótese errada explicada com dados', /Estar ocupada não é o mesmo|Parada não é o mesmo|sobra capacidade/.test(await m.textContent('.modal')));
+    await m.screenshot({ path: join(shotsDir, 'completo-hipotese.png') });
+    check('completo: nada ultrapassa a largura da tela', await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     await ctx.close();
   }
 
@@ -489,7 +603,7 @@ try {
     const read = jsQR(Uint8ClampedArray.from(px.data), px.w, px.h);
     check('QR do slide é lido e aponta para o endereço informado', read?.data === pub, read?.data || 'não lido');
     const slideText = await p.textContent('.slide');
-    check('slide tem título, instrução, tempo e endereço alternativo', /Poção em Apuros/.test(slideText) && /Aponte a câmera e jogue/.test(slideText) && /6 a 8 minutos/.test(slideText) && /jovannapi\.github\.io/.test(slideText));
+    check('slide tem título, instrução, tempo e endereço alternativo', /Poção em Apuros/.test(slideText) && /Aponte a câmera e jogue/.test(slideText) && /cerca de 5 minutos/.test(slideText) && /jovannapi\.github\.io/.test(slideText));
     await p.screenshot({ path: join(shotsDir, 'slide-qr.png') });
     await p.close();
   }

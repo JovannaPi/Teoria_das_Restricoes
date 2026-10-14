@@ -160,7 +160,8 @@ export class Game {
       this.tutorial = null;
       if (!resume) {
         await M.dialogue(this, phase.intro);
-        await M.objectivesIntro(this);
+        // os objetivos ficam na barra "Agora" (sem outra janela em sequência)
+        toast(`Objetivo: ${phase.goalText}`, 'info');
       }
     }
     // partida retomada começa pausada, para o jogador se situar
@@ -292,7 +293,8 @@ export class Game {
         break;
       case 'failure':
         sfx.fail();
-        toast(`${STATIONS[n.station].short}: ${n.reason}`, 'bad');
+        // no modo rápido o refugo fica só no registro, para não cobrir as decisões
+        if (!this.guide) toast(`${STATIONS[n.station].short}: ${n.reason}`, 'bad');
         break;
       case 'event':
         sfx.event();
@@ -305,7 +307,8 @@ export class Game {
       case 'hypothesis':
         if (n.correct) sfx.success();
         else sfx.error();
-        void M.hypothesisResult(this, s.hypotheses[s.hypotheses.length - 1]);
+        // no modo rápido o resultado aparece no próprio cartão da mentora (sem janela extra)
+        if (!this.guide || this.guide.skipped) void M.hypothesisResult(this, s.hypotheses[s.hypotheses.length - 1]);
         break;
       case 'decision-needed':
         void M.crystalChoice(this);
@@ -416,7 +419,7 @@ export class Game {
 
   openSide(view: SideView): void {
     // no celular deitado o painel é uma gaveta: tocar de novo na mesma aba fecha
-    if (layoutMode() === 'deitado' && document.body.classList.contains('side-open') && this.side === view) {
+    if (layoutMode() !== 'desktop' && document.body.classList.contains('side-open') && this.side === view) {
       document.body.classList.remove('side-open');
       this.refreshUi(true);
       return;
@@ -657,6 +660,12 @@ export class Game {
     a['open-glossary'] = () => void M.glossary(this);
     a['open-objectives'] = () => void M.objectivesIntro(this);
     a['open-howto'] = () => M.howTo(this);
+    a['hud-expand'] = () => {
+      document.body.classList.toggle('hud-expanded');
+    };
+    a['quick-choice'] = (el) => this.guide?.choose(el.dataset.v!);
+    a['quick-skip'] = () => this.guide?.skip();
+    a['quick-unskip'] = () => this.guide?.unskip();
     a['open-toc'] = () => M.whatIsToc(this);
     a['open-settings'] = () => void M.settings(this);
     a['open-menu'] = () => void M.gameMenu(this);

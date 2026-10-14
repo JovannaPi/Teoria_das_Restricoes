@@ -14,7 +14,7 @@ export function buildHud(g: Game): void {
     <div class="hud-left">
       <button class="hud-brand" data-action="open-menu" title="Menu da partida">${iconImg('hat')}<span><b>Poção em Apuros</b><small>${esc(phase.number ? `Círculo ${phase.number} — ` : '')}${esc(phase.title)}</small></span></button>
     </div>
-    <div class="hud-stats">
+    <div class="hud-stats" data-action="hud-expand" role="button" tabindex="0" aria-label="Mostrar todos os indicadores">
       <div class="stat" title="Dinheiro em caixa"><span class="lbl">${iconImg('coin')}Caixa</span><b data-bind="cash">0</b></div>
       <div class="stat" title="Lucro líquido do dia = Ganho − Despesa operacional"><span class="lbl">${iconImg('chart')}Lucro</span><b data-bind="np">0</b></div>
       <div class="stat" title="Reputação da loja"><span class="lbl">${iconImg('heart')}Reputação</span><b data-bind="rep">0</b><i class="meter"><i data-bind="repbar"></i></i></div>
@@ -41,13 +41,35 @@ export function buildHud(g: Game): void {
   const tab = (action: string, v: string, icon: string, label: string, extra = '') =>
     `<button data-action="${action}" ${v ? `data-v="${v}"` : ''} data-tab-id="${v || action}">${iconImg(icon)}<span>${label}</span>${extra}</button>`;
   $('#tabbar').innerHTML =
-    tab('side', 'estacao', 'hat', 'Estação') +
+    tab('side', 'estacao', 'hat', 'Loja') +
     tab('side', 'pedidos', 'scroll', 'Pedidos', '<b class="badge" data-bind="waiting2"></b>') +
-    tab('side', 'despensa', 'bag', 'Despensa') +
+    tab('side', 'despensa', 'bag', 'Estoque') +
     tab('side', 'fluxo', 'flow', 'Fluxo') +
-    tab('side', 'melhorias', 'hammer', 'Melhorias') +
     tab('open-analysis', '', 'chart', 'Análise') +
-    tab('open-more', '', 'book', 'Mais', phase.hypothesisEnabled ? '<b class="dotmark"></b>' : '');
+    tab('open-more', '', 'book', 'Mais');
+}
+
+let phaseBarHtml = '';
+
+/** Barra "Agora": o objetivo mais importante no momento e a ação principal para ele. */
+function renderPhaseBar(g: Game): void {
+  const el = document.getElementById('phase-bar');
+  if (!el) return;
+  const phase = g.phase!;
+  let html = '';
+  if (phase.mode === 'desafio' || phase.mode === 'mestra') {
+    const obj = evaluateAll(g.sim!, phase);
+    const next = obj.find((o) => !o.done) || obj[obj.length - 1];
+    const needHyp = phase.hypothesisEnabled && !g.sim!.hypotheses.some((h) => h.correct);
+    html = `<span class="pb-label">Agora</span><span class="pb-text">${esc(next.objective.label)} <small>${esc(next.text)}</small></span>
+      ${needHyp ? `<button class="primary mini" data-action="hypothesis">${iconImg('drum')}Hipótese</button>` : ''}
+      <button class="mini" data-action="open-objectives" aria-label="Ver todos os objetivos">${obj.filter((o) => o.done).length}/${obj.length}</button>`;
+  }
+  el.hidden = !html;
+  if (html !== phaseBarHtml) {
+    phaseBarHtml = html;
+    el.innerHTML = html;
+  }
 }
 
 export function updateHud(g: Game): void {
@@ -64,9 +86,10 @@ export function updateHud(g: Game): void {
   const waiting = Object.values(s.orders).filter((o) => o.status === 'aguardando').length;
   set('waiting', waiting ? String(waiting) : '');
   set('waiting2', waiting ? String(waiting) : '');
+  renderPhaseBar(g);
   document.querySelectorAll('#tabbar [data-tab-id]').forEach((b) => {
     const id = (b as HTMLElement).dataset.tabId!;
-    b.classList.toggle('on', document.body.classList.contains('side-open') && id === g.side);
+    b.classList.toggle('on', document.body.classList.contains('side-open') && (id === g.side || (id === 'fluxo' && g.side === 'melhorias')));
   });
   const obj = evaluateAll(s, g.phase!, g.tutorial?.done ?? false);
   set('objcount', `${obj.filter((o) => o.done).length}/${obj.length}`);

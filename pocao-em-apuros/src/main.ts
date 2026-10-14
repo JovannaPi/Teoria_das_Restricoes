@@ -26,7 +26,7 @@ function boot(): void {
   showTitle(game);
   window.addEventListener('pocao:menu', () => {
     resetOverlay();
-    renderTitle(game);
+    showTitle(game);
   });
   window.addEventListener('pointerdown', () => sfx.unlock(), { once: true });
   // ganchos para testes automatizados (não usados pelo jogo)

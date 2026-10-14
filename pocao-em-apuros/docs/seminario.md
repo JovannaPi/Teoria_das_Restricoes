@@ -13,15 +13,15 @@ Material para usar o **Poção em Apuros** numa aula sobre Teoria das Restriçõ
 
 O slide de acesso já contém: título, QR Code em destaque, "Aponte a câmera e jogue", tempo estimado (6 a 8 minutos), uma frase sobre o desafio e o endereço escrito para quem não conseguir ler o código.
 
-## Roteiro do apresentador (≈ 25 minutos)
+## Roteiro do apresentador (≈ 22 minutos)
 
 | Tempo | O que fazer |
 |---|---|
 | 0–2 min | "Vocês vão administrar uma loja de poções atrasada. O objetivo é entregar mais pedidos e lucrar." **Não fale em gargalo ainda.** |
 | 2–4 min | Projete o slide do QR. Peça que todos toquem em **Jogar**. Quem não tiver celular joga em dupla. |
-| 4–12 min | Partida (6 minutos de jogo a 1×, com pausas para ler). A mentora dá dicas curtas em 6 etapas: observar → descobrir o gargalo → melhorar sem comprar → a procura aumenta e dá para investir → descobrir a nova restrição → resultado. |
-| 12–14 min | Cada um lê a **avaliação dos cinco passos** no próprio celular e responde a pergunta final. Projete o **placar** (Mais modos → Apresentar → Projetar placar). |
-| 14–25 min | Debriefing com as perguntas abaixo. |
+| 4–10 min | Partida (5 minutos de jogo a 1×). A mentora mostra um cartão com **uma decisão por vez**: onde está o acúmulo → qual estação limita → uma melhoria sem custo → liberar no ritmo da restrição → investir → qual limita agora. Cada decisão mostra o efeito medido. |
+| 10–12 min | Cada um lê a **avaliação dos cinco passos** no próprio celular e responde a pergunta final. Projete o **placar** (Mais modos → Apresentar → Projetar placar). |
+| 12–22 min | Debriefing com as perguntas abaixo. |
 
 **O que pedir para observarem durante a partida** (sem entregar a resposta):
 
@@ -30,7 +30,7 @@ O slide de acesso já contém: título, QR Code em destaque, "Aponte a câmera e
 - o que muda quando a loja passa a liberar o trabalho "pela corda";
 - o que acontece depois de investir.
 
-Durante a partida, **não diga qual estação é o gargalo**. Se alguém travar, a mentora dá uma dica depois de um tempo e, se precisar, revela os dados para a partida continuar. Isso aparece na avaliação como oportunidade de melhoria.
+Durante a partida, **não diga qual estação é o gargalo**. Quem errar recebe uma explicação com os números da própria partida; depois de 3 tentativas, a mentora mostra os dados para a partida continuar. Isso aparece na avaliação como oportunidade de melhoria.
 
 ## Perguntas para o debriefing
 
