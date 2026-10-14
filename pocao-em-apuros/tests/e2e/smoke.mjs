@@ -315,7 +315,10 @@ try {
       for (let i = 0; i < 200; i++) g.tick(0.1);
     });
     check('celular em pé: Lina ajuda o caldeirão', (await m.evaluate(() => window.__pocao.game.sim.helper)) === 'caldeirao');
-    // tocar na própria loja (canvas) seleciona a estação
+    // tocar na própria loja (canvas) seleciona a estação; a loja está ampliada, então a câmera vai até ela antes
+    await m.evaluate(() => window.__pocao.game.camera.focusStation('embalagem'));
+    await m.waitForTimeout(1200);
+    await m.evaluate(() => (window.__pocao.game.selected = null));
     const box = await m.evaluate(() => {
       const r = document.querySelector('#shop').getBoundingClientRect();
       return { x: r.left + (r.width * 346) / 480, y: r.top + (r.height * 228) / 270 };
@@ -645,79 +648,217 @@ try {
     await ctx.close();
   }
 
-  // ---------------------------------------------------------------- celular comprido e "site para computador"
+  // ---------------------------------------------------------------- loja ampliada no celular (câmera)
   {
-    const hero = () => {
+    const start = (phase) => (ph) => {
       const g = window.__pocao.game;
       g.save.hero = { name: 'Teste', player: 'Teste', skin: '#f3cfa6', hair: '#8a4a22', hairStyle: 'longo', cloth: '#1f2c52', accent: '#46b06e', hat: 'bruxa', hatColor: '#121a33' };
-      void g.startPhase('fase1');
+      void g.startPhase(ph);
     };
-    const measure = () => {
-      const r = (s) => document.querySelector(s)?.getBoundingClientRect();
-      const vis = ['#bottom', '#side'].map(r).filter((b) => b && b.height > 0);
-      const area = vis[0];
+    const geo = () => {
+      const r = (q) => {
+        const e = document.querySelector(q);
+        if (!e || e.hidden || getComputedStyle(e).display === 'none') return null;
+        const b = e.getBoundingClientRect();
+        return { t: b.top, b: b.bottom, l: b.left, r: b.right, h: b.height, w: b.width };
+      };
+      const g = window.__pocao.game;
       return {
-        dock: document.body.classList.contains('dock'),
-        zoom: Number(getComputedStyle(document.documentElement).zoom) || 1,
-        sw: document.documentElement.scrollWidth,
+        cam: document.body.classList.contains('cam'),
+        s: g.camera.s,
         iw: innerWidth,
-        tabTop: r('#tabbar').top,
-        areaBottom: area ? area.bottom : 0,
-        stripCols: getComputedStyle(document.querySelector('#station-strip')).gridTemplateColumns.split(' ').length,
-        sidePos: getComputedStyle(document.querySelector('#side')).position,
-        stage: r('#stage').width / r('#stage-wrap').width,
+        ih: innerHeight,
+        sw: document.documentElement.scrollWidth,
+        wrap: r('#stage-wrap'),
+        strip: r('#station-strip'),
+        tab: r('#tabbar'),
+        side: document.body.classList.contains('side-open') ? r('#side') : null,
+        coach: r('#game-screen > .coach'),
+        transform: document.getElementById('stage').style.transform,
+        selected: g.selected,
       };
     };
-    // celular comprido normal: o painel encaixa no espaço livre (sem faixa vazia)
-    const c1 = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-    const p1 = await c1.newPage();
-    p1.on('pageerror', (e) => errors.push(String(e)));
-    await p1.goto(URL);
-    await p1.waitForSelector('.play-btn');
-    await p1.evaluate(hero);
-    await p1.waitForTimeout(300);
-    for (let i = 0; i < 6; i++) { const b = await p1.$('[data-action="dialogue-next"]'); if (!b) break; await b.tap(); }
-    let m = await p1.evaluate(measure);
-    check('celular 390×844: espaço abaixo da loja ocupado até a barra de abas', m.dock && Math.abs(m.areaBottom - m.tabTop) <= 2, JSON.stringify(m));
-    await p1.tap('#tabbar [data-tab-id="pedidos"]');
-    await p1.waitForTimeout(250);
-    m = await p1.evaluate(measure);
-    check('celular 390×844: Pedidos encaixado no espaço livre (não cobre a loja)', m.sidePos === 'static' && Math.abs(m.areaBottom - m.tabTop) <= 2, JSON.stringify(m));
-    await c1.close();
-    // Chrome com "Site para computador": janela de 980 px numa tela de 412 px
-    const c2 = await browser.newContext({ viewport: { width: 980, height: 2000 }, screen: { width: 412, height: 915 }, isMobile: false, hasTouch: true });
-    const p2 = await c2.newPage();
-    p2.on('pageerror', (e) => errors.push(String(e)));
-    await p2.goto(URL);
-    await p2.waitForSelector('.play-btn');
-    await p2.evaluate(hero);
-    await p2.waitForTimeout(300);
-    for (let i = 0; i < 6; i++) { const b = await p2.$('[data-action="dialogue-next"]'); if (!b) break; await b.click(); }
-    m = await p2.evaluate(measure);
-    check('site para computador: página ampliada para a largura da tela, layout de celular', m.zoom > 2 && m.stripCols === 6 && m.dock, JSON.stringify(m));
-    check('site para computador: sem rolagem lateral, loja na largura toda, sem faixa vazia', m.sw <= m.iw + 1 && m.stage > 0.98 && Math.abs(m.areaBottom - m.tabTop) <= 3, JSON.stringify(m));
-    await p2.click('#station-strip [data-strip="caldeirao"]');
-    await p2.waitForTimeout(250);
-    const sel = await p2.evaluate(() => window.__pocao.game.selected);
-    await p2.click('#station-strip [data-strip="preparo"]');
-    await p2.waitForTimeout(150);
-    // ponto da loja que o próprio jogo considera o caldeirão, convertido para coordenadas da tela
-    const tapShop = await p2.evaluate(() => {
-      const g = window.__pocao.game;
-      const c = document.querySelector('#shop').getBoundingClientRect();
-      const pts = [];
-      for (let y = 60; y < 240; y += 3) for (let x = 60; x < 420; x += 3) {
-        const pk = g.scene.pick(x, y, g.sim);
-        if (pk.kind === 'station' && pk.id === 'caldeirao') pts.push([x, y]);
+    const open = async (vp, opts = {}) => {
+      const ctx = await browser.newContext({ viewport: vp, isMobile: opts.mobile ?? true, hasTouch: true, deviceScaleFactor: opts.dpr ?? 2, ...(opts.screen ? { screen: opts.screen } : {}) });
+      const p = await ctx.newPage();
+      p.on('pageerror', (e) => errors.push(String(e)));
+      await p.goto(URL);
+      await p.waitForSelector('.play-btn');
+      return { ctx, p };
+    };
+    const skipDialogue = async (p) => {
+      for (let i = 0; i < 6; i++) {
+        const b = await p.$('[data-action="dialogue-next"]');
+        if (!b) break;
+        await b.click();
+        await p.waitForTimeout(80);
       }
-      if (!pts.length) return null;
-      const [x, y] = pts[Math.floor(pts.length / 2)];
-      return { x: c.left + (x / 480) * c.width, y: c.top + (y / 270) * c.height };
+    };
+    // escala antiga (loja inteira encolhida) = largura útil / 480; a nova precisa ser bem maior
+    const sizes = [
+      { name: '320×568', vp: { width: 320, height: 568 }, min: 1.4 },
+      { name: '360×740', vp: { width: 360, height: 740 }, min: 1.6 },
+      { name: '375×667', vp: { width: 375, height: 667 }, min: 1.5 },
+      { name: '390×844', vp: { width: 390, height: 844 }, min: 1.7 },
+      { name: '412×915', vp: { width: 412, height: 915 }, min: 1.8 },
+      { name: '844×390 deitado', vp: { width: 844, height: 390 }, min: 1.6 },
+    ];
+    for (const sz of sizes) {
+      for (const ph of ['turma', 'fase1']) {
+        const { ctx, p } = await open(sz.vp);
+        await p.evaluate(start(ph), ph);
+        await p.waitForTimeout(250);
+        await skipDialogue(p);
+        await p.waitForTimeout(250);
+        const m = await p.evaluate(geo);
+        // antes: a loja inteira cabia na área (deitado: largura sem o trilho de abas, altura sem a barra superior)
+        const old = sz.vp.width > sz.vp.height ? Math.min((sz.vp.width - 64) / 480, (sz.vp.height - 57) / 270) : sz.vp.width / 480;
+        const portrait = sz.vp.height > sz.vp.width;
+        const noOverlap = portrait
+          ? m.wrap.b <= m.strip.t + 1 && (!m.coach || m.coach.t >= m.wrap.b - 1) && m.tab.t >= m.wrap.b
+          : !m.coach || m.coach.l >= m.wrap.r - 1;
+        check(
+          `loja ampliada ${sz.name} (${ph === 'turma' ? 'modo rápido' : 'fase 1'}): escala ${m.s.toFixed(2)} (antes ${old.toFixed(2)}), loja ocupa a área, nada por cima`,
+          m.cam && m.s >= sz.min && m.s >= old * 1.25 && m.wrap.w >= sz.vp.width * (portrait ? 0.99 : 0.55) && (portrait ? m.wrap.h >= sz.vp.height * 0.4 : true) && noOverlap && m.sw <= m.iw,
+          JSON.stringify({ s: m.s, wrap: m.wrap, coach: m.coach, strip: m.strip }),
+        );
+        await ctx.close();
+      }
+    }
+
+    // interações no celular comprido (390×844, fase 1)
+    const { ctx, p } = await open({ width: 390, height: 844 });
+    await p.evaluate(start('fase1'), 'fase1');
+    await p.waitForTimeout(250);
+    await skipDialogue(p);
+    await p.waitForTimeout(300);
+    let m = await p.evaluate(geo);
+    // arrastar a loja move a câmera e não seleciona nada
+    const before = m.transform;
+    const sel0 = m.selected;
+    const cx = m.wrap.l + m.wrap.w / 2;
+    const cy = m.wrap.t + m.wrap.h / 2;
+    const cdp = await ctx.newCDPSession(p);
+    const touch = async (type, x, y) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+    await touch('touchStart', cx, cy);
+    for (let k = 1; k <= 8; k++) await touch('touchMove', cx - k * 20, cy);
+    await touch('touchEnd', 0, 0);
+    await p.waitForTimeout(200);
+    m = await p.evaluate(geo);
+    check('celular: arrastar a loja com o dedo mostra outra parte dela', m.transform !== before, `${before} → ${m.transform}`);
+    check('celular: arrastar não seleciona nada por engano', m.selected === sel0, String(m.selected));
+    // tocar numa estação da faixa leva a câmera até ela
+    for (const id of ['preparo', 'resfriamento', 'balcao']) {
+      await p.tap(`#station-strip [data-strip="${id}"]`);
+      await p.waitForTimeout(1200);
+      const vis = await p.evaluate((sid) => {
+        const t = document.querySelector(`#overlay [data-tag="${sid}"]`).getBoundingClientRect();
+        const w = document.getElementById('stage-wrap').getBoundingClientRect();
+        const x = t.left + t.width / 2;
+        return { inside: x > w.left && x < w.right && t.top >= w.top - 2 && t.bottom < w.bottom, sel: window.__pocao.game.selected };
+      }, id);
+      check(`celular: tocar em "${id}" na faixa seleciona e mostra a estação na loja`, vis.inside && vis.sel === id, JSON.stringify(vis));
+    }
+    // painel aberto fica abaixo da loja, que continua visível
+    m = await p.evaluate(geo);
+    check('celular: painel da estação abre abaixo da loja, sem cobri-la', !!m.side && m.side.t >= m.wrap.b - 1 && m.wrap.h >= 140, JSON.stringify({ wrap: m.wrap, side: m.side }));
+    await p.tap('#side .sheet-x');
+    await p.waitForTimeout(200);
+    // toque um pouco fora do desenho da estação ainda acerta a estação mais próxima
+    const near = await p.evaluate(() => {
+      const g = window.__pocao.game;
+      const c = document.getElementById('shop').getBoundingClientRect();
+      const w = document.getElementById('stage-wrap').getBoundingClientRect();
+      // procura um ponto à vista que, sem tolerância, é chão, mas fica a até ~8 px de tela de uma estação
+      const k = c.width / 480;
+      for (let y = w.top + 20; y < w.bottom - 20; y += 4)
+        for (let x = w.left + 20; x < w.right - 20; x += 4) {
+          const lx = (x - c.left) / k;
+          const ly = (y - c.top) / k;
+          if (g.scene.pick(lx, ly, g.sim, 0).kind !== 'floor') continue;
+          const pk = g.scene.pick(lx, ly, g.sim, 8 / k);
+          if (pk.kind === 'station' && g.scene.pick(lx, ly, g.sim, 14 / k).kind === 'station') return { x, y, id: pk.id };
+        }
+      return null;
     });
-    if (tapShop) await p2.mouse.click(tapShop.x, tapShop.y);
-    await p2.waitForTimeout(200);
-    check('site para computador: toque na loja acerta a estação certa', !!tapShop && (await p2.evaluate(() => window.__pocao.game.selected)) === 'caldeirao', JSON.stringify(tapShop));
-    await c2.close();
+    if (near) {
+      await p.evaluate(() => (window.__pocao.game.selected = null));
+      await p.touchscreen.tap(near.x, near.y);
+      await p.waitForTimeout(200);
+    }
+    check('celular: toque perto (não exatamente em cima) da estação a seleciona', !!near && (await p.evaluate(() => window.__pocao.game.selected)) === near.id, JSON.stringify(near));
+    // "Ver tudo" mostra a loja inteira e "Aproximar" volta
+    if (await p.$('#side .sheet-x')) await p.tap('#side .sheet-x');
+    await p.waitForTimeout(200);
+    await p.tap('.cam-btn');
+    await p.waitForTimeout(200);
+    m = await p.evaluate(geo);
+    const fitAll = await p.evaluate(() => {
+      const c = document.getElementById('shop').getBoundingClientRect();
+      const w = document.getElementById('stage-wrap').getBoundingClientRect();
+      return c.left >= w.left - 1 && c.right <= w.right + 1 && c.top >= w.top - 1 && c.bottom <= w.bottom + 1;
+    });
+    check('celular: "Ver tudo" mostra a loja inteira', fitAll, `escala ${m.s.toFixed(2)}`);
+    await p.waitForTimeout(350);
+    await p.tap('.cam-btn');
+    await p.waitForTimeout(200);
+    const s2 = await p.evaluate(() => window.__pocao.game.camera.s);
+    check('celular: "Aproximar" volta à loja ampliada', s2 > m.s * 1.3, `${m.s.toFixed(2)} → ${s2.toFixed(2)}`);
+    await ctx.close();
+
+    // computador: sem câmera, loja inteira como antes
+    {
+      const { ctx, p } = await open({ width: 1280, height: 800 }, { mobile: false, dpr: 1 });
+      await p.evaluate(start('fase1'), 'fase1');
+      await p.waitForTimeout(250);
+      await skipDialogue(p);
+      const d = await p.evaluate(() => {
+        const c = document.getElementById('shop').getBoundingClientRect();
+        const w = document.getElementById('stage-wrap').getBoundingClientRect();
+        return { c: [c.left, c.top, c.right, c.bottom], w: [w.left, w.top, w.right, w.bottom], cam: document.body.classList.contains('cam'), inside: c.left >= w.left && c.right <= w.right && c.top >= w.top && c.bottom <= w.bottom, ratio: c.width / c.height, t: document.getElementById('stage').style.transform };
+      });
+      check('computador: sem câmera, a loja inteira aparece como antes', !d.cam && d.inside && Math.abs(d.ratio - 16 / 9) < 0.02 && !d.t, JSON.stringify(d));
+      await ctx.close();
+    }
+
+    // Chrome com "Site para computador": janela de 980 px numa tela de 412 px
+    {
+      const { ctx, p } = await open({ width: 980, height: 2000 }, { mobile: false, dpr: 1, screen: { width: 412, height: 915 } });
+      await p.evaluate(start('fase1'), 'fase1');
+      await p.waitForTimeout(250);
+      await skipDialogue(p);
+      await p.waitForTimeout(250);
+      const d = await p.evaluate(() => ({
+        zoom: Number(getComputedStyle(document.documentElement).zoom) || 1,
+        cols: getComputedStyle(document.querySelector('#station-strip')).gridTemplateColumns.split(' ').length,
+        cam: document.body.classList.contains('cam'),
+        s: window.__pocao.game.camera.s,
+        sw: document.documentElement.scrollWidth,
+        iw: innerWidth,
+      }));
+      check('site para computador: página ampliada para a tela, layout de celular e loja ampliada', d.zoom > 2 && d.cols === 6 && d.cam && d.s > 1.6 && d.sw <= d.iw + 1, JSON.stringify(d));
+      await p.click('#station-strip [data-strip="caldeirao"]');
+      await p.waitForTimeout(1000);
+      // ponto da loja que o próprio jogo considera o caldeirão, convertido para coordenadas da tela
+      const tap = await p.evaluate(() => {
+        const g = window.__pocao.game;
+        g.selected = null;
+        const c = document.querySelector('#shop').getBoundingClientRect();
+        const pts = [];
+        for (let y = 60; y < 240; y += 3)
+          for (let x = 60; x < 420; x += 3) {
+            const pk = g.scene.pick(x, y, g.sim);
+            if (pk.kind === 'station' && pk.id === 'caldeirao') pts.push([x, y]);
+          }
+        if (!pts.length) return null;
+        const [x, y] = pts[Math.floor(pts.length / 2)];
+        return { x: c.left + (x / 480) * c.width, y: c.top + (y / 270) * c.height };
+      });
+      if (tap) await p.mouse.click(tap.x, tap.y);
+      await p.waitForTimeout(200);
+      check('site para computador: toque na loja acerta a estação certa', !!tap && (await p.evaluate(() => window.__pocao.game.selected)) === 'caldeirao', JSON.stringify(tap));
+      await ctx.close();
+    }
   }
 
   // ---------------------------------------------------------------- arquivo único (offline, sem servidor)

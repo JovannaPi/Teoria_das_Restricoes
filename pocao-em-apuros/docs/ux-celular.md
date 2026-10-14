@@ -43,7 +43,19 @@ Preservado: motor de simulação, as 5 fases do modo completo e seus parâmetros
 - Botões principais com 48 px de altura; ações bloqueadas não aparecem.
 - Análise em cartões; gráficos respondem ao toque.
 
-**Celular comprido (a maioria dos celulares atuais, em pé):** a loja ocupa a largura toda e não sobra faixa vazia embaixo. O espaço abaixo das estações mostra os pedidos em cartões grandes e "O que aconteceu"; tocar numa aba (Pedidos, Estoque, Fluxo) ou numa estação abre o painel **encaixado nesse espaço**, sem cobrir a loja. Em celulares mais baixos (como 375×667) o painel continua abrindo de baixo, por cima.
+**Loja ampliada no celular (câmera).** A cena é desenhada em 480×270 px lógicos (16:9, `src/render/layout.ts`); personagens têm ~16 px lógicos e as estações 50–120 px. Antes, no celular, a cena inteira era encolhida para caber na largura da tela (escala = largura ÷ 480): num celular de 412 px, cada pixel da arte virava 0,86 px e um personagem ficava com ~14 px. Agora, no celular (`src/game/camera.ts`):
+
+- a loja ocupa toda a área entre a barra superior e a faixa de estações, com escala de **1,5 a 1,9 px por pixel da arte** em pé (cerca de 2× a 2,4× maior que antes) e ~1,6 a 1,8 deitado; a arte é a mesma, só ampliada sem suavização (pixels nítidos);
+- **arrastar com o dedo** mostra o resto da loja; uma barrinha embaixo mostra que parte está à vista; na primeira vez aparece "Arraste para ver o resto da loja";
+- tocar numa estação (na loja ou na faixa de estações) **leva a câmera até ela**;
+- **Ver tudo** (canto superior direito da loja) mostra a loja inteira, como antes; **Aproximar** volta;
+- em celulares muito compridos, a ampliação para quando ~45% da largura da loja está à vista, para não perder a noção do fluxo; a altura que sobra mostra os pedidos e os acontecimentos.
+
+**Toque.** Tocar perto de uma estação ou cliente (até ~14 px de tela fora do desenho) seleciona o alvo mais próximo; o que estiver exatamente sob o dedo tem prioridade. Um arrasto nunca seleciona nada.
+
+**Interface em volta da loja.** Em pé: barra superior, loja, faixa de estações, barra "Agora" (ou cartão da mentora no modo rápido) e abas. Pedidos e acontecimentos ficam na aba **Pedidos** (a menos que sobre altura). Painéis (Pedidos, Estoque, Fluxo, estação) abrem **abaixo da loja**, que encolhe mas continua visível e tocável, nunca por cima dela. O aviso "Objetivo: …" do início da fase não aparece no celular (a barra "Agora" já mostra o objetivo). Deitado: a barra "Agora" vira uma linha fina sob a barra superior; o cartão da mentora fica numa coluna ao lado da loja, e não mais por cima das estações.
+
+**Computador:** sem câmera, a loja inteira como antes. Única correção: a loja passava 8 px para baixo do painel lateral (o respiro interno da área não era descontado).
 
 **"Site para computador" ligado no Chrome:** nesse modo o navegador ignora o ajuste de celular, desenha a página com ~980 px e a encolhe, e tudo ficava minúsculo com metade da tela vazia. O jogo agora detecta isso (tela de toque com a janela muito mais larga que a tela) e se amplia para a largura real do aparelho, usando o mesmo layout de celular (`src/ui/fit.ts`).
 

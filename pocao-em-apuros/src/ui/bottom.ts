@@ -30,11 +30,11 @@ export function renderBottom(g: Game, force: boolean): void {
     .join('');
   const more = orders.length > 14 ? `<span class="more">+${orders.length - 14}</span>` : '';
   const log = s.log
-    .slice(-12)
+    .slice(-5)
     .reverse()
     .map((e) => `<li class="${e.kind}"><time>${clock(e.t)}</time> ${esc(e.text)}</li>`)
     .join('');
-  const html = `<h3 class="dock-h">Pedidos em andamento <small>toque para ver</small></h3><div class="orders-strip" aria-label="Pedidos em andamento">${cards || '<span class="muted">Sem pedidos no momento.</span>'}${more}</div><h3 class="dock-h">O que aconteceu</h3><ul class="log" aria-live="polite">${log || '<li class="dock-empty">Entregas, refugos, eventos e decisões aparecem aqui.</li>'}</ul>`;
+  const html = `<div class="orders-strip" aria-label="Pedidos em andamento">${cards || '<span class="muted">Sem pedidos no momento.</span>'}${more}</div><ul class="log" aria-live="polite">${log}</ul>`;
   if (!force && html === lastHtml) return;
   lastHtml = html;
   root.innerHTML = personalize(html);

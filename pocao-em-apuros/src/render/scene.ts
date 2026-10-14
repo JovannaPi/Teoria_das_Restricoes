@@ -138,15 +138,37 @@ export class ShopScene {
 
   // ------------------------------------------------------------ entrada
 
-  pick(x: number, y: number, s: SimState): Pick {
+  /**
+   * O que está sob o ponto (x, y) da cena. `tol` (px lógicos) amplia as áreas de toque: vale o que
+   * estiver exatamente sob o dedo; se nada estiver, o alvo mais próximo dentro da tolerância.
+   */
+  pick(x: number, y: number, s: SimState, tol = 0): Pick {
+    let best: Pick | null = null;
+    let bestD = Infinity;
     for (const c of this.clients.values()) {
-      if (Math.abs(c.x - x) < 7 && y > c.y - 20 && y < c.y + 2) return { kind: 'client', order: c.order };
+      // corpo do cliente: ~7 px para cada lado, 20 px de altura acima dos pés
+      const dx = Math.max(0, Math.abs(c.x - x) - 7);
+      const dy = y < c.y - 20 ? c.y - 20 - y : y > c.y + 2 ? y - c.y - 2 : 0;
+      const d = Math.hypot(dx, dy);
+      if (d === 0) return { kind: 'client', order: c.order };
+      if (d <= tol && d < bestD) {
+        bestD = d;
+        best = { kind: 'client', order: c.order };
+      }
     }
     for (const id of [...STATION_ORDER].reverse()) {
       if (s.stations[id].locked) continue;
-      if (inRect(LAYOUT[id].hit, x, y)) return { kind: 'station', id };
+      const r = LAYOUT[id].hit;
+      if (inRect(r, x, y)) return { kind: 'station', id };
+      const dx = x < r.x ? r.x - x : x > r.x + r.w ? x - r.x - r.w : 0;
+      const dy = y < r.y ? r.y - y : y > r.y + r.h ? y - r.y - r.h : 0;
+      const d = Math.hypot(dx, dy);
+      if (d <= tol && d < bestD) {
+        bestD = d;
+        best = { kind: 'station', id };
+      }
     }
-    return { kind: 'floor', x, y };
+    return best ?? { kind: 'floor', x, y };
   }
 
   walkLina(x: number, y: number, onArrive: (() => void) | null = null, helpTarget: StationId | null = null): void {

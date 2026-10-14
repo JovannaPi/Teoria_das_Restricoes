@@ -21,7 +21,8 @@ import { computeScore, evaluateAll, immediateDefeat } from './objectives';
 import { loadSave, SaveData, writeSave } from './save';
 import { Tutorial } from './tutorial';
 import { TurmaGuide } from './turma';
-import { mq, viewport } from '../ui/fit';
+import { mq } from '../ui/fit';
+import { Camera } from './camera';
 
 export type ActionHandler = (el: HTMLElement) => void;
 
@@ -47,12 +48,16 @@ export class Game {
   private saveTimer = 0;
   private pointerHeld = false;
   private raf = 0;
+  camera!: Camera;
   readonly actions: Record<string, ActionHandler> = {};
 
   init(): void {
     sfx.settings = { ...this.save.settings.audio };
     const canvas = $('#shop') as HTMLCanvasElement;
     this.scene = new ShopScene(canvas);
+    this.camera = new Camera($('#stage-wrap'), $('#stage'));
+    // a área da loja muda de tamanho quando painéis abrem ou o cartão da mentora cresce
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => this.layoutStage()).observe($('#stage-wrap'));
     this.registerActions();
     this.bindInput(canvas);
     window.addEventListener('resize', () => this.layoutStage());
@@ -141,6 +146,7 @@ export class Game {
     $('#game-screen').classList.remove('hidden');
     buildHud(this);
     this.layoutStage();
+    this.camera.center();
     this.refreshUi(true);
     this.startLoop();
     this.guide?.dispose();
@@ -162,8 +168,9 @@ export class Game {
       this.tutorial = null;
       if (!resume) {
         await M.dialogue(this, phase.intro);
-        // os objetivos ficam na barra "Agora" (sem outra janela em sequência)
-        toast(`Objetivo: ${phase.goalText}`, 'info');
+        // os objetivos ficam na barra "Agora" (sem outra janela em sequência); no celular essa barra
+        // já está sempre à vista, e o aviso cobriria a loja
+        if (layoutMode() === 'desktop') toast(`Objetivo: ${phase.goalText}`, 'info');
       }
     }
     // partida retomada começa pausada, para o jogador se situar
@@ -248,6 +255,7 @@ export class Game {
       this.acc = 0;
     }
     this.scene.update(dtReal, s, gameDt);
+    this.camera.update(dtReal);
     this.scene.draw(s, {
       selected: this.selected,
       hover: this.hover,
@@ -389,17 +397,22 @@ export class Game {
   layoutStage(): void {
     const wrap = document.getElementById('stage-wrap');
     const stage = document.getElementById('stage');
-    if (!wrap || !stage) return;
-    // celular em pé e comprido: o painel fica encaixado no espaço livre abaixo da loja, em vez de flutuar por cima
-    const v = viewport();
-    const free = v.h - v.w * 0.5625 - 230;
-    const dock = layoutMode() === 'em-pe' && free >= (document.body.classList.contains('dock') ? 220 : 250);
-    document.body.classList.toggle('dock', dock);
-    // tamanhos no próprio sistema de coordenadas do elemento (valem também com a página ampliada)
-    let w = wrap.clientWidth;
+    if (!wrap || !stage || !this.camera) return;
+    // celular (em pé ou deitado): a loja é ampliada e a câmera mostra uma parte dela
+    if (layoutMode() !== 'desktop') {
+      this.camera.layout(true);
+      return;
+    }
+    this.camera.layout(false);
+    // computador: a loja inteira cabe na área (tamanhos no próprio sistema de coordenadas do elemento)
+    // descontando o respiro interno (antes a loja passava 8 px para baixo do painel lateral)
+    const cs = getComputedStyle(wrap);
+    const availW = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const availH = wrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    let w = availW;
     let h = (w * 9) / 16;
-    if (h > wrap.clientHeight) {
-      h = wrap.clientHeight;
+    if (h > availH) {
+      h = availH;
       w = (h * 16) / 9;
     }
     stage.style.width = Math.floor(w) + 'px';
@@ -408,6 +421,7 @@ export class Game {
 
   refreshUi(force: boolean): void {
     if (!this.sim || !this.phase) return;
+    document.body.classList.toggle('has-coach', !!document.querySelector('#game-screen > .coach'));
     updateHud(this);
     renderOverlay(this);
     this.guide?.render();
@@ -420,6 +434,7 @@ export class Game {
   select(id: StationId | null): void {
     this.selected = id;
     this.side = 'estacao';
+    if (id) this.camera.focusStation(id);
     if (id) this.emit('select-station', id);
     this.refreshUi(true);
   }
@@ -452,9 +467,12 @@ export class Game {
     canvas.addEventListener('pointerleave', () => (this.hover = null));
     canvas.addEventListener('click', (ev) => {
       sfx.unlock();
-      if (!this.sim) return;
+      if (!this.sim || this.camera.consumeClick()) return;
       const p = toLogical(ev);
-      const pick = this.scene.pick(p.x, p.y, this.sim);
+      // no toque, a área de acerto cresce ~14 px de tela em volta de cada estação e cliente
+      const r = canvas.getBoundingClientRect();
+      const tol = this.camera.active ? (14 * 480) / r.width : 0;
+      const pick = this.scene.pick(p.x, p.y, this.sim, tol);
       if (pick.kind === 'station') {
         sfx.click();
         this.select(pick.id);
@@ -545,6 +563,7 @@ export class Game {
     const a = this.actions;
     const sim = () => this.sim!;
     a['pause'] = () => this.togglePause();
+    a['cam-mode'] = () => this.camera.toggleMode();
     a['speed'] = (el) => this.setSpeed(Number(el.dataset.v));
     a['side'] = (el) => this.openSide(el.dataset.v as SideView);
     a['close-side'] = () => {
