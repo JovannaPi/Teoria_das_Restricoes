@@ -2718,3 +2718,114 @@ body {
   }
 }
 
+
+/* ================================================================ v4: celular comprido — sem faixa vazia
+   O painel (Pedidos, Estoque, Fluxo, estação) fica encaixado no espaço abaixo da loja, e a lista de
+   pedidos com os acontecimentos ocupa esse espaço quando nenhum painel está aberto. */
+.dock-h {
+  display: none;
+}
+body.dock #side {
+  position: static;
+  grid-area: bottom;
+  transform: none;
+  transition: none;
+  height: auto;
+  min-height: 0;
+  z-index: auto;
+  box-shadow: none;
+  border-top: 2px solid var(--line);
+  display: flex;
+  flex-direction: column;
+}
+body.dock:not(.side-open) #side {
+  display: none;
+}
+body.dock.side-open #bottom {
+  display: none !important;
+}
+body.dock .sheet-head .grab {
+  display: none;
+}
+body.dock .side-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  font-size: 0.95rem;
+}
+body.dock #bottom {
+  display: flex !important;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px 10px;
+}
+body.dock .dock-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 2px 0 0;
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--amber);
+}
+body.dock .dock-h small {
+  font-family: var(--sans, inherit);
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+body.dock .orders-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px;
+  overflow: visible;
+  flex: none;
+}
+body.dock .ocard {
+  min-width: 0;
+  min-height: 64px;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+  justify-content: center;
+}
+body.dock .ocard .ol img {
+  width: 18px;
+  height: 18px;
+}
+body.dock .ocard .meter {
+  height: 6px;
+}
+body.dock #bottom .log {
+  margin-top: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+body.dock #bottom .log li {
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+/* faixa de estações, barra "Agora" e cartão da mentora um pouco maiores: há espaço */
+body.dock #station-strip button {
+  min-height: 54px;
+  font-size: 12px;
+}
+body.dock #station-strip .sq {
+  font-size: 12px;
+}
+body.dock #phase-bar .pb-text {
+  font-size: 0.95rem;
+}
+body.dock .coach {
+  font-size: 13.5px;
+}
+body.dock .choices .choice {
+  min-height: 52px;
+}
+.log .dock-empty {
+  display: none;
+}
+body.dock .log .dock-empty {
+  display: list-item;
+  color: var(--muted);
+  border: none;
+}

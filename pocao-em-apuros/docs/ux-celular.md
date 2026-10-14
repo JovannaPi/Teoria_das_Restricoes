@@ -43,6 +43,10 @@ Preservado: motor de simulação, as 5 fases do modo completo e seus parâmetros
 - Botões principais com 48 px de altura; ações bloqueadas não aparecem.
 - Análise em cartões; gráficos respondem ao toque.
 
+**Celular comprido (a maioria dos celulares atuais, em pé):** a loja ocupa a largura toda e não sobra faixa vazia embaixo. O espaço abaixo das estações mostra os pedidos em cartões grandes e "O que aconteceu"; tocar numa aba (Pedidos, Estoque, Fluxo) ou numa estação abre o painel **encaixado nesse espaço**, sem cobrir a loja. Em celulares mais baixos (como 375×667) o painel continua abrindo de baixo, por cima.
+
+**"Site para computador" ligado no Chrome:** nesse modo o navegador ignora o ajuste de celular, desenha a página com ~980 px e a encolhe, e tudo ficava minúsculo com metade da tela vazia. O jogo agora detecta isso (tela de toque com a janela muito mais larga que a tela) e se amplia para a largura real do aparelho, usando o mesmo layout de celular (`src/ui/fit.ts`).
+
 **Celular deitado:** a loja ocupa a tela, as abas ficam num trilho à direita e o painel desliza da direita.
 
 **Computador:** mesma organização, com o painel fixo à direita e as abas no topo.

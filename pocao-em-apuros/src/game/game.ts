@@ -21,6 +21,7 @@ import { computeScore, evaluateAll, immediateDefeat } from './objectives';
 import { loadSave, SaveData, writeSave } from './save';
 import { Tutorial } from './tutorial';
 import { TurmaGuide } from './turma';
+import { mq, viewport } from '../ui/fit';
 
 export type ActionHandler = (el: HTMLElement) => void;
 
@@ -55,6 +56,7 @@ export class Game {
     this.registerActions();
     this.bindInput(canvas);
     window.addEventListener('resize', () => this.layoutStage());
+    window.addEventListener('pocao:fit', () => this.layoutStage());
     window.addEventListener('orientationchange', () => setTimeout(() => this.layoutStage(), 200));
     document.addEventListener('fullscreenchange', () => setTimeout(() => this.layoutStage(), 100));
     document.addEventListener('visibilitychange', () => {
@@ -388,11 +390,16 @@ export class Game {
     const wrap = document.getElementById('stage-wrap');
     const stage = document.getElementById('stage');
     if (!wrap || !stage) return;
-    const r = wrap.getBoundingClientRect();
-    let w = r.width;
+    // celular em pé e comprido: o painel fica encaixado no espaço livre abaixo da loja, em vez de flutuar por cima
+    const v = viewport();
+    const free = v.h - v.w * 0.5625 - 230;
+    const dock = layoutMode() === 'em-pe' && free >= (document.body.classList.contains('dock') ? 220 : 250);
+    document.body.classList.toggle('dock', dock);
+    // tamanhos no próprio sistema de coordenadas do elemento (valem também com a página ampliada)
+    let w = wrap.clientWidth;
     let h = (w * 9) / 16;
-    if (h > r.height) {
-      h = r.height;
+    if (h > wrap.clientHeight) {
+      h = wrap.clientHeight;
       w = (h * 16) / 9;
     }
     stage.style.width = Math.floor(w) + 'px';
@@ -729,8 +736,8 @@ export type LayoutMode = 'desktop' | 'em-pe' | 'deitado';
 
 /** Mesmas condições das media queries de styles.css. */
 export function layoutMode(): LayoutMode {
-  if (window.matchMedia('(orientation: landscape) and (max-height: 540px)').matches) return 'deitado';
-  if (window.matchMedia('(orientation: portrait) and (max-width: 1024px)').matches) return 'em-pe';
+  if (mq('(orientation: landscape) and (max-height: 540px)')) return 'deitado';
+  if (mq('(orientation: portrait) and (max-width: 1024px)')) return 'em-pe';
   return 'desktop';
 }
 

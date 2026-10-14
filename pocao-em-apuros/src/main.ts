@@ -6,8 +6,10 @@ import { resetOverlay } from './ui/overlay';
 import { applyHero } from './game/hero';
 import { flushPending, registerOnlineActions } from './ui/online';
 import { registerPresenterActions } from './ui/presenter';
+import { initFit } from './ui/fit';
 
 function boot(): void {
+  initFit();
   if (game.save.hero) applyHero(game.save.hero);
   game.init();
   if (game.save.settings.reduceMotion) game.scene.lowFx = true;

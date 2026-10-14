@@ -28,7 +28,7 @@
 
 `tests/qr.test.ts` (2): o QR gerado é lido de volta com o mesmo endereço; endereços locais (localhost, rede da casa, arquivo) são recusados.
 
-## Ponta a ponta no navegador — `npm run test:e2e`: 108/108 passando
+## Ponta a ponta no navegador — `npm run test:e2e`: 113/113 passando
 
 Chromium real; o jogo é jogado pela interface (cliques e toques), com o tempo acelerado pelo mesmo caminho dos quadros reais.
 
@@ -41,6 +41,8 @@ Chromium real; o jogo é jogado pela interface (cliques e toques), com o tempo a
 - **Celular deitado (toque)**: a loja ocupa mais de 70% da altura; o painel desliza ao tocar na aba; decisão aplicada por toque; tocar de novo fecha.
 - **Modo rápido num celular de 375×667, só por toque** (35 verificações): Jogar com 65 px e visível sem rolar; nome sugerido; sem janela de objetivos em sequência; tocar numa estação abre o painel de baixo e fechar volta para a loja; pergunta do acúmulo com erro explicado pelos números; identificar com erro explicado ("não é o mesmo") e acerto com evidências, sem janela extra; explorar com o efeito medido (tempo parado antes → depois); subordinar com estoque em processo antes → depois; elevar com confirmação em dois toques e efeito; recomeçar com a nova restrição (destilação); os 5 passos cabem nos 5 minutos de jogo; resultado com passo 1 "em parte" (houve erro proposital) e 2 a 5 "feito"; reflexão contextualizada; jogar de novo; pular e reabrir as dicas.
 - **Modo completo num celular de 360×740** (13 verificações): barra "Agora" com objetivo e Hipótese; abas Loja, Pedidos, Estoque, Fluxo, Análise, Mais; botões principais ≥ 40×40 px; Pedidos, Estoque e Fluxo abrem como painel de baixo dentro da tela; Investimentos dentro de Fluxo; tocar nos indicadores mostra todos; Análise em cartões sem tabela larga; gráfico mostra valores com toque; hipótese errada explicada com dados; sem rolagem lateral.
+- **Celular comprido (390×844)**: o espaço abaixo da loja vai até a barra de abas (sem faixa vazia); Pedidos abre encaixado, sem cobrir a loja.
+- **Chrome com "Site para computador"** (janela de 980 px numa tela de 412 px, toque): a página se amplia para a largura da tela, usa o layout de celular (6 estações numa linha, painel encaixado), sem rolagem lateral; tocar na faixa e na loja seleciona a estação certa.
 - Tela inicial em 320×568, 414×896 e 1280×800: Jogar visível e tocável, sem rolagem lateral.
 - Criação da bruxa: aparece antes da primeira partida, exige um nome, aplica o visual; o nome aparece nos diálogos.
 - Placar: avaliação informa o envio (ou que ficou guardado sem internet); placar e modo projeção abrem e fecham sem botões mortos.
