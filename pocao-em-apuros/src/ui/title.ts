@@ -9,7 +9,8 @@ import * as A from '../sim/actions';
 import { createSim, stepSim } from '../sim/engine';
 import type { SimState } from '../sim/types';
 import { $, esc } from './dom';
-import { glossaryHtml } from './modals';
+import { glossaryHtml, howToHtml, tocHtml } from './modals';
+import { showPresenter } from './presenter';
 import { heroCreator } from './online';
 
 // convite de instalação do navegador (Android/Chrome); no iPhone o caminho é "Compartilhar → Tela de Início"
@@ -61,21 +62,25 @@ export function renderTitle(g: Game): void {
   const s = g.save;
   const run = s.run;
   const runPhase = run ? PHASES.find((p) => p.id === run.phaseId) : null;
-  const tutorialDone = !!s.progress['tutorial']?.completed;
+  const muted = s.settings.audio.muted;
   $('#title-menu').innerHTML = `
-    <div class="logo"><img src="${portraitUrl(LOOKS.lina, 'cast')}" alt="" class="logo-lina"><div><h1>Poção em Apuros</h1><p>Uma loja de bruxas, um caldeirão teimoso e a Teoria das Restrições.</p>${s.hero ? `<p class="hero-tag">${esc(s.hero.name)} · ${esc(s.hero.player)}</p>` : ''}</div></div>
-    <div class="menu-list">
+    <div class="title-top">
+      <span class="edu-tag">Jogo educativo · Teoria das Restrições</span>
+      <button class="icon-btn" data-action="title-sound" aria-label="${muted ? 'Ativar som' : 'Silenciar'}" aria-pressed="${muted}">${iconImg(muted ? 'mute' : 'sound')}<span>${muted ? 'Som desligado' : 'Som ligado'}</span></button>
+    </div>
+    <div class="logo"><img src="${portraitUrl(LOOKS.lina, 'cast')}" alt="" class="logo-lina"><div><h1>Poção em Apuros</h1>
+      <p>Sua loja de poções está atrasada. Descubra o que trava a produção e salve o dia.</p>${s.hero ? `<p class="hero-tag">${esc(s.hero.name)}</p>` : ''}</div></div>
+    <div class="menu-list main-actions">
       ${runPhase ? `<button class="primary" data-action="title-continue">${iconImg('play')} Continuar: ${esc(runPhase.title)}</button>` : ''}
-      <button class="${!runPhase && !tutorialDone ? 'primary' : ''}" data-action="title-start" data-v="tutorial">${iconImg('hat')} Aprendiz de Bruxa <small>tutorial · 5 min</small></button>
-      <button class="${!runPhase && tutorialDone ? 'primary' : ''}" data-action="title-phases">${iconImg('star')} Desafio dos Cinco Círculos <small>modo principal</small></button>
-      <button data-action="title-start" data-v="mestra" ${phaseUnlocked(s, PHASES.map((p) => p.id), 'mestra') ? '' : 'disabled title="Conclua o Quinto Círculo (ou ative o modo professor)"'}>${iconImg('crystal')} Bruxa Mestra <small>${phaseUnlocked(s, PHASES.map((p) => p.id), 'mestra') ? 'desafio imprevisível' : 'bloqueado'}</small></button>
-      <button data-action="title-install" ${installPrompt ? '' : 'hidden'}>${iconImg('door')} Instalar no celular <small>joga offline</small></button>
-      ${!isStandalone() && document.fullscreenEnabled ? `<button data-action="title-fullscreen" class="mobile-only">${iconImg('eye')} Jogar em tela cheia</button>` : ''}
-      <button data-action="board-open">${iconImg('star')} Placar da turma <small>ao vivo</small></button>
-      <button data-action="title-hero">${iconImg('hat')} ${s.hero ? 'Minha bruxa' : 'Criar minha bruxa'} <small>nome e visual</small></button>
-      <button data-action="title-glossary">${iconImg('book')} Os cinco passos e o glossário</button>
-      <button data-action="title-settings">${iconImg('gear')} Configurações</button>
-      <button data-action="title-about">${iconImg('scroll')} Sobre o jogo</button>
+      <button class="${runPhase ? '' : 'primary'} play-btn" data-action="title-start" data-v="turma">${iconImg('play')} Jogar <small>Desafio da Turma · 6 a 8 min</small></button>
+      <div class="row2">
+        <button data-action="title-howto">${iconImg('scroll')} Como jogar</button>
+        <button data-action="title-toc">${iconImg('eye')} O que é a TOC?</button>
+      </div>
+      <div class="row2">
+        <button data-action="board-open">${iconImg('star')} Placar</button>
+        <button data-action="title-more">${iconImg('book')} Mais modos</button>
+      </div>
     </div>`;
   $('#title-panel').innerHTML = '';
   $('#title-panel').hidden = true;
@@ -115,6 +120,28 @@ export function registerTitleActions(g: Game): void {
     }
     void g.startPhase(id, false);
   };
+  a['title-more'] = () => {
+    const ids = PHASES.map((p) => p.id);
+    const mestra = phaseUnlocked(g.save, ids, 'mestra');
+    panel(`<h2>Mais modos</h2><div class="menu-list">
+      <button data-action="title-start" data-v="tutorial">${iconImg('hat')} Aprendiz de Bruxa <small>tutorial · 5 min</small></button>
+      <button data-action="title-phases">${iconImg('star')} Desafio dos Cinco Círculos <small>15 a 25 min</small></button>
+      <button data-action="title-start" data-v="mestra" ${mestra ? '' : 'disabled'}>${iconImg('crystal')} Bruxa Mestra <small>${mestra ? 'imprevisível' : 'conclua o 5º círculo'}</small></button>
+      <button data-action="title-hero">${iconImg('hat')} ${g.save.hero ? 'Minha bruxa' : 'Criar minha bruxa'} <small>nome e visual</small></button>
+      <button data-action="title-present">${iconImg('chart')} Apresentar: QR Code da turma <small>para o projetor</small></button>
+      <button data-action="title-glossary">${iconImg('book')} Os cinco passos e o glossário</button>
+      <button data-action="title-install" ${installPrompt ? '' : 'hidden'}>${iconImg('door')} Instalar no celular <small>opcional</small></button>
+      ${!isStandalone() && document.fullscreenEnabled ? `<button data-action="title-fullscreen" class="mobile-only">${iconImg('eye')} Tela cheia</button>` : ''}
+      <button data-action="title-settings">${iconImg('gear')} Configurações</button>
+      <button data-action="title-about">${iconImg('scroll')} Sobre o jogo</button></div>`);
+  };
+  a['title-howto'] = () => panel(`<h2>Como jogar</h2>${howToHtml()}<button class="primary" data-action="title-start" data-v="turma">Jogar</button>`);
+  a['title-toc'] = () => panel(`<h2>O que é a TOC?</h2>${tocHtml()}<button class="primary" data-action="title-start" data-v="turma">Jogar</button>`);
+  a['title-sound'] = () => {
+    a['settings-mute'](document.body);
+    renderTitle(g);
+  };
+  a['title-present'] = () => showPresenter(g);
   a['title-phases'] = () => {
     panel(`<h2>Desafio dos Cinco Círculos</h2><p class="muted">Cada círculo é um dia na loja e um passo da Teoria das Restrições.</p>
       <div class="phase-list">${phaseCards(g)}</div>

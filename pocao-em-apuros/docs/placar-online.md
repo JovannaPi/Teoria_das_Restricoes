@@ -27,7 +27,7 @@ O placar usa o mesmo projeto Firebase do Calend.rio (`calendario-3b725`), numa c
         && request.resource.data.jogador is string && request.resource.data.jogador.size() > 0 && request.resource.data.jogador.size() <= 24
         && request.resource.data.bruxa is string && request.resource.data.bruxa.size() > 0 && request.resource.data.bruxa.size() <= 18
         && request.resource.data.visual is string && request.resource.data.visual.size() <= 120
-        && request.resource.data.fase in ['fase1', 'fase2', 'fase3', 'fase4', 'fase5', 'mestra']
+        && request.resource.data.fase in ['turma', 'fase1', 'fase2', 'fase3', 'fase4', 'fase5', 'mestra']
         && request.resource.data.pontos is int && request.resource.data.pontos >= 0 && request.resource.data.pontos <= 100
         && request.resource.data.estrelas is int && request.resource.data.estrelas >= 0 && request.resource.data.estrelas <= 3
         && request.resource.data.venceu is bool
@@ -45,9 +45,9 @@ Pronto: qualquer pessoa com o link pode jogar e entrar no placar, **sem criar co
 
 ## Como o placar funciona
 
-- Na primeira partida, cada aluno cria a sua bruxa e digita **o próprio nome** (é o nome que aparece no placar).
+- Na primeira partida, cada aluno dá um nome à sua bruxa (já vem um nome mágico sugerido). É esse nome que aparece no placar — não é pedido nenhum dado pessoal.
 - Ao terminar uma fase, o resultado é enviado automaticamente. Sem internet, ele fica guardado no celular e é enviado quando a conexão voltar.
-- **Só fases vencidas contam.** Para cada fase vale a melhor pontuação do aluno (0 a 100). O **Geral** soma as 6 fases (Círculos 1 a 5 e Bruxa Mestra): no máximo 600 pontos. Empate: quem venceu mais fases e, depois, quem chegou primeiro.
+- **Só fases vencidas contam.** Para cada fase vale a melhor pontuação do aluno (0 a 100). O **Geral** soma as 7 partidas (Desafio da Turma, Círculos 1 a 5 e Bruxa Mestra): no máximo 700 pontos. No seminário, a aba **Desafio da Turma** mostra só o desafio do dia. Empate: quem venceu mais fases e, depois, quem chegou primeiro.
 - No menu, **Placar da turma** mostra o Geral e cada fase. **Projetar na sala** abre o placar em tela cheia, com letras grandes, atualizando ao vivo, para mostrar no projetor.
 - Dica para a aula: ative o **Modo professor** (em Desafio dos Cinco Círculos) só no seu aparelho, se quiser mostrar fases sem jogar as anteriores.
 

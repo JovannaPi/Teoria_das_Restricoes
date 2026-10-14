@@ -12,13 +12,18 @@
     "test": "vitest run",
     "balance": "vitest run tests/balance.test.ts --reporter=verbose",
     "test:e2e": "node tests/e2e/smoke.mjs",
-    "publicar": "npm run build && node scripts/publish-to-site.mjs"
+    "publicar": "npm run build && node scripts/publish-to-site.mjs",
+    "qr": "node scripts/make-qr.mjs"
   },
   "license": "MIT",
   "devDependencies": {
+    "jsqr": "^1.4.0",
     "playwright-core": "^1.64.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vitest": "^5.0.4"
+  },
+  "dependencies": {
+    "qrcode-generator": "^1.4.4"
   }
 }

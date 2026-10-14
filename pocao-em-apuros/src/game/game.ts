@@ -20,6 +20,7 @@ import { netProfit } from '../sim/engine';
 import { computeScore, evaluateAll, immediateDefeat } from './objectives';
 import { loadSave, SaveData, writeSave } from './save';
 import { Tutorial } from './tutorial';
+import { TurmaGuide } from './turma';
 
 export type ActionHandler = (el: HTMLElement) => void;
 
@@ -36,6 +37,8 @@ export class Game {
   side: SideView = 'estacao';
   selectedOrder: number | null = null;
   tutorial: Tutorial | null = null;
+  guide: TurmaGuide | null = null;
+  private lastAction = { name: '', el: null as HTMLElement | null, at: 0 };
   ended = false;
   private lastFrame = 0;
   private acc = 0;
@@ -56,7 +59,10 @@ export class Game {
     document.addEventListener('fullscreenchange', () => setTimeout(() => this.layoutStage(), 100));
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && this.sim && !this.ended) {
+        // ao trocar de app ou bloquear o celular, a partida pausa e é salva
+        this.paused = true;
         this.persistRun();
+        this.refreshUi(true);
       }
     });
   }
@@ -65,6 +71,12 @@ export class Game {
 
   get running(): boolean {
     return !!this.sim && !this.paused && this.modalPauses === 0 && !this.ended;
+  }
+
+  /** Eventos de interação para o tutorial e o guia do Desafio da Turma. */
+  emit(kind: string, data: unknown): void {
+    this.tutorial?.onEvent(kind, data);
+    this.guide?.onEvent(kind, data);
   }
 
   pushModalPause(): void {
@@ -79,7 +91,7 @@ export class Game {
     if (!this.phase.speedOptions.includes(v)) return;
     this.speed = v;
     this.paused = false;
-    this.tutorial?.onEvent('speed', v);
+    this.emit('speed', v);
     this.refreshUi(true);
   }
 
@@ -129,9 +141,21 @@ export class Game {
     this.layoutStage();
     this.refreshUi(true);
     this.startLoop();
+    this.guide?.dispose();
+    this.guide = null;
     if (phase.mode === 'tutorial') {
       this.tutorial = new Tutorial(this, tutorialStep);
       await this.tutorial.start(resume);
+    } else if (phase.mode === 'turma') {
+      this.tutorial = null;
+      if (!resume) await M.dialogue(this, phase.intro);
+      this.guide = new TurmaGuide(this);
+      const saved = resume ? this.save.run?.guide : null;
+      if (saved) {
+        this.guide.index = saved.index;
+        this.guide.marks = saved.marks;
+      }
+      this.guide.start();
     } else {
       this.tutorial = null;
       if (!resume) {
@@ -161,6 +185,8 @@ export class Game {
     this.phase = null;
     this.tutorial?.dispose();
     this.tutorial = null;
+    this.guide?.dispose();
+    this.guide = null;
     M.closeAll(this);
     document.body.dataset.screen = 'title';
     $('#game-screen').classList.add('hidden');
@@ -172,7 +198,13 @@ export class Game {
     if (!this.sim || !this.phase || this.ended) return;
     const notices = this.sim.notices;
     this.sim.notices = [];
-    this.save.run = { phaseId: this.phase.id, sim: this.sim, tutorialStep: this.tutorial?.index ?? 0, savedAt: Date.now() };
+    this.save.run = {
+      phaseId: this.phase.id,
+      sim: this.sim,
+      tutorialStep: this.tutorial?.index ?? 0,
+      savedAt: Date.now(),
+      guide: this.guide ? { index: this.guide.index, marks: this.guide.marks } : undefined,
+    };
     writeSave(this.save);
     this.sim.notices = notices;
   }
@@ -207,7 +239,7 @@ export class Game {
         steps++;
       }
       this.handleNotices();
-      this.tutorial?.onEvent('tick', s.t);
+      this.emit('tick', s.t);
       if (!this.ended) this.checkEnd();
     } else {
       this.acc = 0;
@@ -239,6 +271,7 @@ export class Game {
       this.scene.handleNotice(n, s);
       this.noticeFeedback(n);
       this.tutorial?.onNotice(n);
+      this.guide?.onNotice(n);
     }
   }
 
@@ -289,7 +322,8 @@ export class Game {
     const s = this.sim!;
     const phase = this.phase!;
     if (phase.mode === 'tutorial') return; // o tutorial termina pelas lições
-    const defeat = immediateDefeat(s);
+    // no Desafio da Turma a partida sempre chega ao fim, para a turma ver a análise
+    const defeat = phase.mode === 'turma' ? null : immediateDefeat(s);
     if (defeat) {
       void this.endPhase(false, defeat);
       return;
@@ -366,6 +400,7 @@ export class Game {
     if (!this.sim || !this.phase) return;
     updateHud(this);
     renderOverlay(this);
+    this.guide?.render();
     if (!this.pointerHeld || force) {
       renderSide(this, force);
       renderBottom(this, force);
@@ -375,7 +410,7 @@ export class Game {
   select(id: StationId | null): void {
     this.selected = id;
     this.side = 'estacao';
-    if (id) this.tutorial?.onEvent('select-station', id);
+    if (id) this.emit('select-station', id);
     this.refreshUi(true);
   }
 
@@ -389,7 +424,7 @@ export class Game {
     this.side = view;
     document.body.classList.add('side-open');
     this.refreshUi(true);
-    this.tutorial?.onEvent('open-side', view);
+    this.emit('open-side', view);
   }
 
   private bindInput(canvas: HTMLCanvasElement): void {
@@ -430,6 +465,14 @@ export class Game {
       const el = (ev.target as HTMLElement).closest('[data-action]') as HTMLElement | null;
       if (!el || (el as HTMLButtonElement).disabled) return;
       const name = el.dataset.action!;
+      // evita que um toque duplo dispare a mesma ação duas vezes
+      const now = performance.now();
+      const repeatable = name === 'pause' || name === 'speed' || name === 'buffer-step' || name === 'dialogue-next' || name === 'hero-pick';
+      if (!repeatable && this.lastAction.el === el && this.lastAction.name === name && now - this.lastAction.at < 300) {
+        ev.preventDefault();
+        return;
+      }
+      this.lastAction = { name, el, at: now };
       const fn = this.actions[name];
       if (!fn) {
         console.error('Ação sem handler:', name);
@@ -484,6 +527,7 @@ export class Game {
   }
 
   policyLocked(k: PhaseDef['lockedPolicies'][number]): boolean {
+    if (this.guide) return this.guide.locked(k);
     return !!this.phase?.lockedPolicies.includes(k);
   }
 
@@ -507,7 +551,7 @@ export class Game {
       this.openSide('pedidos');
     };
     a['accept'] = (el) => {
-      if (this.run(A.acceptOrder(sim(), Number(el.dataset.v)), true)) this.tutorial?.onEvent('accept-order', Number(el.dataset.v));
+      if (this.run(A.acceptOrder(sim(), Number(el.dataset.v)), true)) this.emit('accept-order', Number(el.dataset.v));
     };
     a['reject'] = async (el) => {
       const ok = await M.confirm(this, 'Recusar este pedido? O cliente vai embora e a reputação cai um pouco.', 'Recusar');
@@ -516,7 +560,7 @@ export class Game {
     a['buy'] = (el) => {
       const ing = el.dataset.v as IngredientId;
       const q = Number(el.dataset.q);
-      if (this.run(A.buyIngredient(sim(), ing, q))) this.tutorial?.onEvent('buy', ing);
+      if (this.run(A.buyIngredient(sim(), ing, q))) this.emit('buy', ing);
     };
     a['policy'] = (el) => {
       const k = el.dataset.k as keyof Policies;
@@ -529,12 +573,12 @@ export class Game {
         return;
       }
       this.run(A.setPolicy(sim(), k as 'release', v as Policies['release']));
-      this.tutorial?.onEvent('policy', { k, v });
+      this.emit('policy', { k, v });
     };
     a['policy-check'] = (el) => {
       const k = el.dataset.k as 'autoAccept' | 'autoReorder';
       this.run(A.setPolicy(sim(), k, (el as HTMLInputElement).checked));
-      this.tutorial?.onEvent('policy', { k, v: (el as HTMLInputElement).checked });
+      this.emit('policy', { k, v: (el as HTMLInputElement).checked });
     };
     a['buffer-step'] = (el) => {
       if (this.policyLocked('bufferSize')) return;
@@ -565,7 +609,7 @@ export class Game {
       this.scene.walkLina(spot.x, spot.y, () => {
         if (!this.sim) return;
         this.run(A.setHelper(this.sim, id));
-        this.tutorial?.onEvent('helper', id);
+        this.emit('helper', id);
       });
       this.refreshUi(true);
     };
@@ -598,7 +642,7 @@ export class Game {
       );
       if (ok && this.sim) {
         this.run(A.buyUpgrade(this.sim, id));
-        this.tutorial?.onEvent('upgrade', id);
+        this.emit('upgrade', id);
       }
     };
     a['crystal'] = (el) => {
@@ -607,11 +651,13 @@ export class Game {
     };
     a['open-analysis'] = () => {
       void M.analysis(this);
-      this.tutorial?.onEvent('open-analysis', null);
+      this.emit('open-analysis', null);
     };
     a['open-recipes'] = () => void M.recipes(this);
     a['open-glossary'] = () => void M.glossary(this);
     a['open-objectives'] = () => void M.objectivesIntro(this);
+    a['open-howto'] = () => M.howTo(this);
+    a['open-toc'] = () => M.whatIsToc(this);
     a['open-settings'] = () => void M.settings(this);
     a['open-menu'] = () => void M.gameMenu(this);
     a['open-more'] = () => void M.moreMenu(this);
@@ -659,13 +705,14 @@ export class Game {
     a['settings-motion'] = (el) => {
       this.save.settings.reduceMotion = (el as HTMLInputElement).checked;
       document.body.classList.toggle('reduce-motion', this.save.settings.reduceMotion);
+      if (this.save.settings.reduceMotion) this.scene.lowFx = true;
       writeSave(this.save);
     };
     a['tutorial-skip'] = async () => {
       const ok = await M.confirm(this, 'Pular o restante do tutorial?', 'Pular');
       if (ok) this.tutorial?.finish();
     };
-    a['tutorial-next'] = () => this.tutorial?.onEvent('next', null);
+    a['tutorial-next'] = () => this.emit('next', null);
   }
 }
 

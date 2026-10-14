@@ -113,6 +113,8 @@ export class ShopScene {
   private idleSince: Record<StationId, number> = {} as Record<StationId, number>;
   private flash: { station: StationId; until: number; color: string }[] = [];
   private time = 0;
+  /** Efeitos reduzidos: aparelhos modestos ou "reduzir animações" ligado. */
+  lowFx = detectLowEnd();
   floatTexts: { x: number; y: number; text: string; cls: string; born: number }[] = [];
 
   constructor(readonly canvas: HTMLCanvasElement) {
@@ -237,7 +239,7 @@ export class ShopScene {
       const st = s.stations[id];
       if (st.active.length > 0 && !stationStopped(s, id)) {
         this.idleSince[id] = s.t;
-        if (mods) this.emit(id, s, dtReal);
+        if (mods && (!this.lowFx || Math.random() < 0.4)) this.emit(id, s, dtReal);
       }
     }
     for (const p of this.particles) {
@@ -248,7 +250,8 @@ export class ShopScene {
       if (p.kind === 'steam' || p.kind === 'smoke') p.vx *= 0.98;
     }
     this.particles = this.particles.filter((p) => p.life < p.max);
-    if (this.particles.length > 400) this.particles.splice(0, this.particles.length - 400);
+    const cap = this.lowFx ? 120 : 400;
+    if (this.particles.length > cap) this.particles.splice(0, this.particles.length - cap);
     this.floatTexts = this.floatTexts.filter((f) => this.time - f.born < 1.6);
   }
 
@@ -888,8 +891,11 @@ export class ShopScene {
     ctx.globalAlpha = 1;
   }
 
+  private vignette: HTMLCanvasElement | null = null;
+
   private drawLights(s: SimState) {
     const ctx = this.ctx;
+    if (!this.lowFx) {
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     const glow = (x: number, y: number, r: number, color: string, a: number) => {
@@ -911,13 +917,29 @@ export class ShopScene {
     const res = s.stations.resfriamento;
     if (res.active.length) glow(436, 172, 30, 'rgba(140,210,255,A)', 0.16);
     ctx.restore();
-    // vinheta
-    const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.45, W / 2, H / 2, H * 0.95);
-    v.addColorStop(0, 'rgba(10,4,16,0)');
-    v.addColorStop(1, 'rgba(10,4,16,0.55)');
-    ctx.fillStyle = v;
-    ctx.fillRect(0, 0, W, H);
+    }
+    // vinheta: desenhada uma vez e reaproveitada
+    if (!this.vignette) {
+      const c = document.createElement('canvas');
+      c.width = W;
+      c.height = H;
+      const vc = c.getContext('2d')!;
+      const v = vc.createRadialGradient(W / 2, H / 2, H * 0.45, W / 2, H / 2, H * 0.95);
+      v.addColorStop(0, 'rgba(10,4,16,0)');
+      v.addColorStop(1, 'rgba(10,4,16,0.55)');
+      vc.fillStyle = v;
+      vc.fillRect(0, 0, W, H);
+      this.vignette = c;
+    }
+    ctx.drawImage(this.vignette, 0, 0);
   }
+}
+
+function detectLowEnd(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const nav = navigator as Navigator & { deviceMemory?: number };
+  const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return reduce || (nav.hardwareConcurrency || 8) <= 4 || (nav.deviceMemory ?? 8) <= 2;
 }
 
 function hexToRgbaTemplate(hex: string): string {

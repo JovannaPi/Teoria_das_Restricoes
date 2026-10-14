@@ -27,7 +27,7 @@ export type PanelId = 'pedidos' | 'despensa' | 'fluxo' | 'melhorias' | 'analise'
 
 export interface PhaseDef {
   id: string;
-  mode: 'tutorial' | 'desafio' | 'mestra';
+  mode: 'tutorial' | 'desafio' | 'mestra' | 'turma';
   number: number;
   title: string;
   subtitle: string;
@@ -94,7 +94,64 @@ function scenario(o: Partial<ScenarioDef> & { id: string; seed: number }): Scena
 
 const SPEEDS = [1, 2, 4];
 
+/** Demanda do Desafio da Turma depois que "a procura aumenta" (etapa 5). */
+export const TURMA_SURGE: Partial<DemandConfig> = { ordersPerMin: 4.7, mix: { cura: 0.4, visao: 0.4, transformacao: 0.2 } };
+export const TURMA_UPGRADES = ['caldeirao_extra', 'cristal_fervura', 'alambique_duplo', 'serpentina_gelo', 'embaladora_encantada'] as const;
+
 export const PHASES: PhaseDef[] = [
+  // ------------------------------------------------------------------ DESAFIO DA TURMA (seminário)
+  {
+    id: 'turma',
+    mode: 'turma',
+    number: 0,
+    title: 'Desafio da Turma',
+    subtitle: 'Uma encomenda urgente',
+    tocStep: 'Os cinco passos, em 6 minutos',
+    goalText: 'Encontre o que limita a loja, melhore o fluxo, decida se vale investir e descubra o que muda depois.',
+    scenario: scenario({
+      id: 'turma',
+      seed: 2026,
+      duration: 360,
+      startCash: 600,
+      startReputation: 70,
+      demand: { ...baseDemand, ordersPerMin: 3.4 },
+      stations: {
+        caldeirao: { breakEvery: 45, breakDuration: 9, setupTime: 3 },
+        embalagem: { breakEvery: 50, breakDuration: 10 },
+      },
+      policies: { release: 'empurrar', drum: 'caldeirao', bufferSize: 4, priority: 'fifo', inspection: 'final', keepBusy: false, autoAccept: true, autoReorder: true },
+      upgrades: [],
+      wipHoldingCost: 0.05,
+      spoilTime: 50,
+    }),
+    objectives: [{ kind: 'reputation', target: 0, label: 'Chegar ao fim do expediente' }],
+    intro: [
+      { who: 'mentora', text: 'Uma encomenda urgente chegou à sua loja. As poções estão se acumulando e os clientes estão esperando.' },
+      { who: 'mentora', text: 'Organize a produção antes que o expediente termine. Eu vou te dando dicas pelo caminho.' },
+    ],
+    outroWin: [{ who: 'mentora', text: 'Fim do expediente! Vamos ver o que suas decisões fizeram com a loja — passo a passo.' }],
+    outroLose: [{ who: 'mentora', text: 'Fim do expediente. Vamos olhar com calma o que aconteceu, passo a passo.' }],
+    concept:
+      'Os cinco passos: identificar a restrição, explorá-la, subordinar o resto da loja a ela, elevá-la e, quando ela mudar de lugar, recomeçar.',
+    question: {
+      question: 'Por que aumentar a produção de uma estação que não é o gargalo pode não aumentar a quantidade de pedidos entregues?',
+      options: [
+        'Porque toda poção ainda precisa passar pelo gargalo, que continua no mesmo ritmo — o extra só vira fila na frente dele.',
+        'Porque estações que não são gargalo não podem ser melhoradas.',
+        'Porque os clientes só compram quando todas as estações estão 100% ocupadas.',
+      ],
+      correct: 0,
+      explanation: '',
+    },
+    lockedPolicies: ['release', 'drum', 'bufferSize', 'priority', 'inspection', 'keepBusy', 'setupExternal', 'breakCover'],
+    hypothesisEnabled: true,
+    showLoadLens: false,
+    speedOptions: [1, 2],
+    refProfit: 900,
+    refWip: 8,
+    revealConstraint: null,
+  },
+
   // ------------------------------------------------------------------ TUTORIAL
   {
     id: 'tutorial',

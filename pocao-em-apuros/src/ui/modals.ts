@@ -12,6 +12,7 @@ import { analyzeCapacity, averageQueue, observedUtilization, recentUtilization }
 import { averageWip, inventoryValue, netProfit, operatingExpense, throughputGain } from '../sim/engine';
 import type { ActiveEvent, Hypothesis, IngredientId, StationId } from '../sim/types';
 import { barChart, lineChart } from './charts';
+import { contextualReflection, fiveSteps } from '../game/fivesteps';
 import { clock, esc, money, n1, pct, shopMinutes, STATION_COLORS } from './dom';
 
 interface ModalEntry {
@@ -410,6 +411,31 @@ export function refreshSettings(g: Game): void {
   if (el) el.innerHTML = settingsBody(g);
 }
 
+export function howToHtml(): string {
+  return `<ol class="howto">
+    <li><b>Toque numa estação</b> (na loja ou nos botões logo abaixo dela) para ver capacidade, fila e o que fazer.</li>
+    <li><b>Pedidos</b> chegam sozinhos. A barra de cada cliente mostra quanto tempo ainda falta.</li>
+    <li><b>Observe as filas</b>: onde as poções se acumulam, alguma coisa limita a loja.</li>
+    <li><b>Hipótese</b>: escolha a estação que você acha que limita a loja. A mentora confere com os dados.</li>
+    <li><b>Fluxo</b> e <b>Melhorias</b> abrem quando fizer sentido usar. Toque no chão da loja para mover a sua bruxa.</li>
+    <li><b>Pausa</b> a qualquer momento no botão de pausa. Abrir uma janela também pausa.</li>
+  </ol>`;
+}
+
+export function tocHtml(): string {
+  return `<p>A <b>Teoria das Restrições</b> (TOC), de Eliyahu Goldratt, diz que todo sistema tem pelo menos um elo mais fraco — a <b>restrição</b> — que limita o resultado de todo o resto.</p>
+    <p>Na loja de poções, é a estação que não dá conta do que chega. Melhorar outras estações não aumenta as entregas; melhorar a restrição, sim.</p>
+    <ol class="howto"><li><b>Identificar</b> a restrição.</li><li><b>Explorar</b>: tirar o máximo dela sem gastar.</li><li><b>Subordinar</b>: o resto da loja segue o ritmo dela.</li><li><b>Elevar</b>: investir para aumentar a capacidade dela.</li><li><b>Recomeçar</b>: a restrição pode mudar de lugar.</li></ol>`;
+}
+
+export function howTo(g: Game): void {
+  open(g, { title: 'Como jogar', body: howToHtml(), cls: 'small sheet', footer: '<button class="primary" data-action="modal-close">Entendi</button>' });
+}
+
+export function whatIsToc(g: Game): void {
+  open(g, { title: 'O que é a TOC?', body: tocHtml(), cls: 'small sheet', footer: '<button class="primary" data-action="modal-close">Entendi</button>' });
+}
+
 export function moreMenu(g: Game): void {
   const phase = g.phase!;
   const fs = document.fullscreenEnabled;
@@ -419,6 +445,7 @@ export function moreMenu(g: Game): void {
       <button data-action="open-objectives">${iconImg('star')} Objetivos</button>
       ${phase.hypothesisEnabled ? `<button class="primary" data-action="hypothesis">${iconImg('drum')} Registrar hipótese</button>` : ''}
       <button data-action="board-open">${iconImg('star')} Placar da turma</button>
+      <button data-action="open-howto">${iconImg('scroll')} Como jogar</button>
       <button data-action="open-recipes">${iconImg('book')} Receitas</button>
       <button data-action="open-glossary">${iconImg('eye')} Glossário e 5 passos</button>
       ${fs ? `<button data-action="fullscreen">${iconImg('door')} Tela cheia</button>` : ''}
@@ -472,6 +499,20 @@ export async function debrief(
   const stars = [1, 2, 3].map((i) => `<span class="star ${i <= score.stars ? 'on' : ''}">${iconImg('star')}</span>`).join('');
   const constraintName = a.constraint === 'mercado' ? `nenhuma estação saturada (a mais carregada: ${STATIONS[a.ranked[0]].short}, ${pct(a.maxLoad)})` : `${STATIONS[a.constraint].short} (carga ${pct(a.maxLoad)})`;
   const q = phase.question;
+  const turma = phase.mode === 'turma';
+  const steps = turma ? fiveSteps(s, g.guide?.marks ?? null) : [];
+  const firstC = (g.guide?.marks.initialConstraint && g.guide.marks.initialConstraint !== 'mercado' ? g.guide.marks.initialConstraint : a.ranked[0]) as StationId;
+  const explanation = turma ? contextualReflection(s, firstC) : q.explanation;
+  const STATUS = { feito: ['Feito', 'good'], parcial: ['Em parte', 'warn'], nao: ['Oportunidade', 'idle'] } as const;
+  const stepsHtml = steps
+    .map(
+      (st) => `<details class="step" ${st.status !== 'feito' ? 'open' : ''}><summary><span class="sn">${st.n}</span><b>${esc(st.title)}</b><span class="chip ${STATUS[st.status][1]}">${STATUS[st.status][0]}</span></summary>
+      <p><b>Sua decisão:</b> ${esc(st.decision)}</p>
+      <ul class="list">${st.indicators.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>
+      <p><b>Resultado:</b> ${esc(st.result)}</p>
+      <p class="toc-note">${esc(st.toc)}</p></details>`,
+    )
+    .join('');
   const next = g.nextPhaseId();
   const body = `
     <div class="result ${won ? 'win' : 'lose'}"><h3>${won ? 'Fase concluída!' : 'Fase não concluída'}</h3>${won ? `<div class="stars">${stars}</div>` : `<p>${esc(reason || '')}</p>`}</div>
@@ -490,13 +531,14 @@ export async function debrief(
     ${online ? '<p class="online-status" data-online-status>Enviando resultado ao placar da turma…</p>' : ''}
     <ul class="score">${score.parts.map((p) => `<li><span>${esc(p.label)}</span><i class="meter"><i style="width:${(p.points / p.max) * 100}%"></i></i><b>${Math.round(p.points)}/${p.max}</b><small>${esc(p.detail)}</small></li>`).join('')}</ul>
     <p class="muted small">A pontuação avalia o resultado da loja inteira. Manter todas as estações 100% ocupadas não dá pontos.</p>
-    ${decisions ? `<h3>Suas decisões e consequências</h3><ul class="list decisions">${decisions}</ul>` : ''}
+    ${turma ? `<h3>Os cinco passos na sua partida</h3><p class="muted small">Toque em cada passo para ver a decisão, os números e a relação com a TOC.</p><div class="steps5">${stepsHtml}</div>` : ''}
+    ${decisions && !turma ? `<h3>Suas decisões e consequências</h3><ul class="list decisions">${decisions}</ul>` : ''}
     <h3>Conceito</h3><p class="concept">${esc(phase.concept)}</p>
     <h3>Para refletir</h3>
     <div class="quiz" data-correct="${q.correct}"><p><b>${esc(q.question)}</b></p>
       ${q.options.map((o, i) => `<button class="row-btn" data-action="quiz" data-v="${i}">${esc(o)}</button>`).join('')}
-      <div class="quiz-exp" hidden><p>${esc(q.explanation)}</p></div></div>`;
-  const footer = `<button data-action="board-open">Placar</button><button data-action="exit">Menu</button><button data-action="retry">Jogar de novo</button>${won && next ? '<button class="primary" data-action="next-phase">Próxima fase</button>' : ''}`;
+      <div class="quiz-exp" hidden><p>${esc(explanation)}</p></div></div>`;
+  const footer = `<button data-action="board-open">Placar</button><button data-action="exit">Menu</button><button data-action="retry">Jogar de novo</button>${won && next && phase.mode !== 'turma' ? '<button class="primary" data-action="next-phase">Próxima fase</button>' : ''}`;
   const { el: dEl, promise } = open(g, { title: `Avaliação — ${esc(phase.title)}`, body, footer, cls: 'wide debrief', closable: false });
   void online?.then((st) => {
     const box = dEl.querySelector('[data-online-status]');

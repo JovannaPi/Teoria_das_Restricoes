@@ -51,6 +51,7 @@ export function renderOverlay(g: Game): void {
 }
 
 let stripBuilt = false;
+const TINY: Record<string, string> = { preparo: 'Preparo', caldeirao: 'Caldeirão', destilacao: 'Destilar', resfriamento: 'Esfriar', embalagem: 'Embalar', balcao: 'Balcão' };
 
 /** Faixa de estações para telas pequenas: alvos grandes de toque com fila e estado. */
 function renderStrip(g: Game): void {
@@ -60,7 +61,7 @@ function renderStrip(g: Game): void {
   if (!stripBuilt || strip.childElementCount === 0) {
     strip.innerHTML = STATION_ORDER.map(
       (id) =>
-        `<button data-action="select-station" data-v="${id}" data-strip="${id}"><i class="dot" style="background:${STATION_COLORS[id]}"></i><span class="sn">${esc(STATIONS[id].short)}</span><span class="sq"></span><i class="sbar"><i></i></i></button>`,
+        `<button data-action="select-station" data-v="${id}" data-strip="${id}"><i class="dot" style="background:${STATION_COLORS[id]}"></i><span class="sn">${esc(STATIONS[id].short)}</span><span class="st">${TINY[id]}</span><span class="sq"><b class="sqn"></b><span class="sqs"></span></span><i class="sbar"><i></i></i></button>`,
     ).join('');
     stripBuilt = true;
   }
@@ -73,9 +74,12 @@ function renderStrip(g: Game): void {
     else if (s.t < st.downUntil) state = st.downReason || 'parada';
     else if (s.t < st.breakUntil) state = 'intervalo';
     else if (st.active.length) state = `${st.active.length}/${st.slots} em produção`;
-    const txt = `fila ${st.queue.length} · ${state}`;
-    const q = el.querySelector('.sq') as HTMLElement;
-    if (q.textContent !== txt) q.textContent = txt;
+    const qn = el.querySelector('.sqn') as HTMLElement;
+    const qs = el.querySelector('.sqs') as HTMLElement;
+    const ntxt = `fila ${st.queue.length}`;
+    if (qn.textContent !== ntxt) qn.textContent = ntxt;
+    const stxt = ` · ${state}`;
+    if (qs.textContent !== stxt) qs.textContent = stxt;
     const bar = el.querySelector('.sbar > i') as HTMLElement;
     const task = st.active[0];
     bar.style.width = task ? `${Math.round((1 - Math.max(0, task.remaining) / task.total) * 100)}%` : '0%';

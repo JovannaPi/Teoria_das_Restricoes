@@ -3,6 +3,7 @@
 import type { AudioSettings } from '../audio/sfx';
 import type { SimState } from '../sim/types';
 import type { HeroConfig } from './hero';
+import type { TurmaMarks } from './turma';
 import type { ScoreEntry } from '../online/leaderboard';
 
 const KEY = 'pocao-em-apuros:v1';
@@ -19,7 +20,13 @@ export interface SaveData {
   progress: Record<string, PhaseProgress>;
   teacherMode: boolean; // libera todas as fases (para aulas)
   settings: { audio: AudioSettings; defaultSpeed: number; reduceMotion: boolean };
-  run: { phaseId: string; sim: SimState; tutorialStep: number; savedAt: number; helperPos?: { x: number; y: number } } | null;
+  run: {
+    phaseId: string;
+    sim: SimState;
+    tutorialStep: number;
+    savedAt: number;
+    guide?: { index: number; marks: TurmaMarks };
+  } | null;
   glossarySeen: boolean;
   hero: HeroConfig | null; // bruxa criada pelo jogador (null = ainda não criou)
   playerId: string; // identificador anônimo deste aparelho no placar

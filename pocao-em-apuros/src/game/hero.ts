@@ -92,6 +92,19 @@ export function personalize(text: string): string {
   return n === 'Lina' ? text : text.replace(/\bLina\b/g, n);
 }
 
+const FIRST = ['Ametista', 'Brisa', 'Cinza', 'Dália', 'Esmeralda', 'Faísca', 'Gaia', 'Hera', 'Íris', 'Jade', 'Lua', 'Malva', 'Névoa', 'Ônix', 'Pétala', 'Quartzo', 'Runa', 'Sálvia', 'Tília', 'Urze', 'Vesper', 'Zinnia'];
+const LAST = ['do Caldeirão', 'Fumacenta', 'das Ervas', 'Lunar', 'Borbulhante', 'do Vale', 'Estrelada', 'Ventania', 'do Pântano', 'Cintilante'];
+
+/** Nome mágico aleatório (não pede o nome real de ninguém). */
+export function randomWitchName(): string {
+  const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
+  for (let i = 0; i < 20; i++) {
+    const n = `${pick(FIRST)} ${pick(LAST)}`;
+    if (n.length <= 18) return n;
+  }
+  return pick(FIRST);
+}
+
 export function randomHero(base: HeroConfig): HeroConfig {
   const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
   return {

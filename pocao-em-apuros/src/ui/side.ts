@@ -126,6 +126,18 @@ function stationView(g: Game, id: StationId): string {
   const policyCost = (c: number) => `${(c * 30).toFixed(1)} moedas/h`;
   return `
   <div class="st-head"><i class="dot" style="background:${STATION_COLORS[id]}"></i><h2>${esc(def.name)}</h2><span class="chip ${state.cls}">${state.label}</span></div>
+  <div class="kv compact quick"><div><span>Ocupada (últimos 60 s)</span><b>${pct(recentUtilization(s, id))}</b></div><div><span>Fila agora / máxima</span><b>${st.queue.length} / ${st.maxQueue}</b></div><div><span>Capacidade para o mix atual</span><b>${n1(L.mixCapacityPerMin)} poções/min</b></div>${showLoad ? `<div class="hl"><span>Carga exigida pela demanda</span><b class="${L.load > 1 ? 'neg' : ''}">${pct(L.load)}${L.load > 1 ? ' — não dá conta' : ''}</b></div>` : ''}</div>
+  <h3>Decisões</h3>
+  <div class="actions">
+    <button data-action="toggle-station" data-v="${id}" class="${st.paused ? 'primary' : ''}">${st.paused ? 'Retomar estação' : 'Interromper estação'}</button>
+    ${helperHere ? `<button data-action="stop-help">Lina parar de ajudar</button>` : `<button data-action="help-here" data-v="${id}" ${linaWalking ? 'disabled' : ''} title="A Lina caminha até aqui e a estação fica ${Math.round((POLICY_COSTS.helperBonus - 1) * 100)}% mais rápida">Lina ajuda aqui</button>`}
+    ${st.setupTime > 0 ? `<button data-action="station-policy" data-k="setupExternal" data-v="${id}" data-on="${!s.policies.setupExternal[id]}" ${g.policyLocked('setupExternal') ? 'disabled' : ''}>${lockNote(g, 'setupExternal')}${s.policies.setupExternal[id] ? 'Voltar a limpar com a estação parada' : `Limpeza em paralelo (+${policyCost(POLICY_COSTS.setupExternal)})`}</button>` : ''}
+    ${st.breakEvery > 0 ? `<button data-action="station-policy" data-k="breakCover" data-v="${id}" data-on="${!s.policies.breakCover[id]}" ${g.policyLocked('breakCover') ? 'disabled' : ''}>${lockNote(g, 'breakCover')}${s.policies.breakCover[id] ? 'Deixar de cobrir intervalos' : `Cobrir intervalos (+${policyCost(POLICY_COSTS.breakCover)})`}</button>` : ''}
+    ${id !== 'balcao' ? `<button data-action="drum-here" data-v="${id}" ${isDrum || g.policyLocked('drum') ? 'disabled' : ''}>${lockNote(g, 'drum')}${isDrum ? 'A corda está amarrada aqui (tambor)' : 'Amarrar a corda aqui (tambor)'}</button>` : ''}
+    ${g.phase!.hypothesisEnabled ? `<button class="primary" data-action="hypothesis" data-v="${id}">Registrar hipótese: esta estação limita a loja</button>` : ''}
+    ${upgradesHere.length ? `<button data-action="side" data-v="melhorias">Ver melhorias desta estação (${upgradesHere.length})</button>` : ''}
+  </div>
+  <h3>Detalhes</h3>
   <p class="muted">${esc(def.description)}</p>
   <div class="kv">
     <div><span>Postos de trabalho</span><b>${st.slots}</b></div>
@@ -149,16 +161,7 @@ function stationView(g: Game, id: StationId): string {
   <ul class="list">${active || '<li class="muted">Nada sendo feito agora.</li>'}</ul>
   <h3>Fila de entrada (${st.queue.length})</h3>
   <ul class="list queue">${queue.join('') || '<li class="muted">Fila vazia.</li>'}${st.queue.length > 10 ? `<li class="muted">… e mais ${st.queue.length - 10}</li>` : ''}</ul>
-  <h3>Decisões</h3>
-  <div class="actions">
-    <button data-action="toggle-station" data-v="${id}" class="${st.paused ? 'primary' : ''}">${st.paused ? 'Retomar estação' : 'Interromper estação'}</button>
-    ${helperHere ? `<button data-action="stop-help">Lina parar de ajudar</button>` : `<button data-action="help-here" data-v="${id}" ${linaWalking ? 'disabled' : ''} title="A Lina caminha até aqui e a estação fica ${Math.round((POLICY_COSTS.helperBonus - 1) * 100)}% mais rápida">Lina ajuda aqui</button>`}
-    ${st.setupTime > 0 ? `<button data-action="station-policy" data-k="setupExternal" data-v="${id}" data-on="${!s.policies.setupExternal[id]}" ${g.policyLocked('setupExternal') ? 'disabled' : ''}>${lockNote(g, 'setupExternal')}${s.policies.setupExternal[id] ? 'Voltar a limpar com a estação parada' : `Limpeza em paralelo (+${policyCost(POLICY_COSTS.setupExternal)})`}</button>` : ''}
-    ${st.breakEvery > 0 ? `<button data-action="station-policy" data-k="breakCover" data-v="${id}" data-on="${!s.policies.breakCover[id]}" ${g.policyLocked('breakCover') ? 'disabled' : ''}>${lockNote(g, 'breakCover')}${s.policies.breakCover[id] ? 'Deixar de cobrir intervalos' : `Cobrir intervalos (+${policyCost(POLICY_COSTS.breakCover)})`}</button>` : ''}
-    ${id !== 'balcao' ? `<button data-action="drum-here" data-v="${id}" ${isDrum || g.policyLocked('drum') ? 'disabled' : ''}>${lockNote(g, 'drum')}${isDrum ? 'A corda está amarrada aqui (tambor)' : 'Amarrar a corda aqui (tambor)'}</button>` : ''}
-    ${g.phase!.hypothesisEnabled ? `<button class="primary" data-action="hypothesis" data-v="${id}">Registrar hipótese: esta estação limita a loja</button>` : ''}
-    ${upgradesHere.length ? `<button data-action="side" data-v="melhorias">Ver melhorias desta estação (${upgradesHere.length})</button>` : ''}
-  </div>`;
+`;
 }
 
 function orderCard(s: SimState, o: Order, selected: boolean): string {

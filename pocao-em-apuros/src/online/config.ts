@@ -21,4 +21,4 @@ export const COLLECTION = 'pocao_placar';
 export const SEASON = 'turma-2026';
 
 /** Fases que contam para o placar. */
-export const RANKED_PHASES = ['fase1', 'fase2', 'fase3', 'fase4', 'fase5', 'mestra'] as const;
+export const RANKED_PHASES = ['turma', 'fase1', 'fase2', 'fase3', 'fase4', 'fase5', 'mestra'] as const;

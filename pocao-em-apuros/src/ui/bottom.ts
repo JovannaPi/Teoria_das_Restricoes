@@ -25,7 +25,7 @@ export function renderBottom(g: Game, force: boolean): void {
         .map((l) => `<span class="ol"><img src="${flaskUrl(RECIPES[l.recipe].color)}" alt="${esc(RECIPES[l.recipe].short)}">${l.delivered}/${l.qty}</span>`)
         .join('');
       return `<button class="ocard ${o.status} ${late ? 'late' : ''} ${o.vip ? 'vip' : ''} ${g.selectedOrder === o.id ? 'sel' : ''}" data-action="select-order" data-v="${o.id}" title="Pedido #${o.id} — ${esc(o.client.name)}">
-        <span class="oid">#${o.id}${o.status === 'aguardando' ? ' · aceitar?' : ''}</span>${flasks}<i class="meter"><i style="width:${(late ? 1 : ratio) * 100}%"></i></i></button>`;
+        <span class="oid">#${o.id}${o.status === 'aguardando' ? ' · aceitar?' : late ? ' · atrasado' : ''}</span>${flasks}<i class="meter"><i style="width:${(late ? 1 : ratio) * 100}%"></i></i></button>`;
     })
     .join('');
   const more = orders.length > 14 ? `<span class="more">+${orders.length - 14}</span>` : '';

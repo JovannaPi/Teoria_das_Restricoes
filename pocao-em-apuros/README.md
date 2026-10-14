@@ -4,9 +4,11 @@ Jogo 2D de gerenciamento de uma loja de poções para estudantes de Engenharia d
 
 O jogador é **Lina Brasaverde**, herdeira de uma loja de poções em ruínas. Com a ajuda da **Vó Morgana**, precisa descobrir qual estação limita a loja, tirar o máximo dela, fazer o resto da loja trabalhar no ritmo dela, decidir quando investir e recomeçar quando a restrição muda de lugar.
 
-Cada aluno **cria a sua bruxa** (nome, pele, cabelo, roupa e chapéu) e compete no **placar online da turma**, que pode ser projetado na sala.
+**Para seminário:** o botão **Jogar** abre o **Desafio da Turma**, uma partida guiada de 6 a 8 minutos que passa pelos cinco passos e termina com a análise de cada passo usando os números da própria partida. A turma entra por **QR Code** (gerado pelo próprio jogo a partir do endereço público), sem cadastro nem instalação. Roteiro, slide e perguntas de debriefing: **[docs/seminario.md](docs/seminario.md)**.
 
-**Feito primeiro para celular**: funciona em pé e deitado, por toque, pode ser instalado como app e joga sem internet. Também funciona no computador.
+Cada aluno dá nome e visual à **sua bruxa** (sem dados pessoais) e compete no **placar online da turma**, que pode ser projetado na sala.
+
+**Feito primeiro para celular**: funciona em pé e deitado, por toque, no navegador (instalar como app é opcional). Também funciona no computador.
 
 ## Colocar online com placar
 
@@ -33,6 +35,7 @@ npm test             # testes da simulação, da economia e do balanceamento (Vi
 npm run balance      # relatório das estratégias automáticas em cada fase
 npm run test:e2e     # teste ponta a ponta no Chromium (precisa do build antes)
 npm run publicar     # build + cópia para ../pocao/ (pasta publicada com o site)
+npm run qr -- <url>  # QR Code em alta resolução da URL PÚBLICA + teste de leitura
 ```
 
 O jogo não tem dependências em tempo de execução: nenhum servidor, conta ou conexão. Progresso, configurações e partida em andamento ficam no `localStorage` do navegador.
@@ -41,6 +44,7 @@ O jogo não tem dependências em tempo de execução: nenhum servidor, conta ou 
 
 | Modo | Fase | Passo da TOC | O que o jogador faz | Vence se |
 |---|---|---|---|---|
+| **Desafio da Turma** (botão Jogar) | Uma encomenda urgente | Os cinco, em sequência | 6 etapas guiadas por dicas curtas: observar, descobrir o gargalo (hipótese), melhorar sem comprar, a procura aumenta e dá para investir, descobrir a nova restrição, resultado | chegar ao fim do expediente (a avaliação mostra cada passo) |
 | Aprendiz de Bruxa | Tutorial | Primeiros passos | 10 lições em que se aprende fazendo: selecionar estação, aceitar pedido, comprar ingrediente, mover a Lina, mudar a velocidade, observar filas, abrir a Análise | concluir as lições |
 | Cinco Círculos | 1. A Loja Entupida | Identificar | Analisa filas, utilização e capacidade e **registra hipóteses**, que a mentora confere com os dados | hipótese certa + 18 entregas + reputação > 0 |
 | | 2. O Caldeirão Nunca Para | Explorar | Pulmão, limpeza em paralelo, cobertura de intervalos, inspeção antes do caldeirão, prioridade por ganho, ajuda da Lina (compras bloqueadas) | 24 entregas + lucro ≥ 550 |
@@ -84,5 +88,6 @@ Tecnologia: **TypeScript + Vite**, Canvas 2D próprio, HTML/CSS para a interface
 - [docs/simulacao.md](docs/simulacao.md) — regras da simulação, economia e indicadores
 - [docs/toc-no-jogo.md](docs/toc-no-jogo.md) — como cada passo da TOC vira decisão no jogo
 - [docs/testes.md](docs/testes.md) — testes executados e resultados
+- [docs/seminario.md](docs/seminario.md) — Desafio da Turma: QR Code, roteiro do apresentador e debriefing
 - [docs/placar-online.md](docs/placar-online.md) — publicar online e configurar o placar da turma
 - [docs/limitacoes.md](docs/limitacoes.md) — limitações conhecidas e recursos visuais

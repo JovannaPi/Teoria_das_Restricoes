@@ -14,6 +14,7 @@ import {
   HeroConfig,
   lookFromHero,
   randomHero,
+  randomWitchName,
   SKIN_OPTIONS,
 } from '../game/hero';
 import { writeSave } from '../game/save';
@@ -49,8 +50,8 @@ function creatorBody(): string {
     <div class="creator-preview"><img class="hero-portrait" src="${portraitUrl(lookFromHero(draft), 'cast')}" alt="Prévia da sua bruxa">
       <button data-action="hero-random">${iconImg('crystal')} Aleatória</button></div>
     <div class="creator-form">
-      <label class="field">Nome da sua bruxa<input type="text" maxlength="18" data-hero-field="name" value="${esc(draft.name)}" placeholder="Ex.: Morgana Jr." autocomplete="off"></label>
-      <label class="field">Seu nome no placar<input type="text" maxlength="24" data-hero-field="player" value="${esc(draft.player)}" placeholder="Como a turma te conhece" autocomplete="name"></label>
+      <label class="field">Nome da sua bruxa <small class="muted">(aparece no placar; não use seu nome completo)</small><input type="text" maxlength="18" data-hero-field="name" value="${esc(draft.name)}" placeholder="Ex.: Ametista Lunar" autocomplete="off" autocapitalize="words" enterkeyhint="done"></label>
+      <p class="muted small">Visual opcional — toque para mudar ou use "Aleatória".</p>
       <h3>Pele</h3>${swatches('skin', SKIN_OPTIONS)}
       <h3>Cabelo</h3>${swatches('hair', HAIR_OPTIONS)}${choices('hairStyle', HAIRSTYLE_OPTIONS)}
       <h3>Roupa</h3>${swatches('cloth', CLOTH_OPTIONS)}
@@ -81,13 +82,13 @@ function bindFields(): void {
 /** Abre a criação da bruxa. Resolve true quando salva. */
 export function heroCreator(g: Game, firstTime = false): Promise<boolean> {
   draft = { ...DEFAULT_HERO, ...(g.save.hero || {}) };
-  if (!g.save.hero) draft.name = '';
+  if (!g.save.hero) draft = { ...randomHero(draft), name: randomWitchName() };
   const { promise } = openModal(g, {
     title: firstTime ? 'Crie a sua bruxa' : 'Minha bruxa',
     body: creatorBody(),
     cls: 'wide creator-modal',
     closable: !firstTime,
-    footer: `${firstTime ? '' : '<button data-action="modal-close">Cancelar</button>'}<button class="primary" data-action="hero-save">Salvar bruxa</button>`,
+    footer: `${firstTime ? '' : '<button data-action="modal-close">Cancelar</button>'}<button class="primary big" data-action="hero-save">${firstTime ? 'Jogar' : 'Salvar bruxa'}</button>`,
   });
   bindFields();
   return new Promise((resolve) => {
@@ -113,11 +114,11 @@ export function registerOnlineActions(g: Game): void {
   };
   a['hero-save'] = () => {
     const name = cleanName(draft.name);
-    const player = cleanName(draft.player, 24);
+    const player = name;
     const msg = document.querySelector('[data-hero-msg]') as HTMLElement | null;
-    if (!name || !player) {
+    if (!name) {
       if (msg) {
-        msg.textContent = 'Preencha o nome da bruxa e o seu nome (ele aparece no placar da turma).';
+        msg.textContent = 'Dê um nome à sua bruxa (ele aparece no placar da turma).';
         msg.classList.add('neg');
       }
       return;
@@ -180,7 +181,7 @@ let stopWatch: (() => void) | null = null;
 let myId = '';
 
 const PHASE_LABEL: Record<string, string> = Object.fromEntries(
-  PHASES.filter((p) => RANKED_PHASES.includes(p.id as (typeof RANKED_PHASES)[number])).map((p) => [p.id, p.mode === 'mestra' ? 'Mestra' : `Fase ${p.number}`]),
+  PHASES.filter((p) => RANKED_PHASES.includes(p.id as (typeof RANKED_PHASES)[number])).map((p) => [p.id, p.mode === 'mestra' ? 'Mestra' : p.mode === 'turma' ? 'Desafio da Turma' : `Fase ${p.number}`]),
 );
 
 function rowPortrait(r: RankRow): string {
@@ -196,7 +197,7 @@ function rowsHtml(rows: RankRow[], tab: string, max = 50): string {
       const pts = tab === 'geral' ? r.total : r.fases[tab];
       const detail = tab === 'geral' ? `${r.vencidas} fase${r.vencidas === 1 ? '' : 's'} vencida${r.vencidas === 1 ? '' : 's'}` : '';
       return `<li class="${r.jogadorId === myId ? 'me' : ''} ${i < 3 ? 'top top' + (i + 1) : ''}"><span class="rk-pos">${i + 1}º</span>${rowPortrait(r)}
-        <span class="rk-name"><b>${esc(r.jogador)}</b><small>${esc(r.bruxa)}${detail ? ' · ' + detail : ''}</small></span><span class="rk-pts">${pts}<small>pts</small></span></li>`;
+        <span class="rk-name"><b>${esc(r.bruxa)}</b><small>${detail || '&nbsp;'}</small></span><span class="rk-pts">${pts}<small>pts</small></span></li>`;
     })
     .join('')}</ol>`;
 }
@@ -240,7 +241,7 @@ export function leaderboard(g: Game): void {
     .join('');
   openModal(g, {
     title: 'Placar da turma',
-    body: `<p class="muted small">Conta a melhor pontuação de cada fase <b>vencida</b>. O Geral soma as fases (até 600 pontos). Atualiza sozinho.</p>
+    body: `<p class="muted small">Conta a melhor pontuação de cada fase <b>vencida</b>. O Geral soma as fases (até 700 pontos). No seminário, use a aba Desafio da Turma. Atualiza sozinho.</p>
       <div class="tabs" data-board-tabs>${tabs}</div><div data-board-body="modal"></div>`,
     footer: `<button data-action="board-project">${iconImg('chart')} Projetar na sala</button><button class="primary" data-action="modal-close">Fechar</button>`,
     cls: 'wide',
