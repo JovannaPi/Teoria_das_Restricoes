@@ -1,0 +1,29 @@
+{
+  "name": "pocao-em-apuros",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Poção em Apuros — jogo 2D de gerenciamento para aprender a Teoria das Restrições (TOC)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build && node scripts/inline-build.mjs",
+    "preview": "vite preview --port 4173",
+    "test": "vitest run",
+    "balance": "vitest run tests/balance.test.ts --reporter=verbose",
+    "test:e2e": "node tests/e2e/smoke.mjs",
+    "publicar": "npm run build && node scripts/publish-to-site.mjs",
+    "qr": "node scripts/make-qr.mjs"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "jsqr": "^1.4.0",
+    "playwright-core": "^1.64.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
+  },
+  "dependencies": {
+    "qrcode-generator": "^1.4.4"
+  }
+}

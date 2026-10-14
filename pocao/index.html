@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1a1220" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Poção em Apuros" />
+    <meta name="description" content="Poção em Apuros — jogo de gerenciamento de uma loja de poções para aprender a Teoria das Restrições." />
+    <title>Poção em Apuros</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='6' y='1' width='4' height='2' fill='%23a06a3a'/%3E%3Crect x='6' y='3' width='4' height='3' fill='%23a8e0ff'/%3E%3Crect x='3' y='6' width='10' height='8' fill='%231b1222'/%3E%3Crect x='4' y='7' width='8' height='6' fill='%2346b06e'/%3E%3Crect x='5' y='8' width='2' height='2' fill='%2386e8a8'/%3E%3C/svg%3E" />
+    <script type="module" crossorigin src="./assets/index-XSyuncei.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/style-Dw5CR-OC.css">
+  </head>
+  <body data-screen="title">
+    <div id="app">
+      <section id="title-screen" class="screen">
+        <canvas id="title-bg" aria-hidden="true"></canvas>
+        <div class="title-wrap">
+          <div id="title-menu"><p class="muted">Carregando a loja de poções…</p></div>
+          <div id="title-panel" hidden></div>
+        </div>
+        <noscript><p>Este jogo precisa de JavaScript.</p></noscript>
+      </section>
+      <section id="game-screen" class="screen hidden">
+        <header id="hud"></header>
+        <div id="game-main">
+          <div id="stage-wrap">
+            <div id="stage">
+              <canvas id="shop" aria-label="Oficina de poções: clique nas estações para ver detalhes" role="img"></canvas>
+              <div id="overlay"></div>
+            </div>
+          </div>
+          <aside id="side" aria-label="Painel de detalhes"></aside>
+        </div>
+        <div id="station-strip" aria-label="Estações da loja"></div>
+        <footer id="bottom"></footer>
+        <nav id="tabbar" aria-label="Painéis do jogo"></nav>
+      </section>
+      <div id="modal-root"></div>
+      <div id="toasts" aria-live="polite"></div>
+    </div>
+  </body>
+</html>
