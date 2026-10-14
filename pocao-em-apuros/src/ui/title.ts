@@ -1,7 +1,7 @@
 // Tela inicial, seleção de fases e créditos. Ao fundo, uma loja de verdade funcionando.
 import { sfx } from '../audio/sfx';
 import { PHASES } from '../data/phases';
-import type { Game } from '../game/game';
+import { toggleFullscreen, type Game } from '../game/game';
 import { phaseUnlocked, writeSave } from '../game/save';
 import { ShopScene } from '../render/scene';
 import { iconImg, LOOKS, portraitUrl } from '../render/sprites';
@@ -10,6 +10,18 @@ import { createSim, stepSim } from '../sim/engine';
 import type { SimState } from '../sim/types';
 import { $, esc } from './dom';
 import { glossaryHtml } from './modals';
+
+// convite de instalação do navegador (Android/Chrome); no iPhone o caminho é "Compartilhar → Tela de Início"
+let installPrompt: (Event & { prompt: () => Promise<void> }) | null = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installPrompt = e as Event & { prompt: () => Promise<void> };
+  document.querySelectorAll('[data-action="title-install"]').forEach((b) => ((b as HTMLElement).hidden = false));
+});
+
+function isStandalone(): boolean {
+  return window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+}
 
 let demo: { sim: SimState; scene: ShopScene; raf: number; last: number } | null = null;
 
@@ -56,6 +68,8 @@ export function renderTitle(g: Game): void {
       <button class="${!runPhase && !tutorialDone ? 'primary' : ''}" data-action="title-start" data-v="tutorial">${iconImg('hat')} Aprendiz de Bruxa <small>tutorial · 5 min</small></button>
       <button class="${!runPhase && tutorialDone ? 'primary' : ''}" data-action="title-phases">${iconImg('star')} Desafio dos Cinco Círculos <small>modo principal</small></button>
       <button data-action="title-start" data-v="mestra" ${phaseUnlocked(s, PHASES.map((p) => p.id), 'mestra') ? '' : 'disabled title="Conclua o Quinto Círculo (ou ative o modo professor)"'}>${iconImg('crystal')} Bruxa Mestra <small>${phaseUnlocked(s, PHASES.map((p) => p.id), 'mestra') ? 'desafio imprevisível' : 'bloqueado'}</small></button>
+      <button data-action="title-install" ${installPrompt ? '' : 'hidden'}>${iconImg('door')} Instalar no celular <small>joga offline</small></button>
+      ${!isStandalone() && document.fullscreenEnabled ? `<button data-action="title-fullscreen" class="mobile-only">${iconImg('eye')} Jogar em tela cheia</button>` : ''}
       <button data-action="title-glossary">${iconImg('book')} Os cinco passos e o glossário</button>
       <button data-action="title-settings">${iconImg('gear')} Configurações</button>
       <button data-action="title-about">${iconImg('scroll')} Sobre o jogo</button>
@@ -142,7 +156,15 @@ export function registerTitleActions(g: Game): void {
       <p><b>Poção em Apuros</b> é um jogo de gerenciamento para estudantes de Engenharia de Produção aprenderem, jogando, a Teoria das Restrições (TOC) de Eliyahu Goldratt e seus cinco passos de focalização.</p>
       <p>Tudo o que acontece na loja é calculado por uma simulação de verdade: capacidades, filas, tempos, falhas, estoques e dinheiro. Nada é decorativo.</p>
       <p class="muted small">Arte em pixel art e sons gerados por código, feitos para este jogo. Funciona offline; o progresso fica salvo neste navegador.</p>
-      <h3>Controles</h3><ul class="list"><li>Clique numa estação para ver dados e decisões.</li><li>Clique no chão para mover a Lina.</li><li>Espaço pausa; 1, 2 e 4 mudam a velocidade; A abre a Análise; Esc fecha janelas.</li></ul>`);
+      <h3>No celular</h3><p>Funciona em pé e deitado (deitado a loja fica maior). Para instalar: no Android, use "Instalar no celular"; no iPhone, toque em Compartilhar → "Adicionar à Tela de Início". Depois de instalado, joga sem internet.</p>
+      <h3>Controles</h3><ul class="list"><li>Toque/clique numa estação para ver dados e decisões.</li><li>Clique no chão para mover a Lina.</li><li>Espaço pausa; 1, 2 e 4 mudam a velocidade; A abre a Análise; Esc fecha janelas.</li></ul>`);
+  a['title-install'] = async () => {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    installPrompt = null;
+    renderTitle(g);
+  };
+  a['title-fullscreen'] = () => toggleFullscreen();
   a['title-back'] = () => {
     $('#title-panel').hidden = true;
   };

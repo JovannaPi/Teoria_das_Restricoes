@@ -246,6 +246,100 @@ try {
   await page.screenshot({ path: join(shotsDir, 'celular-painel.png') });
   await page.close();
 
+  // ---------------------------------------------------------------- celular em pé (toque)
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    const m = await ctx.newPage();
+    m.on('pageerror', (e) => errors.push('[celular] ' + String(e)));
+    await m.goto(URL);
+    await m.waitForSelector('#title-menu .menu-list');
+    await m.tap('[data-action="title-start"][data-v="tutorial"]');
+    for (let i = 0; i < 8; i++) {
+      const b = await m.$('[data-action="dialogue-next"]');
+      if (!b) break;
+      await b.tap();
+    }
+    check('celular em pé: barra de abas e faixa de estações visíveis', (await m.isVisible('#tabbar')) && (await m.isVisible('#station-strip')));
+    const small = await m.evaluate(() =>
+      [...document.querySelectorAll('#tabbar button, #station-strip button:not([hidden]), .hud-time button')]
+        .map((b) => b.getBoundingClientRect())
+        .filter((r) => r.height < 32 || r.width < 32).length,
+    );
+    check('celular em pé: alvos de toque com pelo menos 32 px', small === 0, `${small} pequenos`);
+    await m.tap('#station-strip [data-strip="balcao"]');
+    await m.tap('#tabbar [data-tab-id="pedidos"]');
+    await m.waitForSelector('[data-action="accept"]');
+    await m.tap('[data-action="accept"]');
+    check('celular em pé: aceitar pedido tocando', (await m.evaluate(() => Object.values(window.__pocao.game.sim.orders)[0].status)) === 'aceito');
+    await m.tap('#station-strip [data-strip="caldeirao"]');
+    await m.tap('#side [data-action="help-here"][data-v="caldeirao"]');
+    await m.evaluate(() => {
+      const g = window.__pocao.game;
+      for (let i = 0; i < 200; i++) g.tick(0.1);
+    });
+    check('celular em pé: Lina ajuda o caldeirão', (await m.evaluate(() => window.__pocao.game.sim.helper)) === 'caldeirao');
+    // tocar na própria loja (canvas) seleciona a estação
+    const box = await m.evaluate(() => {
+      const r = document.querySelector('#shop').getBoundingClientRect();
+      return { x: r.left + (r.width * 346) / 480, y: r.top + (r.height * 228) / 270 };
+    });
+    await m.touchscreen.tap(box.x, box.y);
+    await m.waitForTimeout(100);
+    check('celular em pé: tocar na loja seleciona a estação', (await m.evaluate(() => window.__pocao.game.selected)) === 'embalagem');
+    await m.tap('#tabbar [data-action="open-analysis"]');
+    check('celular em pé: análise abre', await m.isVisible('.modal'));
+    await m.tap('.modal [data-action="modal-close"]');
+    await m.tap('#tabbar [data-action="open-more"]');
+    check('celular em pé: menu "Mais" sem botões mortos', (await deadButtons(m)).length === 0);
+    await m.tap('.modal [data-action="modal-close"]');
+    check('celular em pé: sem rolagem horizontal', await m.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+    await m.screenshot({ path: join(shotsDir, 'celular-em-pe.png') });
+    await ctx.close();
+  }
+
+  // ---------------------------------------------------------------- celular deitado (toque)
+  {
+    const ctx = await browser.newContext({ viewport: { width: 844, height: 390 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    const m = await ctx.newPage();
+    m.on('pageerror', (e) => errors.push('[deitado] ' + String(e)));
+    await m.goto(URL);
+    await m.waitForSelector('#title-menu .menu-list');
+    await m.evaluate(() => {
+      window.__pocao.game.save.teacherMode = true;
+      void window.__pocao.game.startPhase('fase3');
+    });
+    for (let i = 0; i < 8; i++) {
+      const b = await m.$('[data-action="dialogue-next"]');
+      if (!b) break;
+      await b.tap();
+    }
+    await m.tap('.modal [data-action="modal-close"]');
+    const stage = await m.evaluate(() => document.querySelector('#shop').getBoundingClientRect().height);
+    check('celular deitado: a loja ocupa a maior parte da altura', stage > 390 * 0.7, `${Math.round(stage)} px`);
+    await m.tap('#tabbar [data-tab-id="fluxo"]');
+    await m.waitForTimeout(250);
+    check('celular deitado: painel desliza ao tocar na aba', await m.evaluate(() => document.body.classList.contains('side-open')));
+    await m.tap('[data-action="policy"][data-k="release"][data-v="corda"]');
+    check('celular deitado: decisão de fluxo aplicada por toque', (await m.evaluate(() => window.__pocao.game.sim.policies.release)) === 'corda');
+    await m.tap('#tabbar [data-tab-id="fluxo"]');
+    await m.waitForTimeout(250);
+    check('celular deitado: tocar de novo fecha o painel', await m.evaluate(() => !document.body.classList.contains('side-open')));
+    await m.screenshot({ path: join(shotsDir, 'celular-deitado.png') });
+    await ctx.close();
+  }
+
+  // ---------------------------------------------------------------- arquivo único (offline, sem servidor)
+  {
+    const single = join(root, 'dist', 'pocao-em-apuros.html');
+    if (existsSync(single)) {
+      const p = await newPage({ width: 1280, height: 720 });
+      await p.goto('file://' + single);
+      await p.waitForSelector('#title-menu .menu-list', { timeout: 5000 });
+      check('versão em arquivo único abre sem servidor', true);
+      await p.close();
+    }
+  }
+
   check('nenhum erro no console', errors.length === 0, errors.slice(0, 3).join(' | '));
 } catch (e) {
   check('execução sem exceções', false, String(e));

@@ -20,3 +20,10 @@ function boot(): void {
 }
 
 boot();
+
+// Instalação como app (PWA): só quando servido por http(s) no build de produção.
+if (import.meta.env.PROD && 'serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => undefined);
+  });
+}

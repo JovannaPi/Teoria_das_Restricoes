@@ -403,6 +403,24 @@ export function refreshSettings(g: Game): void {
   if (el) el.innerHTML = settingsBody(g);
 }
 
+export function moreMenu(g: Game): void {
+  const phase = g.phase!;
+  const fs = document.fullscreenEnabled;
+  open(g, {
+    title: 'Mais',
+    body: `<div class="menu-list grid2">
+      <button data-action="open-objectives">${iconImg('star')} Objetivos</button>
+      ${phase.hypothesisEnabled ? `<button class="primary" data-action="hypothesis">${iconImg('drum')} Registrar hipótese</button>` : ''}
+      <button data-action="open-recipes">${iconImg('book')} Receitas</button>
+      <button data-action="open-glossary">${iconImg('eye')} Glossário e 5 passos</button>
+      ${fs ? `<button data-action="fullscreen">${iconImg('door')} Tela cheia</button>` : ''}
+      <button data-action="open-settings">${iconImg('sound')} Som</button>
+      <button data-action="restart">${iconImg('restart')} Reiniciar fase</button>
+      <button data-action="exit">${iconImg('door')} Salvar e sair</button></div>`,
+    cls: 'small sheet',
+  });
+}
+
 export function gameMenu(g: Game): void {
   open(g, {
     title: 'Menu da partida',
@@ -411,6 +429,7 @@ export function gameMenu(g: Game): void {
       <button data-action="open-objectives">Ver objetivos</button>
       <button data-action="open-glossary">Glossário e os cinco passos</button>
       <button data-action="open-settings">Configurações de som</button>
+      ${document.fullscreenEnabled ? '<button data-action="fullscreen">Tela cheia</button>' : ''}
       <button data-action="restart">Reiniciar fase</button>
       <button data-action="exit">Salvar e voltar ao menu</button></div>`,
     cls: 'small',

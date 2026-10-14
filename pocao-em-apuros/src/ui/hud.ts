@@ -35,7 +35,19 @@ export function buildHud(g: Game): void {
       <button data-action="open-recipes" title="Livro de receitas">${iconImg('book')}<span>Receitas</span></button>
       <button data-action="open-glossary" title="Glossário e os cinco passos">${iconImg('eye')}<span>Glossário</span></button>
       ${phase.hypothesisEnabled ? `<button data-action="hypothesis" class="hyp-btn" title="Registrar hipótese sobre a restrição">${iconImg('drum')}<span>Hipótese</span></button>` : ''}
-    </nav>`;
+    </nav>
+    <button class="hud-more" data-action="open-menu" aria-label="Menu da partida">${iconImg('gear')}</button>`;
+  // barra de abas para celular (em pé: rodapé; deitado: trilho lateral)
+  const tab = (action: string, v: string, icon: string, label: string, extra = '') =>
+    `<button data-action="${action}" ${v ? `data-v="${v}"` : ''} data-tab-id="${v || action}">${iconImg(icon)}<span>${label}</span>${extra}</button>`;
+  $('#tabbar').innerHTML =
+    tab('side', 'estacao', 'hat', 'Estação') +
+    tab('side', 'pedidos', 'scroll', 'Pedidos', '<b class="badge" data-bind="waiting2"></b>') +
+    tab('side', 'despensa', 'bag', 'Despensa') +
+    tab('side', 'fluxo', 'flow', 'Fluxo') +
+    tab('side', 'melhorias', 'hammer', 'Melhorias') +
+    tab('open-analysis', '', 'chart', 'Análise') +
+    tab('open-more', '', 'book', 'Mais', phase.hypothesisEnabled ? '<b class="dotmark"></b>' : '');
 }
 
 export function updateHud(g: Game): void {
@@ -51,6 +63,11 @@ export function updateHud(g: Game): void {
   set('clock', clock(Math.min(s.t, s.duration)));
   const waiting = Object.values(s.orders).filter((o) => o.status === 'aguardando').length;
   set('waiting', waiting ? String(waiting) : '');
+  set('waiting2', waiting ? String(waiting) : '');
+  document.querySelectorAll('#tabbar [data-tab-id]').forEach((b) => {
+    const id = (b as HTMLElement).dataset.tabId!;
+    b.classList.toggle('on', document.body.classList.contains('side-open') && id === g.side);
+  });
   const obj = evaluateAll(s, g.phase!, g.tutorial?.done ?? false);
   set('objcount', `${obj.filter((o) => o.done).length}/${obj.length}`);
   const rb = document.querySelector('[data-bind="repbar"]') as HTMLElement | null;

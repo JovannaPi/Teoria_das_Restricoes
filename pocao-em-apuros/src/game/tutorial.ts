@@ -108,13 +108,13 @@ export class Tutorial {
   }
 
   private mountCoach(): void {
-    const stage = document.getElementById('stage');
-    if (!stage) return;
+    const host = document.getElementById('game-screen');
+    if (!host) return;
     this.coach?.remove();
     this.coach = document.createElement('div');
     this.coach.className = 'coach';
     this.coach.setAttribute('role', 'status');
-    stage.appendChild(this.coach);
+    host.appendChild(this.coach);
   }
 
   private enter(): void {

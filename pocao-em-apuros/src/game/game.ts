@@ -50,6 +50,8 @@ export class Game {
     this.registerActions();
     this.bindInput(canvas);
     window.addEventListener('resize', () => this.layoutStage());
+    window.addEventListener('orientationchange', () => setTimeout(() => this.layoutStage(), 200));
+    document.addEventListener('fullscreenchange', () => setTimeout(() => this.layoutStage(), 100));
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && this.sim && !this.ended) {
         this.persistRun();
@@ -363,6 +365,12 @@ export class Game {
   }
 
   openSide(view: SideView): void {
+    // no celular deitado o painel é uma gaveta: tocar de novo na mesma aba fecha
+    if (layoutMode() === 'deitado' && document.body.classList.contains('side-open') && this.side === view) {
+      document.body.classList.remove('side-open');
+      this.refreshUi(true);
+      return;
+    }
     this.side = view;
     document.body.classList.add('side-open');
     this.refreshUi(true);
@@ -591,6 +599,11 @@ export class Game {
     a['open-objectives'] = () => void M.objectivesIntro(this);
     a['open-settings'] = () => void M.settings(this);
     a['open-menu'] = () => void M.gameMenu(this);
+    a['open-more'] = () => void M.moreMenu(this);
+    a['fullscreen'] = () => {
+      M.closeAll(this);
+      toggleFullscreen();
+    };
     a['modal-close'] = () => M.closeTop(this);
     a['modal-tab'] = (el) => M.switchTab(el);
     a['restart'] = async () => {
@@ -639,6 +652,32 @@ export class Game {
     };
     a['tutorial-next'] = () => this.tutorial?.onEvent('next', null);
   }
+}
+
+export type LayoutMode = 'desktop' | 'em-pe' | 'deitado';
+
+/** Mesmas condições das media queries de styles.css. */
+export function layoutMode(): LayoutMode {
+  if (window.matchMedia('(orientation: landscape) and (max-height: 540px)').matches) return 'deitado';
+  if (window.matchMedia('(orientation: portrait) and (max-width: 1024px)').matches) return 'em-pe';
+  return 'desktop';
+}
+
+/** Tela cheia e, no celular, tentativa de travar em paisagem (onde a loja aparece maior). */
+export function toggleFullscreen(): void {
+  const d = document as Document & { webkitFullscreenElement?: Element };
+  if (d.fullscreenElement || d.webkitFullscreenElement) {
+    void document.exitFullscreen?.();
+    return;
+  }
+  const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
+  const p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : (el.webkitRequestFullscreen?.(), Promise.resolve());
+  void Promise.resolve(p)
+    .then(() => {
+      const o = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> };
+      return o?.lock?.('landscape').catch(() => undefined);
+    })
+    .catch(() => undefined);
 }
 
 export const game = new Game();
