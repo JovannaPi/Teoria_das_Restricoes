@@ -9,6 +9,7 @@ import { canBuyUpgrade } from '../sim/actions';
 import { applyUpgradeEffect, inbound, ingredientsInUse, orderNeeds, ropeCount, shelfCount } from '../sim/engine';
 import { currentMods } from '../sim/mods';
 import type { Order, SimState, StationId, UpgradeId } from '../sim/types';
+import { personalize } from '../game/hero';
 import { clock, esc, money, n1, pct, shopMinutes, STATION_COLORS } from './dom';
 
 export type SideView = 'estacao' | 'pedidos' | 'despensa' | 'fluxo' | 'melhorias';
@@ -46,7 +47,7 @@ export function renderSide(g: Game, force: boolean): void {
   if (!force && html === lastHtml) return;
   lastHtml = html;
   const scroll = root.querySelector('.side-body')?.scrollTop ?? 0;
-  root.innerHTML = html;
+  root.innerHTML = personalize(html);
   const sb = root.querySelector('.side-body');
   if (sb) sb.scrollTop = scroll;
 }

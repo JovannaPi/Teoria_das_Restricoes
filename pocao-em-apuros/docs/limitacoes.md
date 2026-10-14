@@ -7,5 +7,6 @@
 - **Pulmão** é um único número para o tambor; não há pulmões de expedição ou de montagem (TPC completo).
 - Os **clientes visíveis** são limitados (5 no balcão, 15 na espera); os demais aparecem nos painéis.
 - **Celular**: em pé, a loja é pequena (por isso há a faixa de estações tocáveis); a experiência é melhor deitado. Travar a orientação em paisagem só funciona em tela cheia nos navegadores que permitem (Android/Chrome). No iPhone, a tela cheia completa só existe instalando na Tela de Início.
-- O **salvamento** é por navegador (localStorage); não há nuvem nem ranking de turma.
+- O **salvamento** do progresso é por aparelho (localStorage). Só os resultados das fases vão para o placar online.
+- A **pontuação do placar** é calculada no aparelho do aluno; as regras do Firebase limitam os valores, mas não impedem um resultado inventado dentro do limite (ver `placar-online.md`).
 - O build publicado em `../pocao/` precisa ser servido por http(s) para o modo app/offline funcionar; `pocao-em-apuros.html` funciona aberto direto, mas sem instalação.

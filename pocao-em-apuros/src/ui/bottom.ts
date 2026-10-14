@@ -3,6 +3,7 @@ import { RECIPES } from '../data/recipes';
 import type { Game } from '../game/game';
 import { flaskUrl } from '../render/sprites';
 import { clock, esc } from './dom';
+import { personalize } from '../game/hero';
 
 let lastHtml = '';
 
@@ -36,5 +37,5 @@ export function renderBottom(g: Game, force: boolean): void {
   const html = `<div class="orders-strip" aria-label="Pedidos em andamento">${cards || '<span class="muted">Sem pedidos no momento.</span>'}${more}</div><ul class="log" aria-live="polite">${log}</ul>`;
   if (!force && html === lastHtml) return;
   lastHtml = html;
-  root.innerHTML = html;
+  root.innerHTML = personalize(html);
 }

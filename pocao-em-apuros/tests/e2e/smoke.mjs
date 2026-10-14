@@ -36,7 +36,7 @@ const errors = [];
 async function newPage(viewport) {
   const page = await browser.newPage({ viewport });
   page.on('console', (m) => {
-    if (m.type() === 'error') errors.push(m.text());
+    if (m.type() === 'error' && !/gstatic|firestore|googleapis|net::ERR|Failed to load resource|Failed to fetch dynamically/i.test(m.text())) errors.push(m.text());
   });
   page.on('pageerror', (e) => errors.push(String(e)));
   return page;
@@ -59,6 +59,18 @@ async function skipDialogues(page) {
     await b.click();
     await page.waitForTimeout(40);
   }
+}
+
+/** Preenche a criação da bruxa (aparece antes da primeira partida). */
+async function createHero(page, tap = false) {
+  await page.waitForSelector('.creator');
+  await page.fill('[data-hero-field="name"]', 'Morganinha');
+  await page.fill('[data-hero-field="player"]', 'Aluna Teste');
+  const act = (sel) => (tap ? page.tap(sel) : page.click(sel));
+  await act('[data-action="hero-pick"][data-k="skin"][data-v="#7a4e32"]');
+  await act('[data-action="hero-pick"][data-k="hairStyle"][data-v="coque"]');
+  await act('[data-action="hero-random"]');
+  await act('[data-action="hero-save"]');
 }
 
 async function clickStation(page, id) {
@@ -100,6 +112,13 @@ try {
   // ---------------------------------------------------------------- tutorial completo
   await page.click('[data-action="title-back"]');
   await page.click('[data-action="title-start"][data-v="tutorial"]');
+  check('criação da bruxa aparece antes da primeira partida', (await page.$('.creator')) != null);
+  check('criação da bruxa sem botões mortos', (await deadButtons(page)).length === 0);
+  await page.click('[data-action="hero-save"]');
+  check('criação exige os nomes', await page.isVisible('.creator'));
+  await createHero(page);
+  await page.waitForSelector('[data-action="dialogue-next"]');
+  check('o nome da bruxa aparece nos diálogos', (await page.textContent('.dlg')).includes('Morganinha'));
   await skipDialogues(page);
   await page.waitForSelector('.coach');
   await clickStation(page, 'balcao');
@@ -200,6 +219,18 @@ try {
   await page.click('.debrief [data-action="quiz"][data-v="1"]');
   check('pergunta de reflexão mostra explicação', await page.isVisible('.quiz-exp'));
   await page.screenshot({ path: join(shotsDir, 'fase1-avaliacao.png'), fullPage: false });
+  await page.waitForFunction(() => !/Enviando/.test(document.querySelector('[data-online-status]')?.textContent || ''), null, { timeout: 30000 });
+  const st = await page.textContent('[data-online-status]');
+  check('avaliação informa o envio ao placar (enviado ou guardado sem internet)', /placar|guardado/.test(st), st.trim().slice(0, 60));
+  await page.click('.debrief [data-action="board-open"]');
+  await page.waitForSelector('[data-board-body="modal"]');
+  check('placar abre sem botões mortos', (await deadButtons(page)).length === 0);
+  await page.click('[data-action="board-tab"][data-v="fase1"]');
+  await page.click('[data-action="board-project"]');
+  check('modo projeção do placar abre', await page.isVisible('.projection'));
+  await page.click('[data-action="board-close-projection"]');
+  check('modo projeção fecha', !(await page.isVisible('.projection')));
+  await page.waitForSelector('.debrief');
 
   // ---------------------------------------------------------------- fase 4: investir altera capacidade
   await page.evaluate(() => {
@@ -254,6 +285,8 @@ try {
     await m.goto(URL);
     await m.waitForSelector('#title-menu .menu-list');
     await m.tap('[data-action="title-start"][data-v="tutorial"]');
+    await createHero(m, true);
+    check('celular em pé: bruxa criada por toque', (await m.evaluate(() => window.__pocao.game.save.hero?.name)) === 'Morganinha');
     for (let i = 0; i < 8; i++) {
       const b = await m.$('[data-action="dialogue-next"]');
       if (!b) break;
@@ -308,6 +341,7 @@ try {
       window.__pocao.game.save.teacherMode = true;
       void window.__pocao.game.startPhase('fase3');
     });
+    await createHero(m, true);
     for (let i = 0; i < 8; i++) {
       const b = await m.$('[data-action="dialogue-next"]');
       if (!b) break;

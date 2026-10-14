@@ -1,5 +1,6 @@
 // Janelas modais: diálogos, hipóteses, análise, receitas, glossário, configurações e avaliação.
 import { CHARACTERS } from '../data/characters';
+import { heroName, personalize } from '../game/hero';
 import { FIVE_STEPS, GLOSSARY } from '../data/glossary';
 import type { DialogueLine } from '../data/phases';
 import { INGREDIENTS, materialCost, RECIPES, unitThroughput } from '../data/recipes';
@@ -17,6 +18,7 @@ interface ModalEntry {
   el: HTMLElement;
   resolve: (v: unknown) => void;
   pause: boolean;
+  onClose?: () => void;
 }
 
 const stack: ModalEntry[] = [];
@@ -25,16 +27,20 @@ export function isOpen(): boolean {
   return stack.length > 0;
 }
 
+export function openModal<T = unknown>(g: Game, opts: Parameters<typeof open>[1]) {
+  return open<T>(g, opts);
+}
+
 function open<T = unknown>(
   g: Game,
-  opts: { title?: string; body: string; cls?: string; pause?: boolean; closable?: boolean; footer?: string },
+  opts: { title?: string; body: string; cls?: string; pause?: boolean; closable?: boolean; footer?: string; onClose?: () => void },
 ): { el: HTMLElement; promise: Promise<T> } {
   const root = document.getElementById('modal-root')!;
   const el = document.createElement('div');
   el.className = 'modal-back';
   el.innerHTML = `<div class="modal ${opts.cls || ''}" role="dialog" aria-modal="true" ${opts.title ? `aria-label="${esc(opts.title)}"` : ''}>
     ${opts.title ? `<header><h2>${opts.title}</h2>${opts.closable !== false ? '<button class="x" data-action="modal-close" aria-label="Fechar">×</button>' : ''}</header>` : ''}
-    <div class="modal-body">${opts.body}</div>
+    <div class="modal-body">${personalize(opts.body)}</div>
     ${opts.footer ? `<footer>${opts.footer}</footer>` : ''}
   </div>`;
   root.appendChild(el);
@@ -42,7 +48,7 @@ function open<T = unknown>(
   if (pause) g.pushModalPause();
   let resolve!: (v: unknown) => void;
   const promise = new Promise<T>((r) => (resolve = r as (v: unknown) => void));
-  stack.push({ el, resolve, pause });
+  stack.push({ el, resolve, pause, onClose: opts.onClose });
   const focusable = el.querySelector('button.primary, button, [tabindex]') as HTMLElement | null;
   focusable?.focus();
   return { el, promise };
@@ -54,6 +60,7 @@ function close(g: Game, entry: ModalEntry, value?: unknown) {
   stack.splice(i, 1);
   entry.el.remove();
   if (entry.pause) g.popModalPause();
+  entry.onClose?.();
   entry.resolve(value);
 }
 
@@ -86,7 +93,7 @@ let dlg: { el: HTMLElement; lines: DialogueLine[]; i: number; done: () => void }
 
 const WHO: Record<DialogueLine['who'], { name: string; look: keyof typeof LOOKS | null }> = {
   mentora: { name: CHARACTERS.mentora.name, look: 'morgana' },
-  protagonista: { name: CHARACTERS.protagonista.name, look: 'lina' },
+  protagonista: { name: '', look: 'lina' },
   aprendiz: { name: CHARACTERS.aprendiz.name, look: 'tico' },
   comerciante: { name: CHARACTERS.comerciante.name, look: 'trufa' },
   narrador: { name: '', look: null },
@@ -98,7 +105,7 @@ function renderLine(): void {
   const who = WHO[line.who];
   const box = dlg.el.querySelector('.dlg')!;
   box.innerHTML = `${who.look ? `<img class="portrait" src="${portraitUrl(LOOKS[who.look], line.who === 'aprendiz' ? 'happy' : 'idle')}" alt="">` : ''}
-    <div class="dlg-text ${line.who === 'narrador' ? 'narr' : ''}">${who.name ? `<b>${esc(who.name)}</b>` : ''}<p>${esc(line.text)}</p>
+    <div class="dlg-text ${line.who === 'narrador' ? 'narr' : ''}">${who.name || line.who === 'protagonista' ? `<b>${esc(line.who === 'protagonista' ? heroName() : who.name)}</b>` : ''}<p>${esc(personalize(line.text))}</p>
     <div class="dlg-foot"><small>${dlg.i + 1}/${dlg.lines.length}</small><button class="primary" data-action="dialogue-next">${dlg.i === dlg.lines.length - 1 ? 'Começar' : 'Continuar'}</button></div></div>`;
   (box.querySelector('button.primary') as HTMLElement)?.focus();
 }
@@ -411,6 +418,7 @@ export function moreMenu(g: Game): void {
     body: `<div class="menu-list grid2">
       <button data-action="open-objectives">${iconImg('star')} Objetivos</button>
       ${phase.hypothesisEnabled ? `<button class="primary" data-action="hypothesis">${iconImg('drum')} Registrar hipótese</button>` : ''}
+      <button data-action="board-open">${iconImg('star')} Placar da turma</button>
       <button data-action="open-recipes">${iconImg('book')} Receitas</button>
       <button data-action="open-glossary">${iconImg('eye')} Glossário e 5 passos</button>
       ${fs ? `<button data-action="fullscreen">${iconImg('door')} Tela cheia</button>` : ''}
@@ -427,6 +435,7 @@ export function gameMenu(g: Game): void {
     body: `<div class="menu-list">
       <button data-action="modal-close" class="primary">Continuar jogando</button>
       <button data-action="open-objectives">Ver objetivos</button>
+      <button data-action="board-open">Placar da turma</button>
       <button data-action="open-glossary">Glossário e os cinco passos</button>
       <button data-action="open-settings">Configurações de som</button>
       ${document.fullscreenEnabled ? '<button data-action="fullscreen">Tela cheia</button>' : ''}
@@ -438,7 +447,13 @@ export function gameMenu(g: Game): void {
 
 // ------------------------------------------------------------------ avaliação
 
-export async function debrief(g: Game, won: boolean, reason: string | null, score: ScoreBreakdown): Promise<void> {
+export async function debrief(
+  g: Game,
+  won: boolean,
+  reason: string | null,
+  score: ScoreBreakdown,
+  online?: Promise<'enviado' | 'pendente' | 'negado' | 'ignorado'>,
+): Promise<void> {
   const s = g.sim!;
   const phase = g.phase!;
   const a = analyzeCapacity(s);
@@ -472,6 +487,7 @@ export async function debrief(g: Game, won: boolean, reason: string | null, scor
       <div class="hl"><span>Restrição no fim do dia (pelos dados)</span><b>${esc(constraintName)}</b></div>
     </div>
     <h3>Pontuação: ${score.total}/100</h3>
+    ${online ? '<p class="online-status" data-online-status>Enviando resultado ao placar da turma…</p>' : ''}
     <ul class="score">${score.parts.map((p) => `<li><span>${esc(p.label)}</span><i class="meter"><i style="width:${(p.points / p.max) * 100}%"></i></i><b>${Math.round(p.points)}/${p.max}</b><small>${esc(p.detail)}</small></li>`).join('')}</ul>
     <p class="muted small">A pontuação avalia o resultado da loja inteira. Manter todas as estações 100% ocupadas não dá pontos.</p>
     ${decisions ? `<h3>Suas decisões e consequências</h3><ul class="list decisions">${decisions}</ul>` : ''}
@@ -480,8 +496,16 @@ export async function debrief(g: Game, won: boolean, reason: string | null, scor
     <div class="quiz" data-correct="${q.correct}"><p><b>${esc(q.question)}</b></p>
       ${q.options.map((o, i) => `<button class="row-btn" data-action="quiz" data-v="${i}">${esc(o)}</button>`).join('')}
       <div class="quiz-exp" hidden><p>${esc(q.explanation)}</p></div></div>`;
-  const footer = `<button data-action="exit">Menu</button><button data-action="retry">Jogar de novo</button>${won && next ? '<button class="primary" data-action="next-phase">Próxima fase</button>' : ''}`;
-  const { promise } = open(g, { title: `Avaliação — ${esc(phase.title)}`, body, footer, cls: 'wide debrief', closable: false });
+  const footer = `<button data-action="board-open">Placar</button><button data-action="exit">Menu</button><button data-action="retry">Jogar de novo</button>${won && next ? '<button class="primary" data-action="next-phase">Próxima fase</button>' : ''}`;
+  const { el: dEl, promise } = open(g, { title: `Avaliação — ${esc(phase.title)}`, body, footer, cls: 'wide debrief', closable: false });
+  void online?.then((st) => {
+    const box = dEl.querySelector('[data-online-status]');
+    if (!box) return;
+    if (st === 'ignorado') box.remove();
+    else if (st === 'enviado') box.innerHTML = won ? '<b class="pos">Resultado enviado ao placar da turma.</b> Toque em Placar para ver sua posição.' : 'Resultado registrado. Só fases <b>vencidas</b> somam pontos no placar.';
+    else if (st === 'negado') box.innerHTML = '<b class="neg">O placar ainda não foi liberado no Firebase.</b> O resultado ficou guardado e será enviado depois que as regras forem configuradas.';
+    else box.innerHTML = '<b class="neg">Sem conexão:</b> o resultado ficou guardado e será enviado ao placar quando houver internet.';
+  });
   await promise;
 }
 

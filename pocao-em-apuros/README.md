@@ -4,7 +4,13 @@ Jogo 2D de gerenciamento de uma loja de poções para estudantes de Engenharia d
 
 O jogador é **Lina Brasaverde**, herdeira de uma loja de poções em ruínas. Com a ajuda da **Vó Morgana**, precisa descobrir qual estação limita a loja, tirar o máximo dela, fazer o resto da loja trabalhar no ritmo dela, decidir quando investir e recomeçar quando a restrição muda de lugar.
 
+Cada aluno **cria a sua bruxa** (nome, pele, cabelo, roupa e chapéu) e compete no **placar online da turma**, que pode ser projetado na sala.
+
 **Feito primeiro para celular**: funciona em pé e deitado, por toque, pode ser instalado como app e joga sem internet. Também funciona no computador.
+
+## Colocar online com placar
+
+Veja **[docs/placar-online.md](docs/placar-online.md)**: publicar no GitHub Pages e colar as regras do Firebase (uma vez só).
 
 ## Como jogar agora
 
@@ -78,4 +84,5 @@ Tecnologia: **TypeScript + Vite**, Canvas 2D próprio, HTML/CSS para a interface
 - [docs/simulacao.md](docs/simulacao.md) — regras da simulação, economia e indicadores
 - [docs/toc-no-jogo.md](docs/toc-no-jogo.md) — como cada passo da TOC vira decisão no jogo
 - [docs/testes.md](docs/testes.md) — testes executados e resultados
+- [docs/placar-online.md](docs/placar-online.md) — publicar online e configurar o placar da turma
 - [docs/limitacoes.md](docs/limitacoes.md) — limitações conhecidas e recursos visuais

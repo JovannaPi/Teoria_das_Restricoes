@@ -10,6 +10,7 @@ import { createSim, stepSim } from '../sim/engine';
 import type { SimState } from '../sim/types';
 import { $, esc } from './dom';
 import { glossaryHtml } from './modals';
+import { heroCreator } from './online';
 
 // convite de instalação do navegador (Android/Chrome); no iPhone o caminho é "Compartilhar → Tela de Início"
 let installPrompt: (Event & { prompt: () => Promise<void> }) | null = null;
@@ -62,7 +63,7 @@ export function renderTitle(g: Game): void {
   const runPhase = run ? PHASES.find((p) => p.id === run.phaseId) : null;
   const tutorialDone = !!s.progress['tutorial']?.completed;
   $('#title-menu').innerHTML = `
-    <div class="logo"><img src="${portraitUrl(LOOKS.lina, 'cast')}" alt="" class="logo-lina"><div><h1>Poção em Apuros</h1><p>Uma loja de bruxas, um caldeirão teimoso e a Teoria das Restrições.</p></div></div>
+    <div class="logo"><img src="${portraitUrl(LOOKS.lina, 'cast')}" alt="" class="logo-lina"><div><h1>Poção em Apuros</h1><p>Uma loja de bruxas, um caldeirão teimoso e a Teoria das Restrições.</p>${s.hero ? `<p class="hero-tag">${esc(s.hero.name)} · ${esc(s.hero.player)}</p>` : ''}</div></div>
     <div class="menu-list">
       ${runPhase ? `<button class="primary" data-action="title-continue">${iconImg('play')} Continuar: ${esc(runPhase.title)}</button>` : ''}
       <button class="${!runPhase && !tutorialDone ? 'primary' : ''}" data-action="title-start" data-v="tutorial">${iconImg('hat')} Aprendiz de Bruxa <small>tutorial · 5 min</small></button>
@@ -70,6 +71,8 @@ export function renderTitle(g: Game): void {
       <button data-action="title-start" data-v="mestra" ${phaseUnlocked(s, PHASES.map((p) => p.id), 'mestra') ? '' : 'disabled title="Conclua o Quinto Círculo (ou ative o modo professor)"'}>${iconImg('crystal')} Bruxa Mestra <small>${phaseUnlocked(s, PHASES.map((p) => p.id), 'mestra') ? 'desafio imprevisível' : 'bloqueado'}</small></button>
       <button data-action="title-install" ${installPrompt ? '' : 'hidden'}>${iconImg('door')} Instalar no celular <small>joga offline</small></button>
       ${!isStandalone() && document.fullscreenEnabled ? `<button data-action="title-fullscreen" class="mobile-only">${iconImg('eye')} Jogar em tela cheia</button>` : ''}
+      <button data-action="board-open">${iconImg('star')} Placar da turma <small>ao vivo</small></button>
+      <button data-action="title-hero">${iconImg('hat')} ${s.hero ? 'Minha bruxa' : 'Criar minha bruxa'} <small>nome e visual</small></button>
       <button data-action="title-glossary">${iconImg('book')} Os cinco passos e o glossário</button>
       <button data-action="title-settings">${iconImg('gear')} Configurações</button>
       <button data-action="title-about">${iconImg('scroll')} Sobre o jogo</button>
@@ -165,6 +168,10 @@ export function registerTitleActions(g: Game): void {
     renderTitle(g);
   };
   a['title-fullscreen'] = () => toggleFullscreen();
+  a['title-hero'] = async () => {
+    await heroCreator(g, !g.save.hero);
+    renderTitle(g);
+  };
   a['title-back'] = () => {
     $('#title-panel').hidden = true;
   };

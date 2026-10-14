@@ -1,6 +1,6 @@
 // Service worker: guarda o jogo no aparelho para funcionar sem internet.
 // A versão é trocada a cada build (scripts/inline-build.mjs) para atualizar o cache.
-const CACHE = 'pocao-em-apuros-20261014121653';
+const CACHE = 'pocao-em-apuros-20261014163843';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {

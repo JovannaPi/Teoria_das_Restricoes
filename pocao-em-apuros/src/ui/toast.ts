@@ -1,5 +1,6 @@
 // Mensagens curtas de retorno (sucesso, erro, informação).
 import { esc } from './dom';
+import { personalize } from '../game/hero';
 
 let last = '';
 let lastAt = 0;
@@ -14,7 +15,7 @@ export function toast(text: string, kind: 'good' | 'bad' | 'info' = 'info'): voi
   const el = document.createElement('div');
   el.className = `toast toast-${kind}`;
   el.setAttribute('role', kind === 'bad' ? 'alert' : 'status');
-  el.innerHTML = esc(text);
+  el.innerHTML = esc(personalize(text));
   root.appendChild(el);
   while (root.children.length > 4) root.firstElementChild?.remove();
   setTimeout(() => el.classList.add('out'), 3200);

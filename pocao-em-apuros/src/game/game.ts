@@ -15,6 +15,8 @@ import * as M from '../ui/modals';
 import { renderOverlay } from '../ui/overlay';
 import { renderSide, SideView } from '../ui/side';
 import { toast } from '../ui/toast';
+import { heroCreator, reportResult } from '../ui/online';
+import { netProfit } from '../sim/engine';
 import { computeScore, evaluateAll, immediateDefeat } from './objectives';
 import { loadSave, SaveData, writeSave } from './save';
 import { Tutorial } from './tutorial';
@@ -89,6 +91,11 @@ export class Game {
   // ---------------------------------------------------------------- fases
 
   async startPhase(id: string, resume = false): Promise<void> {
+    // antes da primeira partida, o jogador cria a sua bruxa (nome aparece no placar)
+    if (!this.save.hero) {
+      const ok = await heroCreator(this, true);
+      if (!ok) return;
+    }
     const phase = getPhase(id);
     this.phase = phase;
     this.ended = false;
@@ -320,7 +327,15 @@ export class Game {
     if (won) sfx.victory();
     else sfx.defeat();
     await M.dialogue(this, won ? phase.outroWin : phase.outroLose);
-    await M.debrief(this, won, reason, score);
+    const online = reportResult(this, {
+      fase: phase.id,
+      pontos: score.total,
+      estrelas: score.stars,
+      venceu: won,
+      lucro: netProfit(s),
+      entregas: s.stats.delivered,
+    });
+    await M.debrief(this, won, reason, score, online);
   }
 
   nextPhaseId(): string | null {

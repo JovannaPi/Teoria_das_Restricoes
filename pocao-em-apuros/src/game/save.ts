@@ -2,6 +2,8 @@
 // Tudo protegido por try/catch: o jogo funciona mesmo sem armazenamento disponível.
 import type { AudioSettings } from '../audio/sfx';
 import type { SimState } from '../sim/types';
+import type { HeroConfig } from './hero';
+import type { ScoreEntry } from '../online/leaderboard';
 
 const KEY = 'pocao-em-apuros:v1';
 
@@ -19,6 +21,15 @@ export interface SaveData {
   settings: { audio: AudioSettings; defaultSpeed: number; reduceMotion: boolean };
   run: { phaseId: string; sim: SimState; tutorialStep: number; savedAt: number; helperPos?: { x: number; y: number } } | null;
   glossarySeen: boolean;
+  hero: HeroConfig | null; // bruxa criada pelo jogador (null = ainda não criou)
+  playerId: string; // identificador anônimo deste aparelho no placar
+  pendingScores: ScoreEntry[]; // resultados ainda não enviados (sem internet)
+}
+
+function newId(): string {
+  const a = new Uint8Array(12);
+  (globalThis.crypto || ({ getRandomValues: (x: Uint8Array) => x.map(() => Math.floor(Math.random() * 256)) } as Crypto)).getRandomValues(a);
+  return 'j' + Array.from(a, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 export function defaultSave(): SaveData {
@@ -29,6 +40,9 @@ export function defaultSave(): SaveData {
     settings: { audio: { master: 0.7, sfx: 0.8, ambience: 0.35, muted: false }, defaultSpeed: 1, reduceMotion: false },
     run: null,
     glossarySeen: false,
+    hero: null,
+    playerId: newId(),
+    pendingScores: [],
   };
 }
 
@@ -38,7 +52,8 @@ export function loadSave(): SaveData {
     if (!raw) return defaultSave();
     const data = JSON.parse(raw) as SaveData;
     if (data.version !== 1) return defaultSave();
-    return { ...defaultSave(), ...data, settings: { ...defaultSave().settings, ...data.settings } };
+    const base = defaultSave();
+    return { ...base, ...data, settings: { ...base.settings, ...data.settings }, playerId: data.playerId || base.playerId, pendingScores: data.pendingScores || [] };
   } catch {
     return defaultSave();
   }

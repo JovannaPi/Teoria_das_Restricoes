@@ -6,6 +6,7 @@ import { portraitUrl, LOOKS } from '../render/sprites';
 import { createOrder } from '../sim/engine';
 import type { SimNotice, StationId } from '../sim/types';
 import { esc } from '../ui/dom';
+import { personalize } from './hero';
 import * as M from '../ui/modals';
 import type { Game } from './game';
 
@@ -138,7 +139,7 @@ export class Tutorial {
       return;
     }
     this.coach.hidden = false;
-    this.coach.innerHTML = `<img class="portrait sm" src="${portraitUrl(LOOKS.morgana)}" alt=""><div><b>Vó Morgana · lição ${this.index + 1}/${this.steps.length}</b><p>${esc(st.text)}</p>
+    this.coach.innerHTML = `<img class="portrait sm" src="${portraitUrl(LOOKS.morgana)}" alt=""><div><b>Vó Morgana · lição ${this.index + 1}/${this.steps.length}</b><p>${esc(personalize(st.text))}</p>
       <div class="coach-btns">${st.canSkip ? '<button class="primary mini" data-action="tutorial-next">Concluir tutorial</button>' : ''}<button class="mini" data-action="tutorial-skip">Pular tutorial</button></div></div>`;
   }
 

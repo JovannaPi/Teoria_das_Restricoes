@@ -3,10 +3,19 @@ import { sfx } from './audio/sfx';
 import { game } from './game/game';
 import { registerTitleActions, renderTitle, showTitle } from './ui/title';
 import { resetOverlay } from './ui/overlay';
+import { applyHero } from './game/hero';
+import { flushPending, registerOnlineActions } from './ui/online';
 
 function boot(): void {
+  if (game.save.hero) applyHero(game.save.hero);
   game.init();
   registerTitleActions(game);
+  registerOnlineActions(game);
+  window.addEventListener('pocao:hero', () => {
+    if (document.body.dataset.screen === 'title') renderTitle(game);
+  });
+  window.addEventListener('online', () => void flushPending(game));
+  setTimeout(() => void flushPending(game), 3000);
   document.body.classList.toggle('reduce-motion', game.save.settings.reduceMotion);
   document.body.dataset.screen = 'title';
   showTitle(game);
