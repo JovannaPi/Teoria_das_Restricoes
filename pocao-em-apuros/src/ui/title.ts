@@ -44,8 +44,12 @@ function startDemo(): void {
   demo = { sim, scene, raf: 0, last: performance.now() };
   const loop = (ts: number) => {
     if (!demo) return;
+    // durante a partida a loja de fundo para de vez (não gasta bateria)
+    if (document.body.dataset.screen === 'game') {
+      demo.raf = 0;
+      return;
+    }
     demo.raf = requestAnimationFrame(loop);
-    if (document.body.dataset.screen === 'game') return;
     const dt = Math.min(0.1, (ts - demo.last) / 1000);
     demo.last = ts;
     let steps = Math.round(dt / 0.1) || 1;
@@ -72,14 +76,14 @@ export function renderTitle(g: Game): void {
       <p>Sua loja de poções está atrasada. Descubra o que trava a produção e salve o dia.</p>${s.hero ? `<p class="hero-tag">${esc(s.hero.name)}</p>` : ''}</div></div>
     <div class="menu-list main-actions">
       ${runPhase ? `<button class="primary" data-action="title-continue">${iconImg('play')} Continuar: ${esc(runPhase.title)}</button>` : ''}
-      <button class="${runPhase ? '' : 'primary'} play-btn" data-action="title-start" data-v="turma">${iconImg('play')} Jogar <small>Desafio da Turma · 6 a 8 min</small></button>
+      <button class="${runPhase ? '' : 'primary'} play-btn" data-action="title-start" data-v="turma">${iconImg('play')} Jogar <small>Modo rápido · 5 minutos · uma decisão por vez</small></button>
       <div class="row2">
         <button data-action="title-howto">${iconImg('scroll')} Como jogar</button>
         <button data-action="title-toc">${iconImg('eye')} O que é a TOC?</button>
       </div>
       <div class="row2">
         <button data-action="board-open">${iconImg('star')} Placar</button>
-        <button data-action="title-more">${iconImg('book')} Mais modos</button>
+        <button data-action="title-more">${iconImg('book')} Modo completo</button>
       </div>
     </div>`;
   $('#title-panel').innerHTML = '';
@@ -123,8 +127,8 @@ export function registerTitleActions(g: Game): void {
   a['title-more'] = () => {
     const ids = PHASES.map((p) => p.id);
     const mestra = phaseUnlocked(g.save, ids, 'mestra');
-    panel(`<h2>Mais modos</h2><div class="menu-list">
-      <button data-action="title-start" data-v="tutorial">${iconImg('hat')} Aprendiz de Bruxa <small>tutorial · 5 min</small></button>
+    panel(`<h2>Modo completo</h2><p class="muted small">Para quem quer aprender mais: todas as decisões, finanças e análises.</p><div class="menu-list">
+      <button data-action="title-start" data-v="tutorial">${iconImg('hat')} Aprendiz de Bruxa <small>controles · 5 min</small></button>
       <button data-action="title-phases">${iconImg('star')} Desafio dos Cinco Círculos <small>15 a 25 min</small></button>
       <button data-action="title-start" data-v="mestra" ${mestra ? '' : 'disabled'}>${iconImg('crystal')} Bruxa Mestra <small>${mestra ? 'imprevisível' : 'conclua o 5º círculo'}</small></button>
       <button data-action="title-hero">${iconImg('hat')} ${g.save.hero ? 'Minha bruxa' : 'Criar minha bruxa'} <small>nome e visual</small></button>

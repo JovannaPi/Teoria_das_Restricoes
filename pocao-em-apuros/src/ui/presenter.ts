@@ -17,7 +17,7 @@ function render(root: HTMLElement): void {
         <h1>Poção em Apuros</h1>
         <p class="slide-sub">Sua loja de poções está atrasada. Descubra o que trava a produção e salve o dia.</p>
         <p class="slide-big">Aponte a câmera e jogue</p>
-        <p class="slide-meta">Atividade de 6 a 8 minutos · sem cadastro · sem instalar nada</p>
+        <p class="slide-meta">Atividade de cerca de 5 minutos · sem cadastro · sem instalar nada</p>
         <p class="slide-url">Ou digite: <b>${esc(prettyUrl(urlValue))}</b></p>
       </div>
       <div class="slide-qr">${local ? '' : '<canvas aria-label="QR Code do jogo"></canvas>'}

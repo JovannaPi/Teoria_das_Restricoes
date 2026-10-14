@@ -13,6 +13,7 @@ import { averageWip, inventoryValue, netProfit, operatingExpense, throughputGain
 import type { ActiveEvent, Hypothesis, IngredientId, StationId } from '../sim/types';
 import { barChart, lineChart } from './charts';
 import { contextualReflection, fiveSteps } from '../game/fivesteps';
+import { wrongExplanation } from '../game/turma';
 import { clock, esc, money, n1, pct, shopMinutes, STATION_COLORS } from './dom';
 
 interface ModalEntry {
@@ -224,12 +225,12 @@ export async function hypothesisResult(g: Game, h: Hypothesis): Promise<void> {
   const truth = h.truth === 'mercado' || h.truth == null ? 'a demanda (nenhuma estação está saturada)' : STATIONS[h.truth].short;
   const body = h.correct
     ? `<p class="pos"><b>Confirmado:</b> ${esc(name)} limita a loja agora.</p>`
-    : `<p class="neg"><b>Não é bem isso.</b> ${esc(name)} não é o que limita a loja neste momento.</p><p class="muted small">Olhe de novo para as filas e para a capacidade de cada estação comparada com o que chega até ela.</p>`;
+    : `<p class="neg"><b>Não é bem isso.</b></p><p>${esc(h.station === 'mercado' ? 'Há estação sem dar conta do que chega: a demanda não é o limite agora.' : wrongExplanation(g.sim!, h.station, analyzeCapacity(g.sim!).ranked[0], analyzeCapacity(g.sim!).loads[h.station].load))}</p><p class="muted small">Olhe de novo para as filas e compare a capacidade de cada estação com o que chega até ela.</p>`;
   const ev = `<h3>O que os dados mostram</h3><ul class="list">${h.evidence.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`;
   const extra = h.correct ? `<p class="small">Pelos dados, a restrição atual é: <b>${esc(truth)}</b>.</p>` : '';
   const { promise } = open(g, {
     title: h.correct ? 'Hipótese confirmada' : 'Hipótese não confirmada',
-    body: `<div class="mentor-note"><img class="portrait sm" src="${portraitUrl(LOOKS.morgana)}" alt="">${body}</div>${ev}${extra}`,
+    body: `<div class="mentor-note"><img class="portrait sm" src="${portraitUrl(LOOKS.morgana)}" alt=""><div>${body}</div></div>${ev}${extra}`,
     footer: '<button class="primary" data-action="modal-close">Continuar</button>',
   });
   await promise;
@@ -313,7 +314,23 @@ export function analysis(g: Game): void {
       <button data-tabbtn data-action="modal-tab" data-v="fluxo" role="tab">Fluxo e pedidos</button>
     </div>
     <div data-tab="estacoes">
-      <div class="tbl-wrap"><table class="tbl analysis"><thead><tr><th>Estação</th><th>Postos</th><th>Utilização (dia)</th><th>Utilização (60 s)</th><th>Fila agora</th><th>Fila média</th><th>Fila máx.</th><th>Sem trabalho</th><th>Parada</th><th>Limpando</th><th>Capacidade (poções/min por receita)</th>${lens ? '<th>Carga da demanda</th>' : ''}</tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="st-cards">${ids
+        .map((id) => {
+          const st = s.stations[id];
+          const tot = st.slots * Math.max(1, s.t);
+          const caps = s.recipes
+            .filter((r) => a.loads[id].capacityPerMin[r] != null)
+            .map((r) => `${RECIPES[r].short} ${n1(a.loads[id].capacityPerMin[r]!)}`)
+            .join(' · ');
+          return `<article class="st-card"><h4><i class="dot" style="background:${STATION_COLORS[id]}"></i>${esc(STATIONS[id].name)}</h4><dl>
+            <dt>Ocupada (dia · 60 s)</dt><dd>${pct(observedUtilization(s, id))} / ${pct(recentUtilization(s, id))}</dd>
+            <dt>Fila (agora · média · máx.)</dt><dd>${st.queue.length} / ${n1(averageQueue(s, id))} / ${st.maxQueue}</dd>
+            <dt>Sem trabalho · parada · limpeza</dt><dd>${pct(st.starvedTime / tot)} · ${pct(st.stoppedTime / tot)} · ${pct(st.setupSpent / tot)}</dd>
+            <dt>Capacidade/min</dt><dd>${caps || '—'}</dd>
+            ${lens ? `<dt>Carga da demanda</dt><dd class="${a.loads[id].load > 1 ? 'neg' : ''}"><b>${pct(a.loads[id].load)}</b></dd>` : ''}</dl></article>`;
+        })
+        .join('')}</div>
+      <div class="tbl-wrap has-cards"><table class="tbl analysis"><thead><tr><th>Estação</th><th>Postos</th><th>Utilização (dia)</th><th>Utilização (60 s)</th><th>Fila agora</th><th>Fila média</th><th>Fila máx.</th><th>Sem trabalho</th><th>Parada</th><th>Limpando</th><th>Capacidade (poções/min por receita)</th>${lens ? '<th>Carga da demanda</th>' : ''}</tr></thead><tbody>${rows}</tbody></table></div>
       <p class="muted small">Capacidade por receita = quantas poções daquela receita a estação faria por minuto se só fizesse ela. Compare com a demanda (${n1(a.demandPerMin)} poções/min: ${s.recipes.map((r) => `${RECIPES[r].short} ${n1(a.demandByRecipe[r] || 0)}`).join(', ')}).${lens ? ' Carga acima de 100%: a estação não dá conta da demanda.' : ' A carga teórica fica visível depois que você identificar a restrição.'}</p>
     </div>
     <div data-tab="graficos" hidden>

@@ -28,7 +28,7 @@
 
 `tests/qr.test.ts` (2): o QR gerado é lido de volta com o mesmo endereço; endereços locais (localhost, rede da casa, arquivo) são recusados.
 
-## Ponta a ponta no navegador — `npm run test:e2e`: 80/80 passando
+## Ponta a ponta no navegador — `npm run test:e2e`: 108/108 passando
 
 Chromium real; o jogo é jogado pela interface (cliques e toques), com o tempo acelerado pelo mesmo caminho dos quadros reais.
 
@@ -39,7 +39,8 @@ Chromium real; o jogo é jogado pela interface (cliques e toques), com o tempo a
 - Layouts 1440×900, 1024×768, 390×844 e 844×390 sem rolagem horizontal e com a loja visível.
 - **Celular em pé (toque)**: barra de abas e faixa de estações; alvos de toque ≥ 32 px; aceitar pedido; Lina ajudar; tocar na loja seleciona a estação; Análise; menu "Mais" sem botões mortos.
 - **Celular deitado (toque)**: a loja ocupa mais de 70% da altura; o painel desliza ao tocar na aba; decisão aplicada por toque; tocar de novo fecha.
-- **Desafio da Turma num celular de 375×667, só por toque**: botão Jogar com 65 px e visível sem rolar; nome da bruxa já sugerido; dicas por etapa; decisões de fluxo bloqueadas até identificar o gargalo; hipótese certa libera a melhoria; a procura aumenta e libera investimentos; depois do segundo caldeirão o jogo pede nova análise e confirma a destilação; resultado com os 5 passos calculados da partida (jogando pela TOC, 4 ou 5 aparecem como "Feito"); reflexão com resposta usando os números da partida; nada ultrapassa a largura da tela.
+- **Modo rápido num celular de 375×667, só por toque** (35 verificações): Jogar com 65 px e visível sem rolar; nome sugerido; sem janela de objetivos em sequência; tocar numa estação abre o painel de baixo e fechar volta para a loja; pergunta do acúmulo com erro explicado pelos números; identificar com erro explicado ("não é o mesmo") e acerto com evidências, sem janela extra; explorar com o efeito medido (tempo parado antes → depois); subordinar com estoque em processo antes → depois; elevar com confirmação em dois toques e efeito; recomeçar com a nova restrição (destilação); os 5 passos cabem nos 5 minutos de jogo; resultado com passo 1 "em parte" (houve erro proposital) e 2 a 5 "feito"; reflexão contextualizada; jogar de novo; pular e reabrir as dicas.
+- **Modo completo num celular de 360×740** (13 verificações): barra "Agora" com objetivo e Hipótese; abas Loja, Pedidos, Estoque, Fluxo, Análise, Mais; botões principais ≥ 40×40 px; Pedidos, Estoque e Fluxo abrem como painel de baixo dentro da tela; Investimentos dentro de Fluxo; tocar nos indicadores mostra todos; Análise em cartões sem tabela larga; gráfico mostra valores com toque; hipótese errada explicada com dados; sem rolagem lateral.
 - Tela inicial em 320×568, 414×896 e 1280×800: Jogar visível e tocável, sem rolagem lateral.
 - Criação da bruxa: aparece antes da primeira partida, exige um nome, aplica o visual; o nome aparece nos diálogos.
 - Placar: avaliação informa o envio (ou que ficou guardado sem internet); placar e modo projeção abrem e fecham sem botões mortos.

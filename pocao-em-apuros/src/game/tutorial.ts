@@ -19,10 +19,7 @@ interface Step {
 }
 
 const INTRO: DialogueLine[] = [
-  { who: 'narrador', text: 'A velha loja de poções da família Brasaverde estava fechada havia dez invernos. Hoje, Lina recebeu a chave.' },
-  { who: 'mentora', text: 'Então você é a neta da Amarílis. Tem os olhos dela… e a mesma cara de quem não sabe por onde começar.' },
-  { who: 'protagonista', text: 'Vó Morgana! Eu sei fazer poções. Só não sei fazer uma loja inteira funcionar.' },
-  { who: 'mentora', text: 'Uma loja é uma corrente de estações. Vamos acendê-las uma a uma. Faça o que eu pedir e observe o que acontece.' },
+  { who: 'mentora', text: 'Bem-vinda à loja da sua família, Lina. Eu ensino o básico fazendo: siga as tarefas no quadro de dicas.' },
 ];
 
 export class Tutorial {

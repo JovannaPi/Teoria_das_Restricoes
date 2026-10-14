@@ -113,6 +113,7 @@ export function registerOnlineActions(g: Game): void {
     refreshCreator();
   };
   a['hero-save'] = () => {
+    const firstTimeSave = !g.save.hero;
     const name = cleanName(draft.name);
     const player = name;
     const msg = document.querySelector('[data-hero-msg]') as HTMLElement | null;
@@ -130,7 +131,7 @@ export function registerOnlineActions(g: Game): void {
     creatorResolve = null;
     closeTop(g);
     r?.(true);
-    toast(`${name} está pronta para abrir a loja!`, 'good');
+    if (!firstTimeSave) toast(`${name} está salva!`, 'good');
     window.dispatchEvent(new CustomEvent('pocao:hero'));
   };
   a['board-open'] = () => leaderboard(g);
