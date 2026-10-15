@@ -16,8 +16,8 @@ export function buildHud(g: Game): void {
     </div>
     <div class="hud-stats" data-action="hud-expand" role="button" tabindex="0" aria-label="Mostrar todos os indicadores">
       <div class="stat" title="Dinheiro em caixa"><span class="lbl">${iconImg('coin')}Caixa</span><b data-bind="cash">0</b></div>
-      <div class="stat" title="Lucro líquido do dia = Ganho − Despesa operacional"><span class="lbl">${iconImg('chart')}Lucro</span><b data-bind="np">0</b></div>
-      <div class="stat" title="Reputação da loja"><span class="lbl">${iconImg('heart')}Reputação</span><b data-bind="rep">0</b><i class="meter"><i data-bind="repbar"></i></i></div>
+      <div class="stat" data-qhide-always title="Lucro líquido do dia = Ganho − Despesa operacional"><span class="lbl">${iconImg('chart')}Lucro</span><b data-bind="np">0</b></div>
+      <div class="stat" data-qhide-always title="Reputação da loja"><span class="lbl">${iconImg('heart')}Reputação</span><b data-bind="rep">0</b><i class="meter"><i data-bind="repbar"></i></i></div>
       <div class="stat" title="Poções entregues hoje"><span class="lbl">${iconImg('flask')}Entregues</span><b data-bind="deliv">0</b></div>
       <div class="stat clockstat" title="Relógio da loja (1 s de jogo = 2 min)"><span class="lbl">${iconImg('clock')}<span data-bind="clock">08:00</span></span><i class="meter day"><i data-bind="daybar"></i></i></div>
     </div>
@@ -26,25 +26,26 @@ export function buildHud(g: Game): void {
       ${speeds}
     </div>
     <nav class="hud-menu" aria-label="Painéis">
-      <button data-action="open-objectives" class="obj-btn" title="Objetivos da fase">${iconImg('star')}<span>Objetivos</span><b data-bind="objcount"></b></button>
+      <button data-action="open-objectives" data-qhide class="obj-btn" title="Objetivos da fase">${iconImg('star')}<span>Objetivos</span><b data-bind="objcount"></b></button>
       <button data-action="side" data-v="pedidos" title="Pedidos e clientes">${iconImg('scroll')}<span>Pedidos</span><b class="badge" data-bind="waiting"></b></button>
-      <button data-action="side" data-v="despensa" title="Ingredientes e compras">${iconImg('bag')}<span>Despensa</span></button>
-      <button data-action="side" data-v="fluxo" title="Liberação de trabalho e prioridades">${iconImg('flow')}<span>Fluxo</span></button>
-      <button data-action="side" data-v="melhorias" title="Investimentos">${iconImg('hammer')}<span>Melhorias</span></button>
+      <button data-action="side" data-v="despensa" data-qhide title="Ingredientes e compras">${iconImg('bag')}<span>Despensa</span></button>
+      <button data-action="side" data-v="fluxo" data-qhide title="Liberação de trabalho e prioridades">${iconImg('flow')}<span>Fluxo</span></button>
+      <button data-action="side" data-v="melhorias" data-qhide title="Investimentos">${iconImg('hammer')}<span>Melhorias</span></button>
       <button data-action="open-analysis" title="Análise da produção (tecla A)">${iconImg('chart')}<span>Análise</span></button>
-      <button data-action="open-recipes" title="Livro de receitas">${iconImg('book')}<span>Receitas</span></button>
+      <button data-action="open-recipes" data-qhide title="Livro de receitas">${iconImg('book')}<span>Receitas</span></button>
       <button data-action="open-glossary" title="Glossário e os cinco passos">${iconImg('eye')}<span>Glossário</span></button>
       ${phase.hypothesisEnabled ? `<button data-action="hypothesis" class="hyp-btn" title="Registrar hipótese sobre a restrição">${iconImg('drum')}<span>Hipótese</span></button>` : ''}
     </nav>
     <button class="hud-more" data-action="open-menu" aria-label="Menu da partida">${iconImg('gear')}</button>`;
   // barra de abas para celular (em pé: rodapé; deitado: trilho lateral)
-  const tab = (action: string, v: string, icon: string, label: string, extra = '') =>
-    `<button data-action="${action}" ${v ? `data-v="${v}"` : ''} data-tab-id="${v || action}">${iconImg(icon)}<span>${label}</span>${extra}</button>`;
+  // qhide: some no modo rápido (as decisões ficam no cartão da mentora), volta ao "pular dicas"
+  const tab = (action: string, v: string, icon: string, label: string, extra = '', qhide = false) =>
+    `<button data-action="${action}" ${v ? `data-v="${v}"` : ''} data-tab-id="${v || action}"${qhide ? ' data-qhide' : ''}>${iconImg(icon)}<span>${label}</span>${extra}</button>`;
   $('#tabbar').innerHTML =
     tab('side', 'estacao', 'hat', 'Loja') +
     tab('side', 'pedidos', 'scroll', 'Pedidos', '<b class="badge" data-bind="waiting2"></b>') +
-    tab('side', 'despensa', 'bag', 'Estoque') +
-    tab('side', 'fluxo', 'flow', 'Fluxo') +
+    tab('side', 'despensa', 'bag', 'Estoque', '', true) +
+    tab('side', 'fluxo', 'flow', 'Fluxo', '', true) +
     tab('open-analysis', '', 'chart', 'Análise') +
     tab('open-more', '', 'book', 'Mais');
 }

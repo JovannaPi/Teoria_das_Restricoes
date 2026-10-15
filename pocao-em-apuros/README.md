@@ -4,9 +4,11 @@ Jogo 2D de gerenciamento de uma loja de poções para estudantes de Engenharia d
 
 O jogador é **Lina Brasaverde**, herdeira de uma loja de poções em ruínas. Com a ajuda da **Vó Morgana**, precisa descobrir qual estação limita a loja, tirar o máximo dela, fazer o resto da loja trabalhar no ritmo dela, decidir quando investir e recomeçar quando a restrição muda de lugar.
 
-**Dois modos.** O botão **Jogar** abre o **modo rápido** (Desafio da Turma, ~5 minutos): um cartão da mentora com uma decisão por etapa, com o efeito medido logo depois. O **modo completo** mantém o tutorial de controles, as 5 fases e a Bruxa Mestra, com todas as políticas, finanças e análises. Detalhes em **[docs/ux-celular.md](docs/ux-celular.md)**.
+**Dois modos.** **Modo rápido — 6 a 10 minutos** (para aula): loja enxuta (4 estações, 1 tipo de poção, pedidos e ingredientes automáticos, sem eventos aleatórios) e um cartão da mentora com uma decisão por etapa, com o efeito medido logo depois. Escolhas que não ajudam (melhorar quem não é a restrição, manter todo mundo ocupado, investir no lugar errado) também são medidas, e o jogador tenta de novo. O **modo completo** é a experiência original: tutorial, 5 fases e a Bruxa Mestra, com todas as políticas, finanças e análises. Detalhes em **[docs/ux-celular.md](docs/ux-celular.md)**.
 
-**Para seminário:** o modo rápido é uma partida guiada de ~5 minutos que passa pelos cinco passos e termina com a análise de cada passo usando os números da própria partida. A turma entra por **QR Code** (gerado pelo próprio jogo a partir do endereço público), sem cadastro nem instalação. Roteiro, slide e perguntas de debriefing: **[docs/seminario.md](docs/seminario.md)**.
+**Loja explorável.** A bruxa anda pela loja (arrastar com o dedo, tocar no chão ou setas do teclado), sem atravessar móveis. A Vó Morgana e quem trabalha em cada estação conversam e dão dicas sobre o que está acontecendo na partida — primeiro uma pergunta, depois o porquê, e só por último a resposta.
+
+**Para seminário:** o modo rápido é uma partida guiada de 6 a 10 minutos que passa pelos cinco passos e termina com a análise de cada passo usando os números da própria partida. A turma entra por **QR Code** (gerado pelo próprio jogo a partir do endereço público), sem cadastro nem instalação. Roteiro, slide e perguntas de debriefing: **[docs/seminario.md](docs/seminario.md)**.
 
 Cada aluno dá nome e visual à **sua bruxa** (sem dados pessoais) e compete no **placar online da turma**, que pode ser projetado na sala.
 
@@ -46,7 +48,7 @@ O jogo não tem dependências em tempo de execução: nenhum servidor, conta ou 
 
 | Modo | Fase | Passo da TOC | O que o jogador faz | Vence se |
 |---|---|---|---|---|
-| **Modo rápido** (botão Jogar) | Desafio da Turma, ~5 min | Os cinco, em sequência | Uma decisão por etapa, no cartão da mentora: onde está o acúmulo → qual estação limita → uma melhoria sem custo → liberar no ritmo da restrição → investir → qual limita agora. Cada decisão mostra o efeito medido. | chegar ao fim do expediente (a avaliação mostra cada passo) |
+| **Modo rápido** (aula) | Desafio da Turma, 6 a 10 min | Os cinco, em sequência | Loja com 4 estações e 1 poção. Uma decisão por etapa, no cartão da mentora: onde está o acúmulo → qual estação limita → uma melhoria sem custo (ajudar o Preparo é a armadilha) → trocar "todo mundo ocupado" pelo ritmo da restrição → investir (só o 2º caldeirão adianta) → qual limita agora. Cada decisão mostra o efeito medido; o relógio estende o dia até o jogador terminar | chegar ao fim do expediente (a avaliação mostra cada passo) |
 | Aprendiz de Bruxa | Tutorial | Primeiros passos | 10 lições em que se aprende fazendo: selecionar estação, aceitar pedido, comprar ingrediente, mover a Lina, mudar a velocidade, observar filas, abrir a Análise | concluir as lições |
 | Cinco Círculos | 1. A Loja Entupida | Identificar | Analisa filas, utilização e capacidade e **registra hipóteses**, que a mentora confere com os dados | hipótese certa + 18 entregas + reputação > 0 |
 | | 2. O Caldeirão Nunca Para | Explorar | Pulmão, limpeza em paralelo, cobertura de intervalos, inspeção antes do caldeirão, prioridade por ganho, ajuda da Lina (compras bloqueadas) | 24 entregas + lucro ≥ 550 |
@@ -72,8 +74,8 @@ pocao-em-apuros/
 │  │  ├─ mods.ts           efeitos temporários dos eventos
 │  │  └─ rng.ts            aleatoriedade determinística (salvar/carregar reproduz a partida)
 │  ├─ data/                PARÂMETROS CENTRALIZADOS: receitas, ingredientes, estações, melhorias, fases, eventos, personagens, glossário
-│  ├─ game/                controlador (laço, pausa, velocidade, fim de fase), objetivos e pontuação, tutorial, salvamento
-│  ├─ render/              pixel art gerada por código: cenário, personagens, estações, partículas, iluminação
+│  ├─ game/                controlador (laço, pausa, velocidade, fim de fase), câmera do celular, conversas e dicas (talk.ts), modo rápido (turma.ts), objetivos e pontuação, tutorial, salvamento
+│  ├─ render/              pixel art gerada por código: cenário, personagens, estações, partículas, iluminação; onde a bruxa pode andar (walk.ts)
 │  ├─ ui/                  HUD, painel lateral, faixa inferior, modais, gráficos, tela inicial, estilos (responsivos)
 │  └─ audio/sfx.ts         sons sintetizados com WebAudio (sem arquivos de áudio)
 ├─ tests/                  testes do motor, balanceamento por estratégias, E2E no navegador
@@ -93,4 +95,5 @@ Tecnologia: **TypeScript + Vite**, Canvas 2D próprio, HTML/CSS para a interface
 - [docs/ux-celular.md](docs/ux-celular.md) — auditoria de UX no celular e o que mudou
 - [docs/seminario.md](docs/seminario.md) — Desafio da Turma: QR Code, roteiro do apresentador e debriefing
 - [docs/placar-online.md](docs/placar-online.md) — publicar online e configurar o placar da turma
+- [docs/validacao-com-alunos.md](docs/validacao-com-alunos.md) — roteiro para testar o modo rápido com quem nunca jogou
 - [docs/limitacoes.md](docs/limitacoes.md) — limitações conhecidas e recursos visuais

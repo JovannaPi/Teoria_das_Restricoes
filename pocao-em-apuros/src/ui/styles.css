@@ -2718,3 +2718,382 @@ body {
   }
 }
 
+
+/* ================================================================ v5: celular — a loja é o foco
+   No celular a cena é ampliada (camera.ts) e preenche a área entre a barra superior e a faixa de
+   estações. Painéis abrem encaixados abaixo da loja (que encolhe, mas continua visível e tocável),
+   nunca por cima dela. Pedidos e acontecimentos ficam na aba Pedidos. */
+body.cam #stage-wrap {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  touch-action: none;
+  background: #0d0910;
+  aspect-ratio: auto;
+}
+body.cam #stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  box-shadow: none;
+  will-change: transform;
+}
+body.cam #stage-wrap.cam-drag {
+  cursor: grabbing;
+}
+.cam-ui,
+.cam-map {
+  display: none;
+}
+body.cam .cam-ui {
+  display: block;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+}
+body.cam .cam-btn {
+  min-height: 36px !important;
+  padding: 4px 10px;
+  font-size: 12px;
+  background: rgba(16, 10, 20, 0.72);
+  border-color: rgba(239, 227, 204, 0.25);
+}
+body.cam .cam-map {
+  display: block;
+  position: absolute;
+  left: 25%;
+  right: 25%;
+  bottom: 5px;
+  height: 4px;
+  background: rgba(239, 227, 204, 0.16);
+  z-index: 3;
+  pointer-events: none;
+}
+body.cam .cam-map[hidden] {
+  display: none;
+}
+body.cam .cam-map i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(239, 227, 204, 0.7);
+}
+body.cam #stage-wrap.cam-hint::after {
+  content: 'Arraste para ver o resto da loja';
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: rgba(16, 10, 20, 0.85);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+  animation: camHint 3.2s ease-in-out forwards;
+}
+@keyframes camHint {
+  0%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* etiquetas das estações acompanham a cena ampliada e servem de alvo de toque */
+body.cam #overlay .tag {
+  display: flex;
+  font-size: 12px;
+  padding: 2px 7px;
+  min-height: 0 !important;
+}
+body.cam .paused-badge {
+  display: none;
+}
+body.cam.is-paused #stage-wrap::before {
+  content: 'PAUSADO';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 2px 10px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  background: rgba(16, 10, 20, 0.8);
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  pointer-events: none;
+}
+
+@media (orientation: portrait) and (max-width: 1024px) {
+  #game-screen {
+    grid-template-rows: auto minmax(140px, 1fr) auto auto auto 0 minmax(0, auto) auto !important;
+    grid-template-areas: 'hud' 'stage' 'strip' 'phase' 'coach' 'bottom' 'side' 'tabbar' !important;
+  }
+  /* celular comprido: a loja fica na escala máxima e a altura que sobra mostra pedidos e acontecimentos */
+  body.stage-capped:not(.side-open) #game-screen {
+    grid-template-rows: auto var(--stage-h) auto auto auto minmax(0, 1fr) 0 auto !important;
+  }
+  body.stage-capped:not(.side-open) #bottom {
+    display: flex !important;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 10px;
+    overflow-y: auto;
+  }
+  body.stage-capped #bottom .orders-strip {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+  body.stage-capped #bottom .ocard {
+    min-width: 84px;
+    min-height: 52px;
+    font-size: 0.82rem;
+  }
+  body.stage-capped #bottom .log {
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+  #stage-wrap {
+    aspect-ratio: auto !important;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+  }
+  #bottom {
+    display: none !important;
+  }
+  #side {
+    position: static !important;
+    grid-area: side;
+    transform: none !important;
+    transition: none;
+    height: 100% !important;
+    max-height: min(46dvh, 420px);
+    min-height: 0;
+    z-index: auto;
+    box-shadow: none;
+    border-top: 2px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  body:not(.side-open) #side {
+    display: none;
+  }
+  #side .sheet-head .grab {
+    display: none;
+  }
+  #side .side-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .coach,
+  .coach.turma-coach {
+    max-height: 38dvh;
+    overflow-y: auto;
+  }
+  #station-strip {
+    border-top: 2px solid var(--line);
+  }
+}
+
+/* celular DEITADO: a loja ocupa a área toda; a barra "Agora" e o cartão da mentora ficam numa coluna
+   ao lado da loja, em vez de flutuar sobre as estações */
+@media (orientation: landscape) and (max-height: 540px) {
+  #game-screen {
+    grid-template-columns: minmax(0, 1fr) auto auto !important;
+    grid-template-rows: auto auto minmax(0, 1fr) !important;
+    grid-template-areas: 'hud hud tabbar' 'main phase tabbar' 'main coach tabbar' !important;
+  }
+  #game-main {
+    min-height: 0;
+  }
+  #stage-wrap {
+    height: 100%;
+  }
+  #phase-bar {
+    grid-area: phase;
+    position: static !important;
+    max-width: none !important;
+    width: min(300px, 34vw);
+    flex-wrap: wrap;
+    border: none;
+    border-left: 2px solid var(--line);
+    border-bottom: 2px solid var(--line);
+  }
+  #phase-bar:not([hidden]) ~ .coach,
+  .coach,
+  .coach.turma-coach {
+    grid-area: coach;
+    position: static !important;
+    width: min(300px, 34vw);
+    max-width: none !important;
+    max-height: none !important;
+    min-height: 0;
+    overflow-y: auto;
+    animation: none;
+    box-shadow: none;
+    border-width: 0 0 0 2px;
+    align-self: stretch;
+  }
+  /* sem a barra "Agora", o cartão usa a coluna inteira */
+  #phase-bar[hidden] ~ .coach {
+    grid-row: 2 / 4;
+  }
+  /* sem cartão da mentora (modo completo): a barra "Agora" vira uma linha fina sob a barra superior.
+     Deitado, a escala da loja depende da largura, então essa linha não diminui a loja. */
+  body:not(.has-coach) #game-screen {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-rows: auto auto minmax(0, 1fr) !important;
+    grid-template-areas: 'hud tabbar' 'phase tabbar' 'main tabbar' !important;
+  }
+  body:not(.has-coach) #phase-bar {
+    width: auto;
+    flex-wrap: nowrap;
+    min-height: 0;
+    padding: 3px 10px;
+    border-left: none;
+  }
+  body:not(.has-coach) #phase-bar button {
+    min-height: 38px !important;
+  }
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  /* avisos no alto da loja (parede), centralizados, sem cobrir as estações do chão */
+  #toasts {
+    top: calc(env(safe-area-inset-top) + 64px) !important;
+    bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%);
+    max-width: min(520px, 60vw) !important;
+  }
+}
+
+/* ================================================================ conversa com os personagens */
+.talk {
+  position: absolute;
+  left: 10px;
+  bottom: 12px;
+  z-index: 5;
+  width: min(560px, calc(100% - 20px));
+  max-height: min(60%, 320px);
+  overflow-y: auto;
+  touch-action: pan-y;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  background: var(--parch);
+  color: var(--parch-ink);
+  border: 2px solid #8a6a3a;
+  box-shadow:
+    0 0 0 2px var(--outline),
+    0 10px 24px rgba(0, 0, 0, 0.55);
+  animation: pop 0.2s ease-out;
+}
+.talk-portrait {
+  width: 48px;
+  height: 68px;
+  image-rendering: pixelated;
+  flex: none;
+}
+.talk-body {
+  flex: 1;
+  min-width: 0;
+}
+.talk header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.talk header b {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+}
+.talk header small {
+  flex: 1;
+  color: #6b5236;
+}
+.talk p {
+  margin: 4px 0 8px;
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+.talk-x {
+  min-height: 36px !important;
+  min-width: 40px;
+  padding: 0;
+  font-size: 20px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--parch-ink) !important;
+}
+.talk-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.talk-btns button {
+  min-height: 44px;
+  flex: 1 1 auto;
+}
+.talk-btns button:not(.primary) {
+  color: var(--ink);
+}
+@media (orientation: portrait) and (max-width: 600px) {
+  .talk {
+    left: 6px;
+    right: 6px;
+    bottom: 14px;
+    width: auto;
+    max-height: 58%;
+    padding: 8px 10px;
+  }
+  .talk-portrait {
+    width: 36px;
+    height: 51px;
+  }
+  .talk p {
+    font-size: 0.95rem;
+  }
+}
+
+/* ================================================================ modo rápido (aula): interface enxuta
+   Só o essencial: caixa, entregas, relógio; abas Loja, Pedidos, Análise e Mais. Lucro, reputação,
+   estoque e fluxo voltam quando o jogador escolhe "Pular dicas" (jogar livre). */
+body.quick [data-qhide-always],
+body.quick:not(.guide-free) [data-qhide] {
+  display: none !important;
+}
+body.quick .hud-stats .stat:nth-child(4) {
+  display: flex !important;
+}
+.play-btn.full-btn {
+  min-height: 56px !important;
+  font-size: 1.15rem;
+}
+.play-btn.full-btn small {
+  color: var(--ink2) !important;
+}
+.choices.grid2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.choices.grid2 .choice {
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+.choices.grid2 .choice small {
+  font-size: 0.74rem;
+  line-height: 1.25;
+}

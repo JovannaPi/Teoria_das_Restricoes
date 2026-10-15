@@ -16,11 +16,18 @@ import { renderOverlay } from '../ui/overlay';
 import { renderSide, SideView } from '../ui/side';
 import { toast } from '../ui/toast';
 import { heroCreator, reportResult } from '../ui/online';
+import { applyHero, DEFAULT_HERO, randomHero, randomWitchName } from './hero';
 import { netProfit } from '../sim/engine';
 import { computeScore, evaluateAll, immediateDefeat } from './objectives';
 import { loadSave, SaveData, writeSave } from './save';
 import { Tutorial } from './tutorial';
 import { TurmaGuide } from './turma';
+import { mq } from '../ui/fit';
+import { Camera } from './camera';
+import { struggle, talkKey, talkLines, tocStage, type TalkLine } from './talk';
+import { renderTalk } from '../ui/talk';
+import { nearestFree } from '../render/walk';
+import { TALK_RANGE } from '../render/scene';
 
 export type ActionHandler = (el: HTMLElement) => void;
 
@@ -46,15 +53,30 @@ export class Game {
   private saveTimer = 0;
   private pointerHeld = false;
   private raf = 0;
+  camera!: Camera;
+  /** Conversa aberta: quem fala, as falas desta conversa e em qual está. */
+  talk: { npc: string; lines: TalkLine[]; i: number } | null = null;
+  /** Quantas vezes cada personagem já deu dica sobre o mesmo assunto (nível da dica). */
+  private talkLevels = new Map<string, number>();
+  talkHeard = new Set<string>();
+  /** Personagem com uma dica nova esperando (balão "!"). */
+  talkAlert: string | null = null;
+  private alertSeen = { stage: '', struggle: 0 };
+  private keys = new Set<string>();
+  private linaDrag: { id: number; sx: number; sy: number; moving: boolean } | null = null;
   readonly actions: Record<string, ActionHandler> = {};
 
   init(): void {
     sfx.settings = { ...this.save.settings.audio };
     const canvas = $('#shop') as HTMLCanvasElement;
     this.scene = new ShopScene(canvas);
+    this.camera = new Camera($('#stage-wrap'), $('#stage'));
+    // a área da loja muda de tamanho quando painéis abrem ou o cartão da mentora cresce
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => this.layoutStage()).observe($('#stage-wrap'));
     this.registerActions();
     this.bindInput(canvas);
     window.addEventListener('resize', () => this.layoutStage());
+    window.addEventListener('pocao:fit', () => this.layoutStage());
     window.addEventListener('orientationchange', () => setTimeout(() => this.layoutStage(), 200));
     document.addEventListener('fullscreenchange', () => setTimeout(() => this.layoutStage(), 100));
     document.addEventListener('visibilitychange', () => {
@@ -103,19 +125,32 @@ export class Game {
   // ---------------------------------------------------------------- fases
 
   async startPhase(id: string, resume = false): Promise<void> {
-    // antes da primeira partida, o jogador cria a sua bruxa (nome aparece no placar)
+    // modo rápido: nada de telas antes de jogar — a bruxa ganha nome e visual sorteados
+    // (dá para trocar depois em "Minha bruxa"); no modo completo, o jogador cria a sua bruxa
+    if (!this.save.hero && id === 'turma') {
+      this.save.hero = { ...randomHero(DEFAULT_HERO), name: randomWitchName() };
+      applyHero(this.save.hero);
+      writeSave(this.save);
+    }
     if (!this.save.hero) {
       const ok = await heroCreator(this, true);
       if (!ok) return;
     }
     const phase = getPhase(id);
     this.phase = phase;
+    document.body.classList.toggle('quick', phase.mode === 'turma');
+    document.body.classList.remove('guide-free');
     this.ended = false;
     this.selected = phase.revealConstraint;
     this.side = phase.mode === 'tutorial' ? 'estacao' : 'estacao';
     this.selectedOrder = null;
     this.modalPauses = 0;
     this.scene.reset();
+    this.closeTalk();
+    this.talkLevels.clear();
+    this.talkHeard.clear();
+    this.talkAlert = null;
+    this.alertSeen = { stage: '', struggle: 0 };
     let tutorialStep = 0;
     if (resume && this.save.run && this.save.run.phaseId === id) {
       this.sim = this.save.run.sim;
@@ -139,6 +174,7 @@ export class Game {
     $('#game-screen').classList.remove('hidden');
     buildHud(this);
     this.layoutStage();
+    this.camera.center();
     this.refreshUi(true);
     this.startLoop();
     this.guide?.dispose();
@@ -160,8 +196,9 @@ export class Game {
       this.tutorial = null;
       if (!resume) {
         await M.dialogue(this, phase.intro);
-        // os objetivos ficam na barra "Agora" (sem outra janela em sequência)
-        toast(`Objetivo: ${phase.goalText}`, 'info');
+        // os objetivos ficam na barra "Agora" (sem outra janela em sequência); no celular essa barra
+        // já está sempre à vista, e o aviso cobriria a loja
+        if (layoutMode() === 'desktop') toast(`Objetivo: ${phase.goalText}`, 'info');
       }
     }
     // partida retomada começa pausada, para o jogador se situar
@@ -245,12 +282,24 @@ export class Game {
     } else {
       this.acc = 0;
     }
+    // setas do teclado (computador): a bruxa anda enquanto a tecla estiver pressionada
+    if (this.keys.size) {
+      const dx = (this.keys.has('ArrowRight') ? 1 : 0) - (this.keys.has('ArrowLeft') ? 1 : 0);
+      const dy = (this.keys.has('ArrowDown') ? 1 : 0) - (this.keys.has('ArrowUp') ? 1 : 0);
+      const l = this.scene.lina;
+      if (dx || dy) this.scene.steerLina(l.x + dx * 12, l.y + dy * 12);
+    }
     this.scene.update(dtReal, s, gameDt);
+    // a câmera acompanha a bruxa quando o jogador a leva para perto da borda
+    const l = this.scene.lina;
+    if (l.steering || (!l.arrived && l.realTime)) this.camera.keepInView(l.x, l.y - 12);
+    this.camera.update(dtReal);
     this.scene.draw(s, {
       selected: this.selected,
       hover: this.hover,
       showDrum: true,
       highlight: this.tutorial?.highlight ?? null,
+      talkAlert: this.talkAlert,
     });
     this.uiTimer += dtReal;
     if (this.uiTimer > 0.2) {
@@ -387,12 +436,22 @@ export class Game {
   layoutStage(): void {
     const wrap = document.getElementById('stage-wrap');
     const stage = document.getElementById('stage');
-    if (!wrap || !stage) return;
-    const r = wrap.getBoundingClientRect();
-    let w = r.width;
+    if (!wrap || !stage || !this.camera) return;
+    // celular (em pé ou deitado): a loja é ampliada e a câmera mostra uma parte dela
+    if (layoutMode() !== 'desktop') {
+      this.camera.layout(true);
+      return;
+    }
+    this.camera.layout(false);
+    // computador: a loja inteira cabe na área (tamanhos no próprio sistema de coordenadas do elemento)
+    // descontando o respiro interno (antes a loja passava 8 px para baixo do painel lateral)
+    const cs = getComputedStyle(wrap);
+    const availW = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const availH = wrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    let w = availW;
     let h = (w * 9) / 16;
-    if (h > r.height) {
-      h = r.height;
+    if (h > availH) {
+      h = availH;
       w = (h * 16) / 9;
     }
     stage.style.width = Math.floor(w) + 'px';
@@ -401,6 +460,8 @@ export class Game {
 
   refreshUi(force: boolean): void {
     if (!this.sim || !this.phase) return;
+    document.body.classList.toggle('has-coach', !!document.querySelector('#game-screen > .coach'));
+    this.updateTalkAlert();
     updateHud(this);
     renderOverlay(this);
     this.guide?.render();
@@ -413,6 +474,7 @@ export class Game {
   select(id: StationId | null): void {
     this.selected = id;
     this.side = 'estacao';
+    if (id) this.camera.focusStation(id);
     if (id) this.emit('select-station', id);
     this.refreshUi(true);
   }
@@ -443,11 +505,50 @@ export class Game {
       canvas.style.cursor = pick.kind === 'floor' ? 'crosshair' : 'pointer';
     });
     canvas.addEventListener('pointerleave', () => (this.hover = null));
+    // arrastar a bruxa com o dedo (ou o mouse): ela anda na direção do ponteiro, sem atravessar móveis
+    const tolOf = () => (this.camera.active ? (14 * 480) / canvas.getBoundingClientRect().width : 0);
+    canvas.addEventListener('pointerdown', (ev) => {
+      if (!this.sim || ev.button > 0) return;
+      const p = toLogical(ev);
+      if (this.scene.pick(p.x, p.y, this.sim, tolOf()).kind !== 'lina') return;
+      this.linaDrag = { id: ev.pointerId, sx: ev.clientX, sy: ev.clientY, moving: false };
+      this.camera.blockPointer(ev.pointerId);
+    });
+    canvas.addEventListener('pointermove', (ev) => {
+      const d = this.linaDrag;
+      if (!d || d.id !== ev.pointerId || !this.sim) return;
+      if (!d.moving) {
+        if (Math.hypot(ev.clientX - d.sx, ev.clientY - d.sy) < 8) return;
+        d.moving = true;
+        try {
+          canvas.setPointerCapture(ev.pointerId);
+        } catch {
+          /* ponteiro já solto */
+        }
+        if (this.sim.helper) A.setHelper(this.sim, null);
+        this.emit('lina-drag', null);
+      }
+      const p = toLogical(ev);
+      // o ponto fica um pouco abaixo do dedo, para o dedo não cobrir a bruxa
+      this.scene.steerLina(p.x, p.y + 6);
+    });
+    const endDrag = (ev: PointerEvent) => {
+      const d = this.linaDrag;
+      if (!d || d.id !== ev.pointerId) return;
+      this.linaDrag = null;
+      if (d.moving) {
+        this.camera.suppressClicks();
+        this.scene.steerLina(null);
+      }
+    };
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
     canvas.addEventListener('click', (ev) => {
       sfx.unlock();
-      if (!this.sim) return;
+      if (!this.sim || this.camera.consumeClick()) return;
       const p = toLogical(ev);
-      const pick = this.scene.pick(p.x, p.y, this.sim);
+      // no toque, a área de acerto cresce ~14 px de tela em volta de cada estação e pessoa
+      const pick = this.scene.pick(p.x, p.y, this.sim, tolOf());
       if (pick.kind === 'station') {
         sfx.click();
         this.select(pick.id);
@@ -455,10 +556,17 @@ export class Game {
       } else if (pick.kind === 'client') {
         this.selectedOrder = pick.order;
         this.openSide('pedidos');
+      } else if (pick.kind === 'npc') {
+        sfx.click();
+        this.talkTo(pick.id);
+      } else if (pick.kind === 'lina') {
+        sfx.click();
+        this.openTalk('lina');
       } else {
-        // clicar no chão leva a Lina até lá; se ela ajudava uma estação, deixa de ajudar
+        // tocar no chão leva a bruxa até lá (contornando os móveis); se ela ajudava uma estação, deixa de ajudar
         if (this.sim.helper) A.setHelper(this.sim, null);
-        this.scene.walkLina(p.x, p.y);
+        this.scene.walkLina(p.x, p.y, null, null, true);
+        this.emit('lina-walk', null);
         sfx.step();
       }
     });
@@ -495,6 +603,15 @@ export class Game {
     document.addEventListener('pointerup', () => {
       this.pointerHeld = false;
     });
+    const keyUp = (ev: KeyboardEvent) => {
+      if (!this.keys.delete(ev.key)) return;
+      if (!this.keys.size) this.scene.steerLina(null);
+    };
+    document.addEventListener('keyup', keyUp);
+    window.addEventListener('blur', () => {
+      this.keys.clear();
+      this.scene.steerLina(null);
+    });
     document.addEventListener('keydown', (ev) => {
       sfx.unlock();
       if (!this.sim || this.ended) return;
@@ -503,17 +620,103 @@ export class Game {
         if (ev.key === 'Escape') M.closeTop(this);
         return;
       }
+      if (ev.key.startsWith('Arrow')) {
+        ev.preventDefault();
+        this.keys.add(ev.key);
+        if (this.sim.helper && !ev.repeat) A.setHelper(this.sim, null);
+        return;
+      }
+      if (ev.key.toLowerCase() === 'e' || ev.key === 'Enter') {
+        // conversar com quem estiver perto da bruxa
+        const n = this.scene.nearNpc(this.sim);
+        if (n) {
+          ev.preventDefault();
+          this.openTalk(n.id);
+        }
+        return;
+      }
       if (ev.key === ' ') {
         ev.preventDefault();
         this.togglePause();
       } else if (ev.key === '1' || ev.key === '2' || ev.key === '4') this.setSpeed(Number(ev.key));
       else if (ev.key.toLowerCase() === 'a') this.actions['open-analysis'](document.body);
+      else if (ev.key === 'Escape' && this.talk) this.closeTalk();
       else if (ev.key === 'Escape') {
         this.selected = null;
         document.body.classList.remove('side-open');
         this.refreshUi(true);
       }
     });
+  }
+
+  // ---------------------------------------------------------------- conversas
+
+  /** Tocar num personagem: se a bruxa está perto, conversa; senão ela anda até ele e conversa. */
+  talkTo(npc: string): void {
+    const s = this.sim;
+    if (!s) return;
+    const spots = this.scene.npcs(s).filter((n) => n.id === npc);
+    if (!spots.length) return;
+    const l = this.scene.lina;
+    const near = spots.find((n) => Math.hypot(n.x - l.x, (n.y - l.y) * 1.3) <= TALK_RANGE);
+    if (near) {
+      this.openTalk(npc);
+      return;
+    }
+    // a pessoa mais perto da bruxa; ela para logo à frente (pés um pouco abaixo)
+    const n = spots.sort((a, b) => Math.hypot(a.x - l.x, a.y - l.y) - Math.hypot(b.x - l.x, b.y - l.y))[0];
+    const spot = nearestFree(n.x + (l.x < n.x ? -12 : 12), n.y + 8);
+    if (s.helper) A.setHelper(s, null);
+    this.scene.walkLina(spot.x, spot.y, () => this.openTalk(npc), null, true);
+  }
+
+  openTalk(npc: string, deeper = false): void {
+    if (!this.sim) return;
+    const key = talkKey(this, npc);
+    const heard = this.talkLevels.get(key) ?? -1;
+    // primeira conversa: nível 0 (mais o empurrão de quem está com dificuldade); voltar a perguntar aprofunda
+    const level = Math.min(2, deeper || heard >= 0 ? heard + 1 : struggle(this));
+    this.talkLevels.set(key, level);
+    const lines = talkLines(this, npc, level);
+    this.talkHeard.add(npc);
+    this.talk = { npc, lines, i: 0 };
+    if (npc === 'mentora') {
+      this.talkAlert = null;
+      this.alertSeen = { stage: tocStage(this), struggle: this.strugglePoints() };
+    }
+    this.emit('talk', npc);
+    this.renderTalkBox();
+  }
+
+  closeTalk(): void {
+    this.talk = null;
+    renderTalk(null, { more: false, next: false });
+  }
+
+  private renderTalkBox(): void {
+    const t = this.talk;
+    if (!t) return renderTalk(null, { more: false, next: false });
+    const key = talkKey(this, t.npc);
+    const canDeeper = t.npc !== 'lina' && (this.talkLevels.get(key) ?? 0) < (t.npc === 'mentora' ? 2 : 1);
+    renderTalk(t.lines[t.i], { next: t.i < t.lines.length - 1, more: canDeeper });
+  }
+
+  /** A mentora acena ("!") quando o jogador começa a errar ou (modo completo) muda de passo da TOC. */
+  private updateTalkAlert(): void {
+    if (!this.sim || this.phase?.mode === 'tutorial') return;
+    const st = this.strugglePoints();
+    const stage = tocStage(this);
+    const seen = this.alertSeen;
+    if (!seen.stage) {
+      this.alertSeen = { stage, struggle: st };
+      return;
+    }
+    if (st < seen.struggle) seen.struggle = st;
+    if (st > seen.struggle || (!this.guide && stage !== seen.stage)) this.talkAlert = 'mentora';
+  }
+
+  private strugglePoints(): number {
+    return struggle(this) + (this.guide?.wrongTries ?? 0);
   }
 
   /** Executa uma ação da simulação com feedback visual/sonoro. */
@@ -538,6 +741,14 @@ export class Game {
     const a = this.actions;
     const sim = () => this.sim!;
     a['pause'] = () => this.togglePause();
+    a['cam-mode'] = () => this.camera.toggleMode();
+    a['talk-next'] = () => {
+      if (!this.talk) return;
+      this.talk.i = Math.min(this.talk.lines.length - 1, this.talk.i + 1);
+      this.renderTalkBox();
+    };
+    a['talk-more'] = () => this.talk && this.openTalk(this.talk.npc, true);
+    a['talk-close'] = () => this.closeTalk();
     a['speed'] = (el) => this.setSpeed(Number(el.dataset.v));
     a['side'] = (el) => this.openSide(el.dataset.v as SideView);
     a['close-side'] = () => {
@@ -666,6 +877,13 @@ export class Game {
     a['quick-choice'] = (el) => this.guide?.choose(el.dataset.v!);
     a['quick-skip'] = () => this.guide?.skip();
     a['quick-unskip'] = () => this.guide?.unskip();
+    a['quick-restart'] = async () => {
+      const ok = await M.confirm(this, 'Recomeçar a demonstração do zero?', 'Recomeçar');
+      if (!ok) return;
+      this.save.run = null;
+      writeSave(this.save);
+      void this.startPhase('turma');
+    };
     a['open-toc'] = () => M.whatIsToc(this);
     a['open-settings'] = () => void M.settings(this);
     a['open-menu'] = () => void M.gameMenu(this);
@@ -729,8 +947,8 @@ export type LayoutMode = 'desktop' | 'em-pe' | 'deitado';
 
 /** Mesmas condições das media queries de styles.css. */
 export function layoutMode(): LayoutMode {
-  if (window.matchMedia('(orientation: landscape) and (max-height: 540px)').matches) return 'deitado';
-  if (window.matchMedia('(orientation: portrait) and (max-width: 1024px)').matches) return 'em-pe';
+  if (mq('(orientation: landscape) and (max-height: 540px)')) return 'deitado';
+  if (mq('(orientation: portrait) and (max-width: 1024px)')) return 'em-pe';
   return 'desktop';
 }
 

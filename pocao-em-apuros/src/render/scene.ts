@@ -18,6 +18,7 @@ import {
   WALK_AREA,
 } from './layout';
 import { P } from './palette';
+import { findPath, slide } from './walk';
 import {
   Action,
   box,
@@ -73,13 +74,30 @@ interface ClientActor extends Walker {
   bubbleUntil: number;
 }
 
-export type Pick = { kind: 'station'; id: StationId } | { kind: 'client'; order: number } | { kind: 'floor'; x: number; y: number };
+export type Pick =
+  | { kind: 'station'; id: StationId }
+  | { kind: 'client'; order: number }
+  | { kind: 'npc'; id: string }
+  | { kind: 'lina' }
+  | { kind: 'floor'; x: number; y: number };
+
+/** Personagem fixo com quem a bruxa pode conversar: a mentora ou a equipe de uma estação. */
+export interface Npc {
+  id: string; // 'mentora' ou 'aprendiz:<estação>'
+  station: StationId | null;
+  x: number;
+  y: number;
+}
+
+/** Distância (px lógicos) a partir da qual dá para conversar sem andar. */
+export const TALK_RANGE = 34;
 
 export interface SceneView {
   selected: StationId | null;
   hover: StationId | null;
   showDrum: boolean;
   highlight: StationId | null; // destaque do tutorial
+  talkAlert?: string | null; // personagem com uma dica nova (balão "!")
 }
 
 function stationStopped(s: SimState, id: StationId) {
@@ -97,7 +115,16 @@ export class ShopScene {
   private carriers: Carrier[] = [];
   private clients = new Map<number, ClientActor>();
   private leaving: ClientActor[] = [];
-  lina: Walker & { helpTarget: StationId | null; arrived: boolean; onArrive: (() => void) | null; action: Action } = {
+  lina: Walker & {
+    helpTarget: StationId | null;
+    arrived: boolean;
+    onArrive: (() => void) | null;
+    action: Action;
+    path: { x: number; y: number }[];
+    realTime: boolean; // passeio do jogador anda em tempo real; ajudar uma estação custa tempo da loja
+    steer: { x: number; y: number } | null; // arrastando o dedo / setas do teclado
+    steering: boolean;
+  } = {
     x: LINA_HOME.x,
     y: LINA_HOME.y,
     tx: LINA_HOME.x,
@@ -108,6 +135,10 @@ export class ShopScene {
     arrived: true,
     onArrive: null,
     action: 'idle',
+    path: [],
+    realTime: false,
+    steer: null,
+    steering: false,
   };
   private cat = { x: 260, y: 230, tx: 260, ty: 230, facing: 1 as 1 | -1, speed: 22, nap: 0 };
   private idleSince: Record<StationId, number> = {} as Record<StationId, number>;
@@ -133,28 +164,109 @@ export class ShopScene {
     this.leaving = [];
     this.flash = [];
     this.floatTexts = [];
-    Object.assign(this.lina, { x: LINA_HOME.x, y: LINA_HOME.y, tx: LINA_HOME.x, ty: LINA_HOME.y, helpTarget: null, arrived: true, onArrive: null });
+    Object.assign(this.lina, { x: LINA_HOME.x, y: LINA_HOME.y, tx: LINA_HOME.x, ty: LINA_HOME.y, helpTarget: null, arrived: true, onArrive: null, path: [], steer: null, steering: false });
   }
 
   // ------------------------------------------------------------ entrada
 
-  pick(x: number, y: number, s: SimState): Pick {
+  /** Mentora e uma pessoa de cada estação aberta (quem estiver desenhado). */
+  npcs(s: SimState): Npc[] {
+    const out: Npc[] = [{ id: 'mentora', station: null, x: MENTOR_SPOT.x, y: MENTOR_SPOT.y }];
+    for (const id of STATION_ORDER) {
+      const st = s.stations[id];
+      if (st.locked) continue;
+      const n = Math.min(LAYOUT[id].workers.length, st.slots);
+      for (let k = 0; k < n; k++) out.push({ id: `aprendiz:${id}`, station: id, x: LAYOUT[id].workers[k].x, y: LAYOUT[id].workers[k].y });
+    }
+    return out;
+  }
+
+  /**
+   * O que está sob o ponto (x, y) da cena. `tol` (px lógicos) amplia as áreas de toque: vale o que
+   * estiver exatamente sob o dedo (pessoas antes de móveis); se nada estiver, o alvo mais próximo
+   * dentro da tolerância.
+   */
+  pick(x: number, y: number, s: SimState, tol = 0): Pick {
+    let best: Pick | null = null;
+    let bestD = Infinity;
+    // corpo de um personagem: ~7 px para cada lado dos pés, 22 px de altura
+    const body = (cx: number, cy: number, half = 7) => {
+      const dx = Math.max(0, Math.abs(cx - x) - half);
+      const dy = y < cy - 22 ? cy - 22 - y : y > cy + 2 ? y - cy - 2 : 0;
+      return Math.hypot(dx, dy);
+    };
+    const consider = (d: number, p: Pick) => {
+      if (d <= tol && d < bestD) {
+        bestD = d;
+        best = p;
+      }
+    };
+    const l = this.lina;
+    const dl = body(l.x, l.y, 8);
+    if (dl === 0) return { kind: 'lina' };
+    consider(dl, { kind: 'lina' });
     for (const c of this.clients.values()) {
-      if (Math.abs(c.x - x) < 7 && y > c.y - 20 && y < c.y + 2) return { kind: 'client', order: c.order };
+      const d = body(c.x, c.y);
+      if (d === 0) return { kind: 'client', order: c.order };
+      consider(d, { kind: 'client', order: c.order });
+    }
+    for (const n of this.npcs(s)) {
+      const d = body(n.x, n.y, 6);
+      if (d === 0) return { kind: 'npc', id: n.id };
+      consider(d, { kind: 'npc', id: n.id });
     }
     for (const id of [...STATION_ORDER].reverse()) {
       if (s.stations[id].locked) continue;
-      if (inRect(LAYOUT[id].hit, x, y)) return { kind: 'station', id };
+      const r = LAYOUT[id].hit;
+      if (inRect(r, x, y)) return { kind: 'station', id };
+      const dx = x < r.x ? r.x - x : x > r.x + r.w ? x - r.x - r.w : 0;
+      const dy = y < r.y ? r.y - y : y > r.y + r.h ? y - r.y - r.h : 0;
+      consider(Math.hypot(dx, dy), { kind: 'station', id });
     }
-    return { kind: 'floor', x, y };
+    return best ?? { kind: 'floor', x, y };
   }
 
-  walkLina(x: number, y: number, onArrive: (() => void) | null = null, helpTarget: StationId | null = null): void {
+  /** Personagem mais perto da bruxa dentro do alcance de conversa (ou null). */
+  nearNpc(s: SimState, range = TALK_RANGE): Npc | null {
+    let best: Npc | null = null;
+    let bd = range;
+    for (const n of this.npcs(s)) {
+      const d = Math.hypot(n.x - this.lina.x, (n.y - this.lina.y) * 1.3);
+      if (d <= bd) {
+        bd = d;
+        best = n;
+      }
+    }
+    return best;
+  }
+
+  /** Arrastar o dedo (ou segurar as setas): a bruxa vai na direção do ponto, escorregando nos móveis. */
+  steerLina(x: number | null, y = 0): void {
     const l = this.lina;
-    l.tx = Math.max(WALK_AREA.x, Math.min(WALK_AREA.x + WALK_AREA.w, x));
-    l.ty = Math.max(WALK_AREA.y, Math.min(WALK_AREA.y + WALK_AREA.h, y));
+    if (x == null) {
+      l.steer = null;
+      return;
+    }
+    l.steer = { x, y };
+    l.path = [];
+    l.onArrive = null;
+    l.helpTarget = null;
+    l.arrived = true;
+  }
+
+  walkLina(x: number, y: number, onArrive: (() => void) | null = null, helpTarget: StationId | null = null, realTime = false): void {
+    const l = this.lina;
+    l.steer = null;
+    const tx = Math.max(WALK_AREA.x, Math.min(WALK_AREA.x + WALK_AREA.w, x));
+    const ty = Math.max(WALK_AREA.y, Math.min(WALK_AREA.y + WALK_AREA.h, y));
+    // contorna os móveis em vez de atravessá-los
+    l.path = findPath(l.x, l.y, tx, ty);
+    const first = l.path.shift() ?? { x: tx, y: ty };
+    l.tx = first.x;
+    l.ty = first.y;
     l.onArrive = onArrive;
     l.helpTarget = helpTarget;
+    l.realTime = realTime;
     l.arrived = false;
   }
 
@@ -213,13 +325,32 @@ export class ShopScene {
     this.time += dtReal;
     // Lina anda em tempo de jogo: deslocar-se até uma estação custa tempo da loja
     const l = this.lina;
-    if (!l.arrived) {
-      const moved = stepWalker(l, gameDt);
+    l.steering = false;
+    if (l.steer) {
+      const dx = l.steer.x - l.x;
+      const dy = l.steer.y - l.y;
+      const d = Math.hypot(dx, dy);
+      if (d > 1.5) {
+        const step = Math.min(d, 80 * dtReal);
+        const p = slide(l.x, l.y, (dx / d) * step, (dy / d) * step);
+        if (Math.abs(p.x - l.x) > 0.01 || Math.abs(p.y - l.y) > 0.01) l.steering = true;
+        if (Math.abs(dx) > 0.5) l.facing = dx > 0 ? 1 : -1;
+        l.x = l.tx = p.x;
+        l.y = l.ty = p.y;
+      }
+    } else if (!l.arrived) {
+      const moved = stepWalker(l, l.realTime ? dtReal * 1.4 : gameDt);
       if (moved) {
-        l.arrived = true;
-        const cb = l.onArrive;
-        l.onArrive = null;
-        if (cb) cb();
+        const nxt = l.path.shift();
+        if (nxt) {
+          l.tx = nxt.x;
+          l.ty = nxt.y;
+        } else {
+          l.arrived = true;
+          const cb = l.onArrive;
+          l.onArrive = null;
+          if (cb) cb();
+        }
       }
     }
     // gato
@@ -389,7 +520,7 @@ export class ShopScene {
     // mentora e Lina
     items.push({ y: MENTOR_SPOT.y, draw: () => this.drawChar(LOOKS.morgana, 'idle', MENTOR_SPOT.x, MENTOR_SPOT.y, -1, 2) });
     const l = this.lina;
-    const linaAction: Action = !l.arrived ? 'walk' : s.helper ? 'cast' : 'idle';
+    const linaAction: Action = !l.arrived || l.steering ? 'walk' : s.helper ? 'cast' : 'idle';
     items.push({
       y: l.y,
       draw: () => {
@@ -400,6 +531,16 @@ export class ShopScene {
         }
       },
     });
+    // balões de conversa: "…" em quem está ao alcance da bruxa, "!" em quem tem uma dica nova
+    const near = this.nearNpc(s);
+    const seen = new Set<string>();
+    for (const n of this.npcs(s)) {
+      if (seen.has(n.id)) continue;
+      const alert = view.talkAlert === n.id;
+      if (!alert && near?.id !== n.id) continue;
+      seen.add(n.id);
+      items.push({ y: 999, draw: () => this.drawTalkBubble(n.x, n.y - 34, alert) });
+    }
     // gato
     const c = this.cat;
     items.push({ y: c.y, draw: () => this.drawCat(c.x, c.y, c.facing, c.nap > 0) });
@@ -421,6 +562,18 @@ export class ShopScene {
     this.drawParticles();
     for (const id of STATION_ORDER) this.drawStationOverlay(id, s, view);
     this.drawLights(s);
+  }
+
+  private drawTalkBubble(x: number, y: number, alert: boolean) {
+    const ctx = this.ctx;
+    const bob = Math.round(Math.sin(this.time * 4) * 1);
+    const bx = Math.round(x) - 5;
+    const by = Math.round(y) + bob;
+    box(ctx, bx, by, 11, 8, alert ? P.amber2 : P.cream);
+    px(ctx, bx + 3, by + 8, 2, 2, P.outline);
+    px(ctx, bx + 4, by + 8, 1, 1, alert ? P.amber2 : P.cream);
+    if (alert) px(ctx, bx + 5, by + 1, 1, 4, P.outline), px(ctx, bx + 5, by + 6, 1, 1, P.outline);
+    else for (let k = 0; k < 3; k++) px(ctx, bx + 2 + k * 3, by + 4, 1, 1, P.outline);
   }
 
   private drawChar(look: Look, action: Action, x: number, y: number, facing: 1 | -1, fps: number) {

@@ -6,8 +6,11 @@ import { resetOverlay } from './ui/overlay';
 import { applyHero } from './game/hero';
 import { flushPending, registerOnlineActions } from './ui/online';
 import { registerPresenterActions } from './ui/presenter';
+import { initFit } from './ui/fit';
+import { free } from './render/walk';
 
 function boot(): void {
+  initFit();
   if (game.save.hero) applyHero(game.save.hero);
   game.init();
   if (game.save.settings.reduceMotion) game.scene.lowFx = true;
@@ -30,7 +33,7 @@ function boot(): void {
   });
   window.addEventListener('pointerdown', () => sfx.unlock(), { once: true });
   // ganchos para testes automatizados (não usados pelo jogo)
-  (window as unknown as { __pocao: unknown }).__pocao = { game };
+  (window as unknown as { __pocao: unknown }).__pocao = { game, walk: { free } };
 }
 
 boot();

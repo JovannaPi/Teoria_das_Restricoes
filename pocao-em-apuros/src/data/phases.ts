@@ -95,8 +95,9 @@ function scenario(o: Partial<ScenarioDef> & { id: string; seed: number }): Scena
 const SPEEDS = [1, 2, 4];
 
 /** Demanda do Desafio da Turma depois que "a procura aumenta" (etapa 5). */
-export const TURMA_SURGE: Partial<DemandConfig> = { ordersPerMin: 4.7, mix: { cura: 0.4, visao: 0.4, transformacao: 0.2 } };
-export const TURMA_UPGRADES = ['caldeirao_extra', 'cristal_fervura', 'alambique_duplo', 'serpentina_gelo', 'embaladora_encantada'] as const;
+// Modo rápido: a procura dobra no passo "Elevar" (a loja precisa de mais capacidade na restrição).
+export const TURMA_SURGE: Partial<DemandConfig> = { ordersPerMin: 6.5, mix: { brilho: 1 } };
+export const TURMA_UPGRADES = ['caldeirao_extra', 'alambique_duplo', 'bancada_extra'] as const;
 
 export const PHASES: PhaseDef[] = [
   // ------------------------------------------------------------------ DESAFIO DA TURMA (seminário)
@@ -106,20 +107,26 @@ export const PHASES: PhaseDef[] = [
     number: 0,
     title: 'Modo rápido',
     subtitle: 'Desafio da Turma',
-    tocStep: 'Os cinco passos, em 5 minutos',
-    goalText: 'Encontre o que limita a loja, melhore o fluxo, decida se vale investir e descubra o que muda depois.',
+    tocStep: 'Os cinco passos, em 6 a 10 minutos',
+    goalText: 'Descubra por que a loja não dá conta dos pedidos e melhore a produção, um passo de cada vez.',
+    // Versão enxuta para aula: 4 estações, 1 tipo de poção, pedidos aceitos e ingredientes repostos
+    // sozinhos, sem eventos aleatórios. O Caldeirão é a restrição (≈4,4 poções/min para ≈6/min
+    // pedidas); depois do segundo caldeirão, quem limita é a Destilação (≈8,6/min para ≈9,8/min).
     scenario: scenario({
       id: 'turma',
       seed: 2026,
-      duration: 300,
-      startCash: 600,
+      duration: 480,
+      startCash: 1000,
       startReputation: 70,
-      demand: { ...baseDemand, ordersPerMin: 3.4 },
+      recipes: ['brilho'],
+      demand: { ordersPerMin: 4, mix: { brilho: 1 }, maxLines: 1, qtyMin: 1, qtyMax: 2 },
+      startStock: { erva: 30, agua_lunar: 30 },
       stations: {
         caldeirao: { breakEvery: 45, breakDuration: 9, setupTime: 3 },
-        embalagem: { breakEvery: 50, breakDuration: 10 },
+        resfriamento: { locked: true },
+        embalagem: { locked: true },
       },
-      policies: { release: 'empurrar', drum: 'caldeirao', bufferSize: 4, priority: 'fifo', inspection: 'final', keepBusy: false, autoAccept: true, autoReorder: true },
+      policies: { release: 'empurrar', drum: 'caldeirao', bufferSize: 4, priority: 'fifo', inspection: 'final', keepBusy: true, autoAccept: true, autoReorder: true },
       upgrades: [],
       wipHoldingCost: 0.05,
       spoilTime: 50,
