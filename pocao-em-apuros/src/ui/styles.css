@@ -2976,3 +2976,124 @@ body.cam.is-paused #stage-wrap::before {
     max-width: min(520px, 60vw) !important;
   }
 }
+
+/* ================================================================ conversa com os personagens */
+.talk {
+  position: absolute;
+  left: 10px;
+  bottom: 12px;
+  z-index: 5;
+  width: min(560px, calc(100% - 20px));
+  max-height: min(60%, 320px);
+  overflow-y: auto;
+  touch-action: pan-y;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  background: var(--parch);
+  color: var(--parch-ink);
+  border: 2px solid #8a6a3a;
+  box-shadow:
+    0 0 0 2px var(--outline),
+    0 10px 24px rgba(0, 0, 0, 0.55);
+  animation: pop 0.2s ease-out;
+}
+.talk-portrait {
+  width: 48px;
+  height: 68px;
+  image-rendering: pixelated;
+  flex: none;
+}
+.talk-body {
+  flex: 1;
+  min-width: 0;
+}
+.talk header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.talk header b {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+}
+.talk header small {
+  flex: 1;
+  color: #6b5236;
+}
+.talk p {
+  margin: 4px 0 8px;
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+.talk-x {
+  min-height: 36px !important;
+  min-width: 40px;
+  padding: 0;
+  font-size: 20px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--parch-ink) !important;
+}
+.talk-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.talk-btns button {
+  min-height: 44px;
+  flex: 1 1 auto;
+}
+.talk-btns button:not(.primary) {
+  color: var(--ink);
+}
+@media (orientation: portrait) and (max-width: 600px) {
+  .talk {
+    left: 6px;
+    right: 6px;
+    bottom: 14px;
+    width: auto;
+    max-height: 58%;
+    padding: 8px 10px;
+  }
+  .talk-portrait {
+    width: 36px;
+    height: 51px;
+  }
+  .talk p {
+    font-size: 0.95rem;
+  }
+}
+
+/* ================================================================ modo rápido (aula): interface enxuta
+   Só o essencial: caixa, entregas, relógio; abas Loja, Pedidos, Análise e Mais. Lucro, reputação,
+   estoque e fluxo voltam quando o jogador escolhe "Pular dicas" (jogar livre). */
+body.quick [data-qhide-always],
+body.quick:not(.guide-free) [data-qhide] {
+  display: none !important;
+}
+body.quick .hud-stats .stat:nth-child(4) {
+  display: flex !important;
+}
+.play-btn.full-btn {
+  min-height: 56px !important;
+  font-size: 1.15rem;
+}
+.play-btn.full-btn small {
+  color: var(--ink2) !important;
+}
+.choices.grid2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.choices.grid2 .choice {
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+.choices.grid2 .choice small {
+  font-size: 0.74rem;
+  line-height: 1.25;
+}

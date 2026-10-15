@@ -24,6 +24,26 @@ export const INGREDIENT_ORDER: IngredientId[] = [
 
 // Tempos em segundos de simulação (1 s de simulação = 2 minutos no relógio da loja).
 export const RECIPES: Record<RecipeId, RecipeDef> = {
+  // receita única do modo rápido: quatro estações, sem resfriar nem embalar
+  brilho: {
+    id: 'brilho',
+    name: 'Poção do Brilho',
+    short: 'Brilho',
+    flavor: 'Ilumina a casa por uma noite inteira. A favorita da cidade.',
+    ingredients: { erva: 1, agua_lunar: 1 },
+    route: [
+      { station: 'preparo', time: 4 },
+      { station: 'caldeirao', time: 8 },
+      { station: 'destilacao', time: 7 },
+      { station: 'balcao', time: 2 },
+    ],
+    price: 40,
+    dueTime: 90,
+    latePenalty: 0.4,
+    defectRate: 0,
+    processFailRate: 0,
+    color: '#f2c14e',
+  },
   cura: {
     id: 'cura',
     name: 'Poção de Cura Menor',

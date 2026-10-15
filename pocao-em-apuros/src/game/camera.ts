@@ -122,6 +122,34 @@ export class Camera {
     this.apply();
   }
 
+  /** Ponteiro que outro gesto já usa (arrastar a bruxa): a câmera não deve se mover com ele. */
+  private blocked = -1;
+  blockPointer(id: number): void {
+    this.blocked = id;
+    if (this.drag?.id === id) this.drag = null;
+  }
+
+  suppressClicks(): void {
+    this.suppressUntil = performance.now() + 120;
+  }
+
+  /** Mantém (x, y) da cena dentro da parte central da vista (a câmera segue a bruxa). */
+  keepInView(x: number, y: number): void {
+    if (!this.active || this.drag?.moving) return;
+    const hw = this.vw / this.s / 2;
+    const hh = this.vh / this.s / 2;
+    const mx = hw * 0.55;
+    const my = hh * 0.5;
+    const base = this.target ?? { x: this.x, y: this.y };
+    let tx = base.x;
+    let ty = base.y;
+    if (x < tx - mx) tx = x + mx;
+    if (x > tx + mx) tx = x - mx;
+    if (y < ty - my) ty = y + my;
+    if (y > ty + my) ty = y - my;
+    if (tx !== base.x || ty !== base.y) this.target = { x: tx, y: ty };
+  }
+
   /** O clique que encerra um arrasto não deve selecionar nada na loja. */
   consumeClick(): boolean {
     return performance.now() < this.suppressUntil;
@@ -165,7 +193,8 @@ export class Camera {
 
   private down(e: PointerEvent): void {
     if (!this.active || this.mode === 'tudo' || e.button > 0) return;
-    if ((e.target as HTMLElement).closest('.cam-ui')) return;
+    if ((e.target as HTMLElement).closest('.cam-ui, .talk')) return;
+    if (e.pointerId === this.blocked) return;
     this.drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, cx: this.x, cy: this.y, moving: false };
   }
 
@@ -194,6 +223,7 @@ export class Camera {
 
   private up(e: PointerEvent): void {
     const d = this.drag;
+    if (e.pointerId === this.blocked) this.blocked = -1;
     if (!d || d.id !== e.pointerId) return;
     if (d.moving) this.suppressUntil = performance.now() + 120;
     this.drag = null;

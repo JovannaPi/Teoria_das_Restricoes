@@ -434,7 +434,9 @@ export function howToHtml(): string {
     <li><b>Pedidos</b> chegam sozinhos. A barra de cada cliente mostra quanto tempo ainda falta.</li>
     <li><b>Observe as filas</b>: onde as poções se acumulam, alguma coisa limita a loja.</li>
     <li><b>Hipótese</b>: escolha a estação que você acha que limita a loja. A mentora confere com os dados.</li>
-    <li><b>Fluxo</b> e <b>Melhorias</b> abrem quando fizer sentido usar. Toque no chão da loja para mover a sua bruxa.</li>
+    <li><b>Ande pela loja</b>: arraste a sua bruxa com o dedo (ou toque no chão para ela ir até lá). No computador, use as setas.</li>
+    <li><b>Converse</b>: toque na Vó Morgana ou em quem trabalha numa estação. Cada um dá dicas sobre o que vê; peça "Me explica melhor" se precisar. A conversa não pausa o jogo.</li>
+    <li><b>Fluxo</b> e <b>Melhorias</b> abrem quando fizer sentido usar.</li>
     <li><b>Pausa</b> a qualquer momento no botão de pausa. Abrir uma janela também pausa.</li>
   </ol>`;
 }

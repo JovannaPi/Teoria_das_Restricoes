@@ -15,3 +15,6 @@
 - O **salvamento** do progresso é por aparelho (localStorage). Só os resultados das fases vão para o placar online.
 - A **pontuação do placar** é calculada no aparelho do aluno; as regras do Firebase limitam os valores, mas não impedem um resultado inventado dentro do limite (ver `placar-online.md`).
 - O build publicado em `../pocao/` precisa ser servido por http(s) para o modo app/offline funcionar; `pocao-em-apuros.html` funciona aberto direto, mas sem instalação.
+- **Conversas**: as falas são montadas por regras a partir dos dados da partida (não há IA gerando texto). Cobrem os cinco passos e cada estação, mas não respondem perguntas livres.
+- **Andar pela loja**: a bruxa anda livremente, mas ainda não "pega" objetos nem interage com móveis; a interação com as estações continua sendo pelo toque na estação. Não há zoom com dois dedos.
+- **Modo rápido**: não foi testado com pessoas que nunca jogaram. O protocolo para fazer isso está em [validacao-com-alunos.md](validacao-com-alunos.md).

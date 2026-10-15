@@ -76,15 +76,13 @@ export function renderTitle(g: Game): void {
       <p>Sua loja de poções está atrasada. Descubra o que trava a produção e salve o dia.</p>${s.hero ? `<p class="hero-tag">${esc(s.hero.name)}</p>` : ''}</div></div>
     <div class="menu-list main-actions">
       ${runPhase ? `<button class="primary" data-action="title-continue">${iconImg('play')} Continuar: ${esc(runPhase.title)}</button>` : ''}
-      <button class="${runPhase ? '' : 'primary'} play-btn" data-action="title-start" data-v="turma">${iconImg('play')} Jogar <small>Modo rápido · 5 minutos · uma decisão por vez</small></button>
+      <button class="${runPhase ? '' : 'primary'} play-btn" data-action="title-start" data-v="turma">${iconImg('play')} Modo rápido — 6 a 10 minutos <small>Guiado, ideal para a aula: os cinco passos da TOC na prática</small></button>
+      <button class="play-btn full-btn" data-action="title-more">${iconImg('book')} Modo completo <small>A experiência original: tutorial, 5 fases e a Bruxa Mestra</small></button>
       <div class="row2">
         <button data-action="title-howto">${iconImg('scroll')} Como jogar</button>
         <button data-action="title-toc">${iconImg('eye')} O que é a TOC?</button>
       </div>
-      <div class="row2">
-        <button data-action="board-open">${iconImg('star')} Placar</button>
-        <button data-action="title-more">${iconImg('book')} Modo completo</button>
-      </div>
+      <button data-action="board-open">${iconImg('star')} Placar da turma</button>
     </div>`;
   $('#title-panel').innerHTML = '';
   $('#title-panel').hidden = true;

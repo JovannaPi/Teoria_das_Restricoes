@@ -2,7 +2,7 @@
 // para que o estado possa ser salvo, carregado e testado sem a interface.
 
 export type StationId = 'preparo' | 'caldeirao' | 'destilacao' | 'resfriamento' | 'embalagem' | 'balcao';
-export type RecipeId = 'cura' | 'visao' | 'transformacao' | 'precisao';
+export type RecipeId = 'cura' | 'visao' | 'transformacao' | 'precisao' | 'brilho';
 export type IngredientId =
   | 'erva'
   | 'agua_lunar'
