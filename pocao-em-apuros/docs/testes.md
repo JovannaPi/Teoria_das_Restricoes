@@ -30,7 +30,7 @@
 
 `tests/qr.test.ts` (2): o QR gerado é lido de volta com o mesmo endereço; endereços locais (localhost, rede da casa, arquivo) são recusados.
 
-## Ponta a ponta no navegador — `npm run test:e2e`: 132/132 passando
+## Ponta a ponta no navegador — `npm run test:e2e`: 166/166 passando
 
 Chromium real; o jogo é jogado pela interface (cliques e toques), com o tempo acelerado pelo mesmo caminho dos quadros reais.
 
