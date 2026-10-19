@@ -94,7 +94,7 @@ export function fiveSteps(s: SimState, marks: TurmaMarks | null): StepReport[] {
     // basta uma decisão que recupere tempo da restrição (o modo rápido pede uma por etapa)
     status: exp.length >= 1 ? 'feito' : expAny.length ? 'parcial' : 'nao',
     decision: exp.length
-      ? `Decisões na ${name(firstId)}: ${unique(exp.map(short)).join('; ')}.`
+      ? `Decisões ${the(firstId) === 'a' ? 'na' : 'no'} ${name(firstId)}: ${unique(exp.map(short)).join('; ')}.`
       : 'Você não aplicou melhorias operacionais na restrição.',
     indicators: [
       `Tempo perdido pela ${name(firstId)} no dia (sem trabalho, parada ou limpando): ${pct(lostTime(s, firstId))}.`,

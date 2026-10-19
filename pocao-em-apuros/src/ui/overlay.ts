@@ -43,7 +43,10 @@ export function renderOverlay(g: Game): void {
     .map((f) => {
       const age = performance.now() / 1000;
       void age;
-      return `<span class="float ${f.cls}" style="left:${(f.x / W) * 100}%;top:${(f.y / H) * 100}%">${esc(f.text)}</span>`;
+      // modo rápido: palavra do dia a dia no lugar do termo técnico
+      const simple = document.body.classList.contains('quick') && !document.body.classList.contains('guide-free');
+      const text = simple && f.text === 'refugo' ? 'estragou' : f.text;
+      return `<span class="float ${f.cls}" style="left:${(f.x / W) * 100}%;top:${(f.y / H) * 100}%">${esc(text)}</span>`;
     })
     .join('');
   if (floats.dataset.h !== html) {

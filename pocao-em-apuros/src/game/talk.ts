@@ -162,7 +162,7 @@ function crewText(g: Game, id: StationId, level: number): string {
     if (id === 'balcao' && !isC) {
       const waiting = Object.values(s.orders).filter((o) => o.status === 'aguardando' || o.status === 'aceito').length;
       const late = Object.values(s.orders).filter((o) => o.status === 'aceito' && s.t > o.dueAt).length;
-      return `${waiting} clientes esperando${late ? `, ${late} já atrasados` : ''}. Eu entrego rapidinho — o problema é que as poções demoram a chegar até mim.`;
+      return `${waiting} ${waiting === 1 ? 'cliente esperando' : 'clientes esperando'}${late ? `, ${late} já ${late === 1 ? 'atrasado' : 'atrasados'}` : ''}. Eu entrego rapidinho — o problema é que as poções demoram a chegar até mim.`;
     }
     if (isC && (u < 0.6 || q < 2)) {
       // começo do dia: ainda não há números que mostrem o problema; ela aponta onde olhar

@@ -436,13 +436,22 @@ try {
     check('rápido: sem avisos flutuantes por cima da loja', (await m.evaluate(() => document.querySelectorAll('#toasts .toast').length)) === 0);
     await shot('03-identificar');
     await choose('destilacao');
-    check('rápido: escolha errada explicada em uma frase, com convite a conversar', /Não é a Destilação: a fila dela é \d+/.test(await coach()) && /Vó Morgana/.test(await coach()));
+    check('rápido: escolha errada explicada em uma frase, com botão para pedir dica', /Não é a Destilação: a fila dela é \d+/.test(await coach()) && !!(await m.$('.turma-coach [data-action="talk-mentor"]')));
     check('rápido: depois de um erro, a mentora acena com uma dica ("!")', (await m.evaluate(() => window.__pocao.game.talkAlert)) === 'mentora');
+    {
+      const y0 = await m.evaluate(() => document.getElementById('station-strip').getBoundingClientRect().top);
+      await m.tap('.turma-coach [data-action="talk-mentor"]');
+      await m.waitForSelector('.talk');
+      check('rápido: o botão abre a conversa com a Vó Morgana na hora (sem precisar achá-la)', /Vó Morgana/.test(await m.textContent('.talk')));
+      await m.tap('.talk [data-action="talk-close"]');
+      const y1 = await m.evaluate(() => document.getElementById('station-strip').getBoundingClientRect().top);
+      check('rápido: a faixa de estações não muda de lugar quando o cartão muda', Math.abs(y1 - y0) < 1, `${y0} → ${y1}`);
+    }
     await choose('caldeirao');
     check('rápido: restrição confirmada com evidências simples (fila e ritmo)', /Isso! \d+ poções esperam na frente da estação Caldeirão/.test(await coach()));
     check('rápido: sem janela extra para o resultado da hipótese', (await m.$('.modal')) == null);
     await choose('ok');
-    { const t = await coach(); check('rápido: passo 2 (explorar) com escolhas sem custo dentro do cartão', t.includes('sem gastar nada') && (await has('helper-preparo')), t.slice(0, 160)); }
+    { const t = await coach(); check('rápido: passo 2 (explorar) com escolhas sem custo, em linguagem de "você"', t.includes('sem gastar nada') && (await has('helper-preparo')) && /Você ajuda no Preparo/.test(t), t.slice(0, 200)); }
     await shot('04-explorar');
     // melhorar quem não é a restrição: medido, sem ganho, e dá para tentar outra
     await choose('helper-preparo');
@@ -450,9 +459,15 @@ try {
     check('rápido: ajudar o Preparo (não é a restrição) não aumenta as entregas — e a etapa não avança', /Não mudou nada/.test(await coach()) && (await has('setupExternal')), (await coach()).slice(0, 220));
     await choose('setupExternal');
     await ff(30);
-    check('rápido: explorar a restrição mostra o efeito medido', /ficava parado \d+% do tempo; agora, \d+%/.test(await coach()));
+    {
+      const t = await coach();
+      const mm = /O Caldeirão fazia ([\d,]+) poções por minuto; agora faz ([\d,]+)/.exec(t);
+      const num = (x) => Number(x.replace(',', '.'));
+      check('rápido: explorar a restrição mostra o efeito medido, e o número sobe de verdade', !!mm && num(mm[2]) > num(mm[1]), mm ? mm[0] : t.slice(0, 200));
+    }
     await choose('ok');
-    check('rápido: passo 3 (subordinar) parte de "todo mundo ocupado"', (await coach()).includes('Como trabalhar'));
+    const shownWip = Number(/já são (\d+) poções paradas/.exec(await coach())?.[1]);
+    check('rápido: passo 3 (subordinar) parte de "todo mundo ocupado", sem nomes não apresentados', (await coach()).includes('Como trabalhar') && !/Tico/.test(await coach()));
     await choose('empurrar');
     await ff(42);
     check('rápido: manter todo mundo ocupado é medido e explicado, e a corda continua disponível', /Todo mundo ocupado não faz/.test(await coach()) && (await has('corda')));
@@ -462,7 +477,7 @@ try {
     {
       const t = await coach();
       const mm = /Poções paradas pela loja: (\d+) → (\d+)/.exec(t);
-      check('rápido: corda diminui as poções espalhadas pela loja', !!mm && Number(mm[2]) < Number(mm[1]), mm ? mm[0] : t.slice(0, 200));
+      check('rápido: corda diminui as poções paradas, e o "antes" é o mesmo número da pergunta', !!mm && Number(mm[2]) < Number(mm[1]) && Number(mm[1]) === shownWip, mm ? `${mm[0]} (pergunta: ${shownWip})` : t.slice(0, 200));
     }
     await choose('ok');
     check('rápido: passo 4 (elevar) com preço das opções e o caixa à vista', /Segundo caldeirão/.test(await coach()) && /\d+ moedas/.test(await coach()) && (await m.evaluate(() => !!document.querySelector('[data-qcash]').offsetParent)));
@@ -478,6 +493,11 @@ try {
     check('rápido: investimento na restrição mostra o efeito', /Você aumentou quem segurava a loja/.test(await coach()));
     await choose('ok');
     check('rápido: passo 5 (recomeçar)', (await coach()).includes('A loja mudou'));
+    await ff(40);
+    {
+      const q = await m.evaluate(() => window.__pocao.game.sim.stations.destilacao.queue.length);
+      check('rápido: no passo 5 a fila da nova restrição (Destilação) cresce à vista', q >= 4, `fila da Destilação depois de 40 s: ${q}`);
+    }
     await choose('caldeirao');
     check('rápido: a restrição antiga não é mais a resposta', /Não é o Caldeirão/.test(await coach()));
     await choose('destilacao');
@@ -485,7 +505,8 @@ try {
     await choose('ok');
     {
       const t = await coach();
-      check('rápido: fim compara começo e agora (entregas e poções paradas)', /No começo: [\d,]+ poções por minuto e \d+ paradas pela loja\. Agora: [\d,]+ por minuto e \d+ paradas/.test(t), t.slice(0, 220));
+      const mm = /No começo, a loja conseguia entregar ([\d,]+) poções por minuto; agora, ([\d,]+)\. Poções paradas pela loja: \d+ → \d+/.exec(t);
+      check('rápido: fim compara começo e agora com os mesmos números das etapas', !!mm && mm[1] === '4,4' && Number(mm[2].replace(',', '.')) > 4.4, t.slice(0, 260));
     }
     const tSim = await m.evaluate(() => window.__pocao.game.sim.t);
     check('rápido: a partida guiada dura entre 4 e 10 minutos de jogo (a 1×)', tSim >= 240 && tSim <= 600, `${Math.round(tSim)} s de jogo`);

@@ -566,7 +566,7 @@ export async function debrief(
     <div class="quiz" data-correct="${q.correct}"><p><b>${esc(q.question)}</b></p>
       ${q.options.map((o, i) => `<button class="row-btn" data-action="quiz" data-v="${i}">${esc(o)}</button>`).join('')}
       <div class="quiz-exp" hidden><p>${esc(explanation)}</p></div></div>
-    <p class="muted small">Pontuação: ${score.total}/100</p>
+    <p class="muted small">Pontuação no placar: ${score.total}/100 — conta as entregas, o lucro e as poções paradas pela loja.</p>
     ${online ? '<p class="online-status" data-online-status>Enviando resultado ao placar da turma…</p>' : ''}`;
   const body = turma ? quickBody : `
     <div class="result ${won ? 'win' : 'lose'}"><h3>${won ? 'Fase concluída!' : 'Fase não concluída'}</h3>${won ? `<div class="stars">${stars}</div>` : `<p>${esc(reason || '')}</p>`}</div>
@@ -594,13 +594,15 @@ export async function debrief(
       <div class="quiz-exp" hidden><p>${esc(explanation)}</p></div></div>`;
   const footer = `<button data-action="board-open">Placar</button><button data-action="exit">Menu</button><button data-action="retry">Jogar de novo</button>${won && next && phase.mode !== 'turma' ? '<button class="primary" data-action="next-phase">Próxima fase</button>' : ''}`;
   const { el: dEl, promise } = open(g, { title: `Avaliação — ${esc(phase.title)}`, body, footer, cls: 'wide debrief', closable: false });
+  // abre sempre pelo começo (o foco no primeiro botão rolava a janela para o meio)
+  requestAnimationFrame(() => dEl.querySelectorAll('.modal-body, .body, section').forEach((x) => ((x as HTMLElement).scrollTop = 0)));
   void online?.then((st) => {
     const box = dEl.querySelector('[data-online-status]');
     if (!box) return;
     if (st === 'ignorado') box.remove();
     else if (st === 'enviado') box.innerHTML = won ? '<b class="pos">Resultado enviado ao placar da turma.</b> Toque em Placar para ver sua posição.' : 'Resultado registrado. Só fases <b>vencidas</b> somam pontos no placar.';
     else if (st === 'negado') box.innerHTML = '<b class="neg">O placar ainda não foi liberado no Firebase.</b> O resultado ficou guardado e será enviado depois que as regras forem configuradas.';
-    else box.innerHTML = '<b class="neg">Sem conexão:</b> o resultado ficou guardado e será enviado ao placar quando houver internet.';
+    else box.innerHTML = 'O resultado ficou guardado no celular e vai para o placar assim que houver internet.';
   });
   await promise;
 }

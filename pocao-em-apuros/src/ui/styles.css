@@ -3128,3 +3128,19 @@ body.quick:not(.guide-free) #game-main {
 body.quick:not(.guide-free) .hud-more .hm-l {
   display: inline;
 }
+/* modo rápido em pé: o cartão da mentora tem altura fixa, para a faixa de estações nunca mudar de
+   lugar entre um toque e outro (os testes com jogadores mostraram toques caindo no lugar errado) */
+@media (orientation: portrait) and (max-width: 1024px) {
+  body.quick:not(.guide-free) .coach.turma-coach {
+    height: clamp(170px, 28dvh, 250px);
+    max-height: none;
+    overflow-y: auto;
+  }
+}
+.turma-coach .count {
+  font-variant-numeric: tabular-nums;
+}
+.turma-coach .talk-help {
+  margin-top: 6px;
+  width: 100%;
+}

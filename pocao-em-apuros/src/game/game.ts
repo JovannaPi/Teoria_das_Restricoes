@@ -755,6 +755,8 @@ export class Game {
     };
     a['talk-more'] = () => this.talk && this.openTalk(this.talk.npc, true);
     a['talk-close'] = () => this.closeTalk();
+    // atalho do cartão do modo rápido: conversa com a mentora sem precisar achá-la na loja
+    a['talk-mentor'] = () => this.openTalk('mentora', !!this.talk && this.talk.npc === 'mentora');
     a['speed'] = (el) => this.setSpeed(Number(el.dataset.v));
     a['side'] = (el) => this.openSide(el.dataset.v as SideView);
     a['close-side'] = () => {
