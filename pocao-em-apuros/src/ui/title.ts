@@ -137,7 +137,7 @@ export function registerTitleActions(g: Game): void {
       <button data-action="title-settings">${iconImg('gear')} Configurações</button>
       <button data-action="title-about">${iconImg('scroll')} Sobre o jogo</button></div>`);
   };
-  a['title-howto'] = () => panel(`<h2>Como jogar</h2>${howToHtml()}<button class="primary" data-action="title-start" data-v="turma">Jogar</button>`);
+  a['title-howto'] = () => panel(`<h2>Como jogar</h2>${howToHtml(true)}<button class="primary" data-action="title-start" data-v="turma">Jogar</button>`);
   a['title-toc'] = () => panel(`<h2>O que é a TOC?</h2>${tocHtml()}<button class="primary" data-action="title-start" data-v="turma">Jogar</button>`);
   a['title-sound'] = () => {
     a['settings-mute'](document.body);

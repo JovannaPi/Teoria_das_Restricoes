@@ -184,10 +184,18 @@ function ownedText(s: SimState): string[] {
 }
 
 /** Explicação da pergunta de reflexão usando os números da própria partida. */
+/** artigo da estação */
+function the(id: StationId): string {
+  return id === 'destilacao' || id === 'embalagem' ? 'a' : 'o';
+}
+
 export function contextualReflection(s: SimState, firstId: StationId): string {
   const others = STATION_ORDER.filter((id) => id !== firstId && !s.stations[id].locked && id !== 'balcao');
   const idle = others
     .map((id) => ({ id, starved: s.stations[id].starvedTime / (s.stations[id].slots * Math.max(1, s.t)) }))
     .sort((x, y) => y.starved - x.starved)[0];
-  return `Toda poção precisa passar pela restrição (${STATIONS[firstId].short}), que trabalhou ${pct(observedUtilization(s, firstId))} do dia. Na sua partida, ${STATIONS[idle.id].short} passou ${pct(idle.starved)} do tempo sem trabalho: acelerar uma estação assim só aumentaria a folga dela — e qualquer poção extra iria para a fila na frente da restrição. Entregas aumentam quando a restrição produz mais.`;
+  void idle;
+  // sem porcentagens: a ideia em uma frase, ligada às estações da própria partida
+  const waited = others.map((id) => STATIONS[id].short).join(' e ');
+  return `Toda poção precisa passar pela restrição (${STATIONS[firstId].short}). Na sua partida, ${waited} ficaram parados boa parte do tempo esperando por ${the(firstId)} ${STATIONS[firstId].short}: acelerá-los só aumentaria essa espera e a fila. As entregas só aumentam quando a restrição produz mais.`;
 }

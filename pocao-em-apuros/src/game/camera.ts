@@ -40,6 +40,11 @@ export class Camera {
     );
     this.map = wrap.querySelector('.cam-map i');
     this.btn = wrap.querySelector('.cam-btn');
+    // a área da loja nunca rola sozinha: o navegador rola elementos com overflow escondido quando um
+    // botão dentro deles recebe foco, e aí o toque deixaria de cair onde a câmera mostra
+    wrap.addEventListener('scroll', () => {
+      if (wrap.scrollLeft || wrap.scrollTop) wrap.scrollLeft = wrap.scrollTop = 0;
+    });
     wrap.addEventListener('pointerdown', (e) => this.down(e));
     wrap.addEventListener('pointermove', (e) => this.move(e));
     wrap.addEventListener('pointerup', (e) => this.up(e));

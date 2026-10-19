@@ -120,3 +120,24 @@ O modo completo não mudou. O modo rápido (botão **Modo rápido — 6 a 10 min
 Os resultados de "explorar" e "elevar" são mostrados como **capacidade da loja** (o que a restrição consegue fazer, calculado pela simulação), e não só como entregas numa janela de 25 a 40 s, que variavam demais para uma comparação justa. **Recomeçar** (no cartão) reinicia a demonstração na hora.
 
 Números conferidos em `tests/turma.test.ts`: decidir pela TOC entrega 51 a 56 poções contra 32 a 34 sem decidir (3 dias diferentes); ajudar o Preparo: 13 → 13 entregas em 3 min; limpar em paralelo no Caldeirão: 13 → 17–18; com a procura maior, 2º caldeirão 13 → 26, alambique ou bancada 13 → 13.
+
+## Modo rápido ainda mais enxuto (v6)
+
+Para quem joga pela primeira vez numa aula, a tela do modo rápido mostra só o necessário. Enquanto as dicas da mentora estão ligadas:
+
+| Antes | Agora |
+|---|---|
+| Janela de abertura com a fala da mentora | o cartão da mentora já apresenta o problema |
+| Tocar numa estação abria um painel com "ocupada (últimos 60 s)", "capacidade para o mix atual", decisões e detalhes | o cartão mostra uma linha: o que a estação faz e a fila |
+| Etiquetas na loja com "ociosa", "intervalo"… | só o nome e a fila |
+| Barra superior com caixa, entregues, relógio, pausa, 1× e 2× | entregues, relógio, pausa e **Menu**; o caixa aparece só no passo de investir |
+| Barra de abas (Loja, Pedidos, Análise, Mais) | nenhuma; o **Menu** tem: continuar, como jogar, recomeçar, jogar sem as dicas, sair |
+| "Recomeçar" e "Pular dicas" no cartão | no Menu |
+| Avisos flutuantes e janela "O mercado mudou" | nenhum: o cartão diz o que importa |
+| Duas perguntas parecidas ("onde acumula?" e "qual limita?") | só "Qual estação está segurando a loja? Olhe as filas." |
+| Textos de 3 a 5 linhas, com "capacidade", "carga", "mix" | uma ou duas frases curtas por cartão (até 30 palavras no primeiro) |
+| Avaliação com objetivos, 7 indicadores financeiros, detalhamento da pontuação, cinco passos com indicadores e conceito | quantas poções entregou (começo × fim), os cinco passos (o que você fez + uma frase de TOC) e uma pergunta para pensar |
+
+"Jogar sem as dicas" (no Menu) devolve a interface completa (abas, painéis, Fluxo, velocidades, avisos). O modo completo não mudou.
+
+Correção encontrada nos testes: quando um botão dentro da loja recebia foco, o navegador rolava a área da loja sozinho e os toques deixavam de cair onde a câmera mostrava. A área da loja agora nunca rola sozinha.

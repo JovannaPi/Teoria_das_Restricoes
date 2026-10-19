@@ -2727,6 +2727,7 @@ body.cam #stage-wrap {
   display: block;
   position: relative;
   overflow: hidden;
+  overflow: clip;
   padding: 0;
   touch-action: none;
   background: #0d0910;
@@ -3096,4 +3097,34 @@ body.quick .hud-stats .stat:nth-child(4) {
 .choices.grid2 .choice small {
   font-size: 0.74rem;
   line-height: 1.25;
+}
+
+/* ================================================================ modo rápido com a mentora: só o essencial
+   Sem abas, painéis, avisos e velocidades: a loja, a faixa de estações, o cartão da mentora e um
+   botão de menu. O caixa só aparece no passo de investir. "Jogar sem as dicas" devolve tudo. */
+body.quick:not(.guide-free) #tabbar,
+body.quick:not(.guide-free) .hud-menu,
+body.quick:not(.guide-free) .hud-time .spd,
+body.quick:not(.guide-free) #side,
+body.quick:not(.guide-free) #bottom,
+body.quick:not(.guide-free) #phase-bar,
+body.quick:not(.guide-free):not(.show-cash) [data-qcash] {
+  display: none !important;
+}
+body.quick:not(.guide-free) #hud .hud-more {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 48px;
+  min-height: 44px;
+}
+body.quick:not(.guide-free) #game-main {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+.hud-more .hm-l {
+  display: none;
+}
+body.quick:not(.guide-free) .hud-more .hm-l {
+  display: inline;
 }

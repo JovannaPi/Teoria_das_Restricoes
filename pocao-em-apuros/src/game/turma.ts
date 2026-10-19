@@ -113,11 +113,16 @@ export class TurmaGuide {
       case 0:
         this.card = {
           step: STEP[0],
-          text: 'Os pedidos chegam mais rápido do que a loja entrega. Toque em duas estações (na loja ou nos botões abaixo dela) para ver o que cada uma faz. Você também pode arrastar a sua bruxa e tocar nas pessoas para conversar.',
+          text: 'Os pedidos chegam mais rápido do que a loja entrega. Toque em duas estações para conhecer a loja.',
         };
         break;
       case 1: {
-        // onde está o acúmulo? (observação, com resposta conferida nos dados)
+        // a pergunta "onde acumula" repetia a de identificar: no modo rápido vamos direto a ela
+        this.index = 2;
+        this.enter();
+        return;
+      }
+      case 99: {
         this.card = {
           step: STEP[0],
           text: 'Olhe os números de "fila" nas estações. Onde as poções estão se acumulando?',
@@ -128,7 +133,7 @@ export class TurmaGuide {
       case 2:
         this.card = {
           step: STEP[1],
-          text: 'Agora a pergunta da Teoria das Restrições: qual estação está limitando quantas poções a loja consegue entregar?',
+          text: 'Qual estação está segurando a loja? Olhe as filas.',
           choices: this.stationChoices(),
         };
         break;
@@ -138,15 +143,14 @@ export class TurmaGuide {
         this.marks.baseWip ??= wipCount(s);
         this.card = {
           step: STEP[2],
-          text: `Antes de gastar dinheiro, tire mais do que já existe. Escolha uma melhoria sem custo — e veja o que ela faz com as entregas.`,
+          text: `Melhore o ${STATIONS[this.drum()].short} sem gastar nada. O que fazer?`,
           choices: this.exploreChoices(),
         };
         break;
       case 4: {
-        const q = s.stations[this.drum()].queue.length;
         this.card = {
           step: STEP[3],
-          text: `O Tico quer todo mundo sempre ocupado: o Preparo produz mesmo sem pedido. Agora há ${wipCount(s)} poções espalhadas pela loja e ${q} esperando na frente do ${STATIONS[this.drum()].short}. Como organizar o trabalho?`,
+          text: `O Tico deixa todo mundo sempre ocupado: já são ${wipCount(s)} poções paradas pela loja. Como trabalhar?`,
           choices: this.subordinateChoices(),
         };
         break;
@@ -156,12 +160,12 @@ export class TurmaGuide {
         startEvent(s, {
           kind: 'mudanca_demanda',
           demand: TURMA_SURGE,
-          message: 'A notícia correu e chegam mais clientes, pedindo mais Visão Noturna e Transformação.',
+          message: 'A notícia correu e chegam mais clientes.',
         });
         s.upgradesAvailable = [...TURMA_UPGRADES];
         this.card = {
           step: STEP[4],
-          text: `A procura aumentou! Só melhorar o que já existe não basta mais. Você tem ${Math.round(s.cash)} moedas para investir. Onde colocar o dinheiro?`,
+          text: `Chegaram mais clientes! Agora vale investir. Você tem ${Math.round(s.cash)} moedas. Onde?`,
           choices: this.elevateChoices(),
         };
         break;
@@ -170,7 +174,7 @@ export class TurmaGuide {
         this.marks.secondStart = s.t;
         this.card = {
           step: STEP[5],
-          text: 'A loja mudou. A restrição de antes ainda é a mesma? Olhe as filas de novo e escolha.',
+          text: 'A loja mudou. Qual estação está segurando a loja agora?',
           choices: this.stationChoices(),
         };
         break;
@@ -178,16 +182,18 @@ export class TurmaGuide {
         const fmt = (x: number) => x.toFixed(1).replace('.', ',');
         const cmp =
           this.marks.baseRate != null
-            ? ` Entregas: ${fmt(this.marks.baseRate)} → ${fmt(this.rateNow(60))} poções/min. Poções espalhadas pela loja: ${this.marks.baseWip} → ${wipCount(s)}.`
+            ? ` No começo: ${fmt(this.marks.baseRate)} poções por minuto e ${this.marks.baseWip} paradas pela loja. Agora: ${fmt(this.rateNow(60))} por minuto e ${wipCount(s)} paradas.`
             : '';
         this.card = {
           step: STEP[6],
-          text: `Pronto! Você passou pelos cinco passos.${cmp} Pode continuar até ${this.endClock()} ou ver o resultado agora.`,
+          text: `Pronto: você passou pelos cinco passos!${cmp}`,
           choices: [{ v: 'fim', label: 'Ver o resultado agora', primary: true }],
         };
         break;
       }
     }
+    // o caixa só aparece quando há o que fazer com ele
+    document.body.classList.toggle('show-cash', this.index >= 5);
     // nas etapas que agem sobre a restrição, a câmera mostra a restrição
     if (this.index >= 3 && this.index <= 5) this.g.camera.focusStation(this.drum());
     this.render(true);
@@ -198,18 +204,18 @@ export class TurmaGuide {
     const c = this.drum();
     const C = STATIONS[c].short;
     return [
-      { v: 'setupExternal', label: 'Limpar em paralelo', sub: `uma aprendiz limpa o ${C} enquanto ele trabalha` },
-      { v: 'breakCover', label: 'Cobrir as pausas', sub: `alguém assume o ${C} na hora do chá` },
-      { v: 'helper', label: `${heroName()} ajuda no ${C}`, sub: '20% mais rápido enquanto ela estiver lá' },
-      { v: 'helper-preparo', label: `${heroName()} ajuda no Preparo`, sub: 'o Preparo fica 20% mais rápido' },
+      { v: 'setupExternal', label: 'Limpar em paralelo', sub: 'alguém limpa enquanto ele trabalha' },
+      { v: 'breakCover', label: 'Cobrir as pausas', sub: 'alguém assume na hora do chá' },
+      { v: 'helper', label: `${heroName()} ajuda no ${C}` },
+      { v: 'helper-preparo', label: `${heroName()} ajuda no Preparo` },
     ].filter((ch) => !this.tried.has(ch.v) && this.applicable(ch.v));
   }
 
   private subordinateChoices(): Choice[] {
     const C = STATIONS[this.drum()].short;
     return [
-      { v: 'corda', label: `Trabalhar no ritmo do ${C}`, sub: 'só começa uma poção quando ele tiver espaço (corda)' },
-      { v: 'empurrar', label: 'Manter todo mundo ocupado', sub: 'cada estação produz o máximo que conseguir' },
+      { v: 'corda', label: `No ritmo do ${C}`, sub: 'só começa uma poção quando ele puder' },
+      { v: 'empurrar', label: 'Todo mundo ocupado', sub: 'cada um produz o máximo' },
     ].filter((ch) => !this.tried.has(ch.v));
   }
 
@@ -218,7 +224,7 @@ export class TurmaGuide {
     return [
       ...opts
         .filter((u) => !this.s.upgradesOwned.some((o) => o.id === u))
-        .map((u) => ({ v: u, label: UPGRADES[u].name, sub: `${STATIONS[UPGRADES[u].station].short} · ${UPGRADES[u].price} moedas` })),
+        .map((u) => ({ v: u, label: UPGRADES[u].name, sub: `${UPGRADES[u].price} moedas` })),
       { v: 'nada', label: 'Não investir agora' },
     ];
   }
@@ -277,14 +283,15 @@ export class TurmaGuide {
           if (this.index === 2) this.marks.identifiedAt = s.t;
           else this.marks.secondIdentifiedAt = s.t;
           s.policies.drum = id;
-          this.card.feedback = `Isso! ${STATIONS[id].short} está ocupada ${pct(recentUtilization(s, id))} do tempo, tem ${s.stations[id].queue.length} poções esperando e faz ${a.loads[id].mixCapacityPerMin.toFixed(1).replace('.', ',')} poções/min — a loja recebe ${a.demandPerMin.toFixed(1).replace('.', ',')}/min. Ela não dá conta: é a restrição.`;
+          this.card.feedback = `Isso! ${s.stations[id].queue.length} poções esperam na frente da estação ${STATIONS[id].short}: ela faz ${a.loads[id].mixCapacityPerMin.toFixed(1).replace('.', ',')} por minuto, mas chegam ${a.demandPerMin.toFixed(1).replace('.', ',')}. Ela segura a loja: é a restrição.`;
           this.card.feedbackKind = 'good';
-          this.card.choices = [{ v: 'ok', label: this.index === 6 ? `Amarrar a corda no ${STATIONS[id].short} e continuar` : 'Continuar', primary: true }];
+          this.card.choices = [{ v: 'ok', label: 'Continuar', primary: true }];
         } else {
           this.wrongTries++;
+          // curto e com um número só: a fila dela, e o fato de ela dar conta
           this.card.feedback =
-            wrongExplanation(s, id, a.ranked[0], a.loads[id].load) +
-            (this.wrongTries >= 2 ? ` Dica: compare a capacidade (poções/min) com o que chega na loja.` : ` A Vó Morgana (balão "!" no fundo da loja) pode ajudar.`);
+            `Não é ${the(id)} ${STATIONS[id].short}: a fila ${the(id) === 'a' ? 'dela' : 'dele'} é ${s.stations[id].queue.length} e ${the(id) === 'a' ? 'ela' : 'ele'} dá conta do que chega.` +
+            (this.wrongTries >= 2 ? ' Procure a fila que só cresce.' : ' Dúvida? Toque na Vó Morgana (balão "!").');
           this.card.feedbackKind = 'bad';
           if (this.wrongTries >= 3 && this.index === 2) {
             this.marks.revealedByMentor = true;
@@ -322,7 +329,7 @@ export class TurmaGuide {
       case 5: {
         if (v === 'nada') {
           addLog(s, 'decisao', 'Decidiu não investir.');
-          this.card.feedback = 'Sem investimento, a loja continua com a mesma capacidade — e a procura agora é maior.';
+          this.card.feedback = 'Sem investir, a loja continua do mesmo tamanho — e agora chegam mais clientes.';
           this.card.feedbackKind = 'info';
           this.card.choices = [{ v: 'ok', label: 'Continuar', primary: true }];
           break;
@@ -330,7 +337,7 @@ export class TurmaGuide {
         const u = v as UpgradeId;
         if (this.pendingBuy !== u) {
           this.pendingBuy = u;
-          this.card.feedback = `${UPGRADES[u].name}: ${UPGRADES[u].price} moedas e +${(UPGRADES[u].opCostPerSec * 30).toFixed(1).replace('.', ',')} moedas/h de despesa. Toque de novo para confirmar.`;
+          this.card.feedback = `${UPGRADES[u].name} por ${UPGRADES[u].price} moedas. Toque de novo para confirmar.`;
           this.card.feedbackKind = 'info';
           break;
         }
@@ -371,7 +378,6 @@ export class TurmaGuide {
     this.measure = null;
     const s = this.s;
     const win = Math.max(10, s.t - m.from);
-    const rate = (deliveredBetween(s, m.from, s.t) / win) * 60;
     const fmt = (x: number) => x.toFixed(1).replace('.', ',');
     let text = '';
     let kind: Card['feedbackKind'] = 'good';
@@ -379,21 +385,19 @@ export class TurmaGuide {
     const C = STATIONS[this.drum()].short;
     // capacidade da loja = o que a restrição consegue fazer (calculada pela simulação, sem o ruído de uma janela curta)
     const capNow = analyzeCapacity(s).systemCapacityPerMin;
-    const capTxt = `A loja consegue entregar ${fmt(m.base.cap)} → ${fmt(capNow)} poções/min`;
     if (m.kind === 'explorar') {
       const lost = this.lostNow(this.drum(), win);
-      text = `Resultado: o ${C} ficava parado ${pct(m.base.lost)} do tempo; agora ${pct(lost)}. ${capTxt}. Explorar a restrição é isso: tirar mais dela sem comprar nada.`;
+      text = `Boa! O ${C} ficava parado ${pct(m.base.lost)} do tempo; agora, ${pct(lost)}. A loja passou de ${fmt(m.base.cap)} para ${fmt(capNow)} poções por minuto, sem gastar nada.`;
     } else if (m.kind === 'explorar-fora') {
-      const q = s.stations[this.drum()].queue.length;
-      text = `Resultado: ${capTxt} — nada mudou. O Preparo ficou mais rápido, mas toda poção ainda passa pelo ${C}, que continua no mesmo ritmo. A fila na frente dele: ${m.base.queue} → ${q}. Tente melhorar quem limita a loja.`;
+      text = `Não mudou nada: a loja continua em ${fmt(capNow)} poções por minuto. Toda poção ainda passa pelo ${C}, que não ficou mais rápido. Tente outra.`;
       kind = 'bad';
       retry = this.exploreChoices();
     } else if (m.kind === 'corda' || m.kind === 'empurrar') {
       const w = wipCount(s);
       if (m.kind === 'corda') {
-        text = `Resultado: poções espalhadas pela loja: ${m.base.wip} → ${w}, e as entregas ficaram em ${fmt(rate)} poções/min. As outras estações agora seguem o ritmo da restrição — às vezes ficam paradas, e tudo bem: produzir mais só criaria fila e poção estragada.`;
+        text = `Boa! Poções paradas pela loja: ${m.base.wip} → ${w}, e as entregas continuam iguais. Produzir mais do que o ${C} só fazia fila.`;
       } else {
-        text = `Resultado: poções espalhadas pela loja: ${m.base.wip} → ${w}, e as entregas continuam em ${fmt(rate)} poções/min. Todo mundo ocupado não faz o ${C} andar mais rápido: só aumenta a fila, o dinheiro parado e as poções que estragam esperando.`;
+        text = `Poções paradas pela loja: ${m.base.wip} → ${w}, e as entregas não aumentaram. Todo mundo ocupado não faz o ${C} andar mais rápido.`;
         kind = 'bad';
         retry = this.subordinateChoices();
       }
@@ -402,8 +406,8 @@ export class TurmaGuide {
       const st = own ? UPGRADES[own.id].station : null;
       const wasC = st === this.drum();
       text = wasC
-        ? `Resultado: ${capTxt}, e as entregas medidas foram ${fmt(rate)} poções/min. Você elevou a restrição: aumentou a capacidade de quem limitava a loja.`
-        : `Resultado: ${capTxt} — nada mudou. O investimento foi numa estação que não limitava a loja: a despesa subiu, mas o ${C} continua no mesmo ritmo.`;
+        ? `Boa! A loja passou de ${fmt(m.base.cap)} para ${fmt(capNow)} poções por minuto. Você aumentou quem segurava a loja.`
+        : `Não mudou nada: a loja continua em ${fmt(capNow)} poções por minuto. Você gastou, mas o ${C} continua segurando a loja.`;
       kind = wasC ? 'good' : 'bad';
       if (!wasC) retry = this.elevateChoices().filter((c) => c.v === 'nada' || UPGRADES[c.v as UpgradeId].price <= s.cash);
     }
@@ -430,7 +434,7 @@ export class TurmaGuide {
       if (this.index === 0) {
         const id = data as StationId;
         const st = this.s.stations[id];
-        this.card.feedback = `${STATIONS[id].name}: ${STATIONS[id].verb}. Fila agora: ${st.queue.length}. Toque em outra estação para comparar.`;
+        this.card.feedback = `${STATIONS[id].short}: ${STATIONS[id].verb}. Fila: ${st.queue.length}.${this.viewed.size < 2 ? ' Toque em outra.' : ''}`;
         this.card.feedbackKind = 'info';
         if (this.viewed.size >= 2) this.later(() => this.index === 0 && this.next(), 900);
         this.render(true);
@@ -520,8 +524,7 @@ export class TurmaGuide {
     const n = (c.choices || []).length;
     const grid = n >= 5 ? 'grid3' : n === 4 ? 'grid2' : 'stack';
     const html = `<header><img class="portrait xs" src="${portraitUrl(LOOKS.morgana)}" alt=""><b>${esc(c.step)}</b><span class="dots" aria-hidden="true">${progress}</span>
-      <button class="mini ghost" data-action="quick-restart" aria-label="Recomeçar a demonstração">Recomeçar</button>
-      <button class="mini ghost" data-action="quick-skip" aria-label="Pular as dicas e jogar livre">Pular dicas</button></header>
+</header>
       <p>${esc(personalize(c.text))}</p>
       ${c.feedback ? `<p class="fb ${c.feedbackKind || 'info'}" role="status">${esc(personalize(c.feedback))}</p>` : ''}
       ${c.wait ? `<p class="fb info wait">${esc(c.wait)}</p>` : ''}
@@ -540,6 +543,11 @@ export class TurmaGuide {
     this.coach?.remove();
     this.coach = null;
   }
+}
+
+/** artigo da estação ("a Destilação", "o Caldeirão") */
+function the(id: StationId): 'a' | 'o' {
+  return id === 'destilacao' || id === 'embalagem' ? 'a' : 'o';
 }
 
 function pct(v: number): string {

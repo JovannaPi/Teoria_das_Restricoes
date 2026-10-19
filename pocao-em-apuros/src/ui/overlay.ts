@@ -28,7 +28,9 @@ export function renderOverlay(g: Game): void {
     else if (s.t < st.downUntil) state = st.downReason || 'parada';
     else if (s.t < st.breakUntil) state = 'intervalo';
     else if (st.active.length === 0) state = 'ociosa';
-    const txt = (st.queue.length ? `fila ${st.queue.length}` : '') + (state ? (st.queue.length ? ' · ' : '') + state : '');
+    // modo rápido: só o nome e a fila (sem "ociosa", "intervalo"…)
+    const simple = document.body.classList.contains('quick') && !document.body.classList.contains('guide-free');
+    const txt = simple ? (st.queue.length ? `fila ${st.queue.length}` : '') : (st.queue.length ? `fila ${st.queue.length}` : '') + (state ? (st.queue.length ? ' · ' : '') + state : '');
     if (q.textContent !== txt) q.textContent = txt;
     el.classList.toggle('sel', g.selected === id);
     el.classList.toggle('warn', st.queue.length >= 6);
