@@ -111,7 +111,7 @@ export const PHASES: PhaseDef[] = [
     goalText: 'Descubra por que a loja não dá conta dos pedidos e melhore a produção, um passo de cada vez.',
     // Versão enxuta para aula: 4 estações, 1 tipo de poção, pedidos aceitos e ingredientes repostos
     // sozinhos, sem eventos aleatórios. O Caldeirão é a restrição (≈4,4 poções/min para ≈6/min
-    // pedidas); depois do segundo caldeirão, quem limita é a Destilação (7,5/min para ≈9,8/min: a fila na frente dela cresce à vista).
+    // pedidas); depois do segundo caldeirão, quem limita é a Destilação (6,7/min para ≈9,8/min: a fila na frente dela cresce à vista).
     scenario: scenario({
       id: 'turma',
       seed: 2026,

@@ -466,18 +466,21 @@ try {
       check('rápido: explorar a restrição mostra o efeito medido, e o número sobe de verdade', !!mm && num(mm[2]) > num(mm[1]), mm ? mm[0] : t.slice(0, 200));
     }
     await choose('ok');
-    const shownWip = Number(/já são (\d+) poções paradas/.exec(await coach())?.[1]);
+    const shownWip = Number(/já são (\d+) poções esperando nas filas/.exec(await coach())?.[1]);
     check('rápido: passo 3 (subordinar) parte de "todo mundo ocupado", sem nomes não apresentados', (await coach()).includes('Como trabalhar') && !/Tico/.test(await coach()));
     await choose('empurrar');
     await ff(42);
-    check('rápido: manter todo mundo ocupado é comparado com a outra escolha, e ela continua disponível', /Com todo mundo ocupado: \d+ poções? paradas?.*No ritmo do Caldeirão seriam \d+/.test(await coach()) && (await has('corda')), (await coach()).slice(0, 260));
+    check('rápido: manter todo mundo ocupado é comparado com a outra escolha, e ela continua disponível', /Eram \d+ poções nas filas; com todo mundo ocupado, agora são \d+\. No ritmo do Caldeirão seriam \d+/.test(await coach()) && (await has('corda')), (await coach()).slice(0, 260));
     check('rápido: o caixa ainda não aparece antes do passo de investir', !(await m.evaluate(() => !!document.querySelector('[data-qcash]').offsetParent)));
     await choose('corda');
-    await ff(42);
+    await ff(20.05); // lê logo que o resultado aparece (a fila continua andando depois)
     {
       const t = await coach();
-      const mm = /No ritmo do Caldeirão: (\d+) poções? paradas? pela loja\. Se todo mundo continuasse ocupado: (\d+)/.exec(t);
-      check('rápido: no ritmo da restrição ficam bem menos poções paradas do que com todo mundo ocupado (mesmo instante)', !!mm && Number(mm[1]) < Number(mm[2]) * 0.8, mm ? mm[0] : t.slice(0, 200));
+      const mm = /Eram (\d+) poções nas filas\. Agora, no ritmo do Caldeirão: (\d+)\. Se todo mundo continuasse ocupado, seriam (\d+)/.exec(t);
+      check('rápido: no ritmo da restrição ficam bem menos poções nas filas do que com todo mundo ocupado (mesmo instante)', !!mm && Number(mm[2]) < Number(mm[3]) * 0.8, mm ? mm[0] : t.slice(0, 200));
+      const visible = await m.evaluate(() => [...document.querySelectorAll('#station-strip button')].filter((b) => b.offsetParent).reduce((t, b) => t + Number((b.querySelector('.sqn')?.textContent || '0').match(/\d+/)?.[0] || 0), 0));
+      const dbgQ = await m.evaluate(() => { const s = window.__pocao.game.sim; return JSON.stringify(Object.fromEntries(Object.entries(s.stations).map(([k, v]) => [k, [v.queue.length, v.locked]]))) + ' t' + s.t.toFixed(1); });
+      check('rápido: o número de poções nas filas é a soma das filas que aparecem nas estações', !!mm && Math.abs(Number(mm[2]) - visible) <= 2, `cartão ${mm?.[2]} × faixa ${visible} ${dbgQ}`);
       void shownWip;
     }
     await choose('ok');

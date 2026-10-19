@@ -518,6 +518,7 @@ export function gameMenu(g: Game): void {
 /** No modo rápido não se fala em corda, tambor ou pulmão: só no "ritmo da restrição". */
 function plainDecision(t: string): string {
   return t
+    .replace(new RegExp(`${heroName().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} passou a ajudar`, 'g'), 'você passou a ajudar')
     .replace(/ e reamarrou a corda nela/, ' e passou a trabalhar no ritmo dela')
     .replace(/, mas a corda ficou no lugar antigo/, ', mas o trabalho continuou no ritmo da restrição antiga')
     .replace(/Você mudou a liberação: .*/, 'Você passou a trabalhar no ritmo da restrição, sem produzir além do que ela consegue.')
@@ -559,7 +560,7 @@ export async function debrief(
   const stepsHtml = steps
     .map(
       (st) => `<details class="step" ${st.status !== 'feito' ? 'open' : ''}><summary><span class="sn">${st.n}</span><b>${esc(st.title)}</b><span class="chip ${STATUS[st.status][1]}">${STATUS[st.status][0]}</span></summary>
-      <p><b>O que você fez:</b> ${esc(turma ? plainDecision(st.decision) : st.decision)}</p>
+      <p><b>O que você fez:</b> ${esc(turma ? plainDecision(st.decision) + (st.n === 3 && g.guide?.marks.triedBusy ? ' Antes, você testou "todo mundo ocupado" e viu as filas crescerem.' : '') : st.decision)}</p>
       <p class="toc-note">${esc(st.toc.split('. ')[0].replace(/\.?$/, '.'))}</p></details>`,
     )
     .join('');

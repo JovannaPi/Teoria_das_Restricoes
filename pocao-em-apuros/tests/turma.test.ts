@@ -136,4 +136,32 @@ describe('Modo rápido (aula)', () => {
       expect(rope.n).toBeGreaterThanOrEqual(push.n - 1);
     }
   });
+  it('depois do 2º caldeirão a Destilação fica claramente sobrecarregada, qualquer que tenha sido a melhoria do passo 2', () => {
+    for (const ex of ['setupExternal', 'breakCover', 'helper'] as const) {
+      const s = sim();
+      advance(s, 60);
+      if (ex === 'helper') A.setHelper(s, 'caldeirao');
+      else A.setStationPolicy(s, ex, 'caldeirao', true);
+      surge(s);
+      s.cash = 2000;
+      A.buyUpgrade(s, 'caldeirao_extra');
+      advance(s, 30);
+      const a = analyzeCapacity(s);
+      expect(a.constraint).toBe('destilacao');
+      expect(a.loads.destilacao.load).toBeGreaterThan(1.3);
+    }
+  });
+
+  it('se comprar também o alambique, nenhuma estação fica sobrecarregada (o passo 5 não pede uma restrição)', () => {
+    const s = sim();
+    advance(s, 60);
+    A.setStationPolicy(s, 'setupExternal', 'caldeirao', true);
+    surge(s);
+    s.cash = 2000;
+    A.buyUpgrade(s, 'alambique_duplo');
+    A.buyUpgrade(s, 'caldeirao_extra');
+    advance(s, 30);
+    const a = analyzeCapacity(s);
+    expect(a.constraint === 'mercado' || a.loads[a.constraint].load < 1).toBe(true);
+  });
 });

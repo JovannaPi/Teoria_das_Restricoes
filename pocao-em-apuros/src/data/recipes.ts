@@ -34,7 +34,7 @@ export const RECIPES: Record<RecipeId, RecipeDef> = {
     route: [
       { station: 'preparo', time: 4 },
       { station: 'caldeirao', time: 8 },
-      { station: 'destilacao', time: 8 },
+      { station: 'destilacao', time: 9 },
       { station: 'balcao', time: 2 },
     ],
     price: 40,
