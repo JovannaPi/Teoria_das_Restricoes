@@ -9,7 +9,7 @@ import type { Game } from '../game/game';
 import { evaluateAll, ScoreBreakdown } from '../game/objectives';
 import { iconImg, LOOKS, portraitUrl, flaskUrl } from '../render/sprites';
 import { analyzeCapacity, averageQueue, observedUtilization, recentUtilization } from '../sim/analysis';
-import { averageWip, deliveredBetween, inventoryValue, netProfit, operatingExpense, throughputGain } from '../sim/engine';
+import { averageWip, inventoryValue, netProfit, operatingExpense, throughputGain } from '../sim/engine';
 import type { ActiveEvent, Hypothesis, IngredientId, StationId } from '../sim/types';
 import { barChart, lineChart } from './charts';
 import { contextualReflection, fiveSteps } from '../game/fivesteps';
@@ -515,6 +515,17 @@ export function gameMenu(g: Game): void {
 
 // ------------------------------------------------------------------ avaliação
 
+/** No modo rápido não se fala em corda, tambor ou pulmão: só no "ritmo da restrição". */
+function plainDecision(t: string): string {
+  return t
+    .replace(/ e reamarrou a corda nela/, ' e passou a trabalhar no ritmo dela')
+    .replace(/, mas a corda ficou no lugar antigo/, ', mas o trabalho continuou no ritmo da restrição antiga')
+    .replace(/Você mudou a liberação: .*/, 'Você passou a trabalhar no ritmo da restrição, sem produzir além do que ela consegue.')
+    .replace(/A loja continuou liberando todo pedido assim que chegava \(empurrando\)\./, 'A loja continuou com todo mundo ocupado.')
+    .replace(/ — na restrição/g, ' (na restrição)')
+    .replace(/ — fora da restrição/g, ' (fora da restrição)');
+}
+
 export async function debrief(
   g: Game,
   won: boolean,
@@ -548,7 +559,7 @@ export async function debrief(
   const stepsHtml = steps
     .map(
       (st) => `<details class="step" ${st.status !== 'feito' ? 'open' : ''}><summary><span class="sn">${st.n}</span><b>${esc(st.title)}</b><span class="chip ${STATUS[st.status][1]}">${STATUS[st.status][0]}</span></summary>
-      <p><b>O que você fez:</b> ${esc(st.decision)}</p>
+      <p><b>O que você fez:</b> ${esc(turma ? plainDecision(st.decision) : st.decision)}</p>
       <p class="toc-note">${esc(st.toc.split('. ')[0].replace(/\.?$/, '.'))}</p></details>`,
     )
     .join('');
@@ -556,17 +567,18 @@ export async function debrief(
   // modo rápido: avaliação curta — o que a loja fez, os cinco passos e uma pergunta
   const marks = g.guide?.marks;
   const fmt1 = (x: number) => x.toFixed(1).replace('.', ',');
-  const lastRate = (deliveredBetween(s, s.t - 60, s.t) / Math.max(1, Math.min(60, s.t))) * 60;
+  // mesmos números do cartão final: o que a loja consegue entregar por minuto (no começo × agora)
+  const capNow = a.systemCapacityPerMin;
   const quickBody = `
     <div class="result win"><h3>Fim do dia!</h3><p>Você entregou <b>${s.stats.delivered}</b> poções.${
-      marks?.baseRate != null ? ` No começo, a loja entregava ${fmt1(marks.baseRate)} por minuto; no fim, ${fmt1(lastRate)}.` : ''
+      marks?.baseCap != null ? ` No começo, a loja conseguia entregar ${fmt1(marks.baseCap)} poções por minuto; no fim, ${fmt1(capNow)}.` : ''
     }</p></div>
     <h3>Os cinco passos na sua partida</h3><p class="muted small">Toque num passo para ver o que aconteceu.</p><div class="steps5">${stepsHtml}</div>
     <h3>Para pensar</h3>
     <div class="quiz" data-correct="${q.correct}"><p><b>${esc(q.question)}</b></p>
       ${q.options.map((o, i) => `<button class="row-btn" data-action="quiz" data-v="${i}">${esc(o)}</button>`).join('')}
       <div class="quiz-exp" hidden><p>${esc(explanation)}</p></div></div>
-    <p class="muted small">Pontuação no placar: ${score.total}/100 — conta as entregas, o lucro e as poções paradas pela loja.</p>
+    <p class="muted small">Pontuação no placar: <b>${score.total}/100</b> — ${score.parts.map((p) => `${esc(p.label.toLowerCase())} ${Math.round(p.points)}/${p.max}`).join(' · ')}.</p>
     ${online ? '<p class="online-status" data-online-status>Enviando resultado ao placar da turma…</p>' : ''}`;
   const body = turma ? quickBody : `
     <div class="result ${won ? 'win' : 'lose'}"><h3>${won ? 'Fase concluída!' : 'Fase não concluída'}</h3>${won ? `<div class="stars">${stars}</div>` : `<p>${esc(reason || '')}</p>`}</div>

@@ -197,5 +197,5 @@ export function contextualReflection(s: SimState, firstId: StationId): string {
   void idle;
   // sem porcentagens: a ideia em uma frase, ligada às estações da própria partida
   const waited = others.map((id) => STATIONS[id].short).join(' e ');
-  return `Toda poção precisa passar pela restrição (${STATIONS[firstId].short}). Na sua partida, ${waited} ficaram parados boa parte do tempo esperando por ${the(firstId)} ${STATIONS[firstId].short}: acelerá-los só aumentaria essa espera e a fila. As entregas só aumentam quando a restrição produz mais.`;
+  return `Toda poção precisa passar pela restrição (${STATIONS[firstId].short}). Na sua partida, ${waited} tinham folga: fazê-los trabalhar mais rápido só criaria fila na frente ${the(firstId) === 'a' ? 'da' : 'do'} ${STATIONS[firstId].short}. As entregas só aumentam quando a restrição produz mais.`;
 }

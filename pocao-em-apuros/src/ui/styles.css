@@ -3144,3 +3144,15 @@ body.quick:not(.guide-free) .hud-more .hm-l {
   margin-top: 6px;
   width: 100%;
 }
+/* modo rápido: sem marcador de "tambor" (termo do modo completo) e sem o horário da loja, que
+   confundia o "por minuto" dos resultados; a barra do dia continua mostrando o andamento */
+body.quick:not(.guide-free) #overlay .tag.drum::before {
+  display: none;
+}
+body.quick:not(.guide-free) #station-strip button.drum .st::after,
+body.quick:not(.guide-free) #station-strip button.drum .sn::after {
+  content: none;
+}
+body.quick:not(.guide-free) [data-bind='clock'] {
+  display: none;
+}

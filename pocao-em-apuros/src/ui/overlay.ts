@@ -66,7 +66,7 @@ function renderStrip(g: Game): void {
   if (!stripBuilt || strip.childElementCount === 0) {
     strip.innerHTML = STATION_ORDER.map(
       (id) =>
-        `<button data-action="select-station" data-v="${id}" data-strip="${id}"><i class="dot" style="background:${STATION_COLORS[id]}"></i><span class="sn">${esc(STATIONS[id].short)}</span><span class="st">${TINY[id]}</span><span class="sq"><b class="sqn"></b><span class="sqs"></span></span><i class="sbar"><i></i></i></button>`,
+        `<button data-action="select-station" data-v="${id}" data-strip="${id}"><i class="dot" style="background:${STATION_COLORS[id]}"></i><span class="sn">${esc(STATIONS[id].short)}</span><span class="st">${STATION_ORDER.filter((x) => !s.stations[x].locked).length <= 4 ? esc(STATIONS[id].short) : TINY[id]}</span><span class="sq"><b class="sqn"></b><span class="sqs"></span></span><i class="sbar"><i></i></i></button>`,
     ).join('');
     stripBuilt = true;
   }

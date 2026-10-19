@@ -470,14 +470,15 @@ try {
     check('rápido: passo 3 (subordinar) parte de "todo mundo ocupado", sem nomes não apresentados', (await coach()).includes('Como trabalhar') && !/Tico/.test(await coach()));
     await choose('empurrar');
     await ff(42);
-    check('rápido: manter todo mundo ocupado é medido e explicado, e a corda continua disponível', /Todo mundo ocupado não faz/.test(await coach()) && (await has('corda')));
+    check('rápido: manter todo mundo ocupado é comparado com a outra escolha, e ela continua disponível', /Com todo mundo ocupado: \d+ poções? paradas?.*No ritmo do Caldeirão seriam \d+/.test(await coach()) && (await has('corda')), (await coach()).slice(0, 260));
     check('rápido: o caixa ainda não aparece antes do passo de investir', !(await m.evaluate(() => !!document.querySelector('[data-qcash]').offsetParent)));
     await choose('corda');
     await ff(42);
     {
       const t = await coach();
-      const mm = /Poções paradas pela loja: (\d+) → (\d+)/.exec(t);
-      check('rápido: corda diminui as poções paradas, e o "antes" é o mesmo número da pergunta', !!mm && Number(mm[2]) < Number(mm[1]) && Number(mm[1]) === shownWip, mm ? `${mm[0]} (pergunta: ${shownWip})` : t.slice(0, 200));
+      const mm = /No ritmo do Caldeirão: (\d+) poções? paradas? pela loja\. Se todo mundo continuasse ocupado: (\d+)/.exec(t);
+      check('rápido: no ritmo da restrição ficam bem menos poções paradas do que com todo mundo ocupado (mesmo instante)', !!mm && Number(mm[1]) < Number(mm[2]) * 0.8, mm ? mm[0] : t.slice(0, 200));
+      void shownWip;
     }
     await choose('ok');
     check('rápido: passo 4 (elevar) com preço das opções e o caixa à vista', /Segundo caldeirão/.test(await coach()) && /\d+ moedas/.test(await coach()) && (await m.evaluate(() => !!document.querySelector('[data-qcash]').offsetParent)));
@@ -493,10 +494,11 @@ try {
     check('rápido: investimento na restrição mostra o efeito', /Você aumentou quem segurava a loja/.test(await coach()));
     await choose('ok');
     check('rápido: passo 5 (recomeçar)', (await coach()).includes('A loja mudou'));
-    await ff(40);
+    check('rápido: no passo 5 as opções só aparecem depois de a fila crescer (sem chute)', !(await has('destilacao')));
+    for (let k = 0; k < 14 && !(await has('destilacao')); k++) await ff(5);
     {
       const q = await m.evaluate(() => window.__pocao.game.sim.stations.destilacao.queue.length);
-      check('rápido: no passo 5 a fila da nova restrição (Destilação) cresce à vista', q >= 4, `fila da Destilação depois de 40 s: ${q}`);
+      check('rápido: quando as opções aparecem, a fila da nova restrição (Destilação) já está à vista', (await has('destilacao')) && q >= 3, `fila da Destilação: ${q}`);
     }
     await choose('caldeirao');
     check('rápido: a restrição antiga não é mais a resposta', /Não é o Caldeirão/.test(await coach()));
@@ -505,7 +507,7 @@ try {
     await choose('ok');
     {
       const t = await coach();
-      const mm = /No começo, a loja conseguia entregar ([\d,]+) poções por minuto; agora, ([\d,]+)\. Poções paradas pela loja: \d+ → \d+/.exec(t);
+      const mm = /No começo, a loja conseguia entregar ([\d,]+) poções por minuto; agora, ([\d,]+)\./.exec(t);
       check('rápido: fim compara começo e agora com os mesmos números das etapas', !!mm && mm[1] === '4,4' && Number(mm[2].replace(',', '.')) > 4.4, t.slice(0, 260));
     }
     const tSim = await m.evaluate(() => window.__pocao.game.sim.t);
@@ -520,6 +522,12 @@ try {
     await m.waitForSelector('.debrief .steps5');
     const statuses = await m.$$eval('.steps5 .step .chip', (els) => els.map((e) => e.textContent));
     check('rápido: resultado mostra os 5 passos com dados da partida', statuses.length === 5, statuses.join(' | '));
+    {
+      const d = await m.textContent('.debrief');
+      const fim = /No começo, a loja conseguia entregar ([\d,]+) poções por minuto; no fim, ([\d,]+)/.exec(d);
+      check('rápido: a avaliação usa os mesmos números do cartão final', !!fim && fim[1] === '4,4', fim ? fim[0] : d.slice(0, 200));
+      check('rápido: avaliação sem "corda", "tambor" ou "pulmão"', !/corda|tambor|pulmão/i.test(d));
+    }
     check('rápido: avaliação curta (sem tabela de indicadores financeiros nem detalhamento da pontuação)', !(await m.$('.debrief .kv')) && !(await m.$('.debrief ul.score')) && /Você entregou \d+ poções/.test(await m.textContent('.debrief')));
     check('rápido: passo 1 "em parte" (houve um palpite errado)', statuses[0] === 'Em parte', statuses.join(' | '));
     await m.tap('.debrief [data-action="quiz"][data-v="0"]');
