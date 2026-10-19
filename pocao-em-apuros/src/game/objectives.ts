@@ -1,7 +1,8 @@
 // Avaliação de objetivos, vitória/derrota e pontuação — tudo calculado a partir
 // do estado real da simulação.
 import type { Objective, PhaseDef } from '../data/phases';
-import { averageWip, netProfit } from '../sim/engine';
+import { averageWip, createSim, netProfit } from '../sim/engine';
+import { analyzeCapacity } from '../sim/analysis';
 import type { SimState } from '../sim/types';
 
 export interface ObjectiveStatus {
@@ -69,8 +70,18 @@ export interface ScoreBreakdown {
 export function computeScore(s: SimState, phase: PhaseDef, won: boolean): ScoreBreakdown {
   const parts: ScoreBreakdown['parts'] = [];
   const np = netProfit(s);
-  const pProfit = Math.max(0, Math.min(40, (np / phase.refProfit) * 40));
-  parts.push({ label: 'Resultado global (lucro líquido)', points: pProfit, max: 40, detail: `${Math.round(np)} de referência ${phase.refProfit}` });
+  if (phase.mode === 'turma') {
+    // modo rápido: o resultado global é o que o jogo mostra o tempo todo — quanto a loja passou a
+    // conseguir entregar por minuto, do começo do dia (só a restrição inicial) até o fim
+    const start = analyzeCapacity(createSim(phase.scenario)).systemCapacityPerMin;
+    const end = analyzeCapacity(s).systemCapacityPerMin;
+    const best = analyzeCapacity(s).demandPerMin;
+    const pCap = Math.max(0, Math.min(40, ((end - start) / Math.max(0.1, best - start)) * 40));
+    parts.push({ label: 'Entregas por minuto (começo → fim)', points: pCap, max: 40, detail: `${start.toFixed(1)} → ${end.toFixed(1)} (o máximo é tudo o que chega: ${best.toFixed(1)})` });
+  } else {
+    const pProfit = Math.max(0, Math.min(40, (np / phase.refProfit) * 40));
+    parts.push({ label: 'Resultado global (lucro líquido)', points: pProfit, max: 40, detail: `${Math.round(np)} de referência ${phase.refProfit}` });
+  }
 
   const accepted = s.stats.ordersCompleted + s.stats.ordersCanceled;
   const onTimeRatio = s.stats.delivered > 0 ? s.stats.deliveredOnTime / s.stats.delivered : 0;

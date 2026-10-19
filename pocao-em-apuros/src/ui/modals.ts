@@ -559,9 +559,15 @@ export async function debrief(
   const STATUS = { feito: ['Feito', 'good'], parcial: ['Em parte', 'warn'], nao: ['Oportunidade', 'idle'] } as const;
   const stepsHtml = steps
     .map(
-      (st) => `<details class="step" ${st.status !== 'feito' ? 'open' : ''}><summary><span class="sn">${st.n}</span><b>${esc(st.title)}</b><span class="chip ${STATUS[st.status][1]}">${STATUS[st.status][0]}</span></summary>
-      <p><b>O que você fez:</b> ${esc(turma ? plainDecision(st.decision) + (st.n === 3 && g.guide?.marks.triedBusy ? ' Antes, você testou "todo mundo ocupado" e viu as filas crescerem.' : '') : st.decision)}</p>
-      <p class="toc-note">${esc(st.toc.split('. ')[0].replace(/\.?$/, '.'))}</p></details>`,
+      (st) => {
+        // modo rápido: um passo com tentativa errada fica "Em parte", como o palpite errado do passo 1
+        const mk = g.guide?.marks;
+        const slip = turma && st.status === 'feito' && ((st.n === 2 && mk?.triedOutside) || (st.n === 3 && mk?.triedBusy) || (st.n === 4 && mk?.wastedBuy));
+        if (slip) st = { ...st, status: 'parcial' };
+        return `<details class="step" ${st.status !== 'feito' ? 'open' : ''}><summary><span class="sn">${st.n}</span><b>${esc(st.title)}</b><span class="chip ${STATUS[st.status][1]}">${STATUS[st.status][0]}</span></summary>
+      <p><b>O que você fez:</b> ${esc(turma ? plainDecision(st.decision) + (st.n === 3 && g.guide?.marks.triedBusy ? ' Antes, você testou "todo mundo ocupado" e viu as filas crescerem.' : '') + (st.n === 2 && g.guide?.marks.triedOutside ? ' Antes, você ajudou o Preparo e nada mudou.' : '') + (st.n === 4 && g.guide?.marks.wastedBuy ? ' Antes, você comprou algo fora da restrição e o dinheiro não trouxe resultado.' : '') : st.decision)}</p>
+      <p class="toc-note">${esc(st.toc.split('. ')[0].replace(/\.?$/, '.'))}</p></details>`;
+      },
     )
     .join('');
   const next = g.nextPhaseId();

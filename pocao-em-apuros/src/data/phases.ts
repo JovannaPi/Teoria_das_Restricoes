@@ -129,7 +129,7 @@ export const PHASES: PhaseDef[] = [
       policies: { release: 'empurrar', drum: 'caldeirao', bufferSize: 4, priority: 'fifo', inspection: 'final', keepBusy: true, autoAccept: true, autoReorder: true },
       upgrades: [],
       wipHoldingCost: 0.05,
-      spoilTime: 50,
+      spoilTime: 50, // poção feita antes da hora estraga esperando: é o custo de "todo mundo ocupado"
     }),
     objectives: [{ kind: 'reputation', target: 0, label: 'Chegar ao fim do expediente' }],
     intro: [{ who: 'mentora', text: 'Sua loja está atrasada: as poções se acumulam e os clientes esperam. Vamos descobrir o que trava a produção — uma decisão de cada vez.' }],
