@@ -562,7 +562,8 @@ export async function debrief(
       (st) => {
         // modo rápido: um passo com tentativa errada fica "Em parte", como o palpite errado do passo 1
         const mk = g.guide?.marks;
-        const slip = turma && st.status === 'feito' && ((st.n === 2 && mk?.triedOutside) || (st.n === 3 && mk?.triedBusy) || (st.n === 4 && mk?.wastedBuy));
+        // testar uma opção e corrigir faz parte do aprendizado; só o dinheiro gasto à toa tem custo real
+        const slip = turma && st.status === 'feito' && st.n === 4 && mk?.wastedBuy;
         if (slip) st = { ...st, status: 'parcial' };
         return `<details class="step" ${st.status !== 'feito' ? 'open' : ''}><summary><span class="sn">${st.n}</span><b>${esc(st.title)}</b><span class="chip ${STATUS[st.status][1]}">${STATUS[st.status][0]}</span></summary>
       <p><b>O que você fez:</b> ${esc(turma ? plainDecision(st.decision) + (st.n === 3 && g.guide?.marks.triedBusy ? ' Antes, você testou "todo mundo ocupado" e viu as filas crescerem.' : '') + (st.n === 2 && g.guide?.marks.triedOutside ? ' Antes, você ajudou o Preparo e nada mudou.' : '') + (st.n === 4 && g.guide?.marks.wastedBuy ? ' Antes, você comprou algo fora da restrição e o dinheiro não trouxe resultado.' : '') : st.decision)}</p>
@@ -585,7 +586,7 @@ export async function debrief(
     <div class="quiz" data-correct="${q.correct}"><p><b>${esc(q.question)}</b></p>
       ${q.options.map((o, i) => `<button class="row-btn" data-action="quiz" data-v="${i}">${esc(o)}</button>`).join('')}
       <div class="quiz-exp" hidden><p>${esc(explanation)}</p></div></div>
-    <p class="muted small">Pontuação no placar: <b>${score.total}/100</b> — ${score.parts.map((p) => `${esc(p.label.toLowerCase())} ${Math.round(p.points)}/${p.max}`).join(' · ')}.</p>
+    <p class="muted small">Pontuação no placar: <b>${score.total}/100</b> — ${score.parts.map((p, i) => `${esc(p.label.toLowerCase())} ${Math.round(p.points)}/${p.max}${i === 0 ? ` (${esc(p.detail)})` : ''}`).join(' · ')}.</p>
     ${online ? '<p class="online-status" data-online-status>Enviando resultado ao placar da turma…</p>' : ''}`;
   const body = turma ? quickBody : `
     <div class="result ${won ? 'win' : 'lose'}"><h3>${won ? 'Fase concluída!' : 'Fase não concluída'}</h3>${won ? `<div class="stars">${stars}</div>` : `<p>${esc(reason || '')}</p>`}</div>

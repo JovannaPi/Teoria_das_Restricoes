@@ -38,6 +38,50 @@ Notas — jogar sem explicação: 8 e 8; aprendi algo: 6 e 6.
 | "Caldeirã" cortado, "Destilar" × "Destilação" | nomes completos na faixa quando só há 4 estações |
 | Pontuação sem explicação | mostra as partes que compõem a nota |
 
+## Rodada 3
+
+Notas — jogar sem explicação: 8 e 6; aprendi algo: 7 e 7.
+
+| Problema encontrado | Correção |
+|---|---|
+| Comprou o alambique **e** o 2º caldeirão: nenhuma estação ficava sobrecarregada, mas o passo 5 pedia uma restrição e dizia "faz 9,9, chegam 9,8: segura a loja" | o passo 5 nunca afirma que uma estação segura a loja sem ela estar sobrecarregada (teste novo cobre esse caminho) |
+| No celular pequeno, os botões ficavam escondidos embaixo do cartão | o cartão rola sozinho até o resultado, com os botões logo abaixo |
+| Passo 5 com filas de 0 a 2 | Destilação mais lenta (6,7/min): a nova restrição fica clara qualquer que tenha sido a melhoria do passo 2 |
+| "Poções paradas" não batia com as filas visíveis | passa a contar as filas das estações (o mesmo que o jogador vê) |
+| Instalação de 22 s, caixa sem explicação, nome sorteado na avaliação | instalação em segundos, linha do caixa, "você" na avaliação |
+
+## Rodada 4
+
+Notas — jogar sem explicação: 8 e 8; aprendi algo: 7 e 7.
+
+| Problema encontrado | Correção |
+|---|---|
+| Passo 5 sem decisão quando o jogador comprou também o alambique | a procura sobe de novo e o jogador procura a nova fila |
+| "Lucro líquido 0/40" na nota, sem o lucro nunca ter sido objetivo | no modo rápido, essa parte da nota vira "entregas por minuto (começo → fim)", o número que o jogo mostra o tempo todo |
+| Avaliação "Feito" mesmo com dinheiro desperdiçado | passo 4 fica "Em parte" quando houve compra fora da restrição |
+| O alambique não dizia qual estação melhora | cada investimento diz "melhora: Destilação · 340 moedas" |
+| Previsões de fila que não se cumpriam ("vai diminuindo") | removidas; o resultado diz só o que a estação faz e o que chega |
+| Tentativa de tirar as poções que estragam | desfeita: sem elas, "todo mundo ocupado" bate num teto e a diferença para a corda some (57 × 58). As poções continuam estragando, e agora o jogo conta quantas estragaram |
+
+## Rodada 5
+
+Notas — jogar sem explicação: 8 e 7; aprendi algo: 8 e 7.
+
+| Problema encontrado | Correção |
+|---|---|
+| Passo 5: com a corda na restrição antiga, o excesso fica **fora das filas** (clientes esperando) e "olhe as filas" não funcionava | no passo 5 todo pedido volta a entrar na hora; a fila aparece na frente da nova restrição; depois de identificá-la, a corda é amarrada nela (o passo 5 da TOC, literalmente) |
+| Fila que cai sem entregas (poções estragando) | o resultado do passo 3 diz quantas poções feitas antes da hora estragaram |
+| Caixa que muda sem explicação | "Caixa 756: 1.000 do começo + 440 de vendas − 684 de ingredientes e despesas" |
+| "Chegaram mais clientes" vago | "antes chegavam 6,0 poções por minuto; agora, 9,8" |
+| Texto do passo 3 congelado enquanto a fila cresce | número ao vivo |
+| "Em parte" por ter testado uma opção e corrigido | testar e corrigir conta como "Feito" (com a nota do que foi testado); só dinheiro gasto à toa deixa "Em parte" |
+| A bruxa ficava ajudando o Preparo depois de escolher outra melhoria | ela fica livre |
+
+## O que os jogadores simulados ainda apontam
+
+- **Duração:** jogadores simulados terminam em 3 a 5 minutos (eles leem rápido). Alunos de verdade tendem a demorar mais; medir na aula.
+- **Capacidade de cada estação na faixa** (poções/min em cada botão): pedida por vários. Não foi feita de propósito: tornaria a identificação um cálculo em vez de uma observação, e a professora pediu menos informação na tela.
+
 ## Controle remoto usado
 
 `node server.mjs <porta> <pasta> <largura> <altura>` abre o jogo publicado num Chromium com toque e atende `/look`, `/tap?x=&y=`, `/drag?x1=&y1=&x2=&y2=` e `/wait?ms=`, devolvendo uma captura nova a cada comando e registrando o estado do jogo num `log.jsonl` (para conferir o que o jogador viu com o que de fato aconteceu).

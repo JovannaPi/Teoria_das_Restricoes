@@ -534,7 +534,7 @@ try {
     check('rápido: avaliação curta (sem tabela de indicadores financeiros nem detalhamento da pontuação)', !(await m.$('.debrief .kv')) && !(await m.$('.debrief ul.score')) && /Você entregou \d+ poções/.test(await m.textContent('.debrief')));
     check('rápido: passo 1 "em parte" (houve um palpite errado)', statuses[0] === 'Em parte', statuses.join(' | '));
     await m.tap('.debrief [data-action="quiz"][data-v="0"]');
-    check('rápido: reflexão curta, ligada às estações da partida, sem porcentagens', /Toda poção precisa passar pela restrição \(Caldeirão\)\. Na sua partida, Preparo e Destilação/.test(await m.textContent('.quiz-exp')) && !/%/.test(await m.textContent('.quiz-exp')));
+    check('rápido: reflexão curta, ligada às estações da partida, sem porcentagens', /Toda poção precisa passar pela restrição \(Caldeirão\)\. No começo do dia, Preparo e Destilação/.test(await m.textContent('.quiz-exp')) && !/%/.test(await m.textContent('.quiz-exp')));
     check('rápido: sem janela de evento por cima da avaliação', (await m.$$('.modal')).length === 1);
     check('rápido: nada ultrapassa a largura da tela', await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     await shot('06-resultado');
