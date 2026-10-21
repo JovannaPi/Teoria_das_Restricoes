@@ -398,6 +398,10 @@ try {
     check('rápido: sem janela de objetivos em sequência', (await m.$('.modal')) == null);
     check('rápido: primeira tarefa apresenta o problema e pede para tocar em estações', /chegam mais rápido do que a loja entrega/.test(await m.textContent('.turma-coach')));
     {
+      const words = (await m.textContent('.turma-coach')).trim().split(/\s+/).length;
+      check('rápido: cartão da mentora curto (até 30 palavras)', words <= 30, `${words} palavras`);
+    }
+    {
       const ui = await m.evaluate(() => ({
         strip: [...document.querySelectorAll('#station-strip button')].filter((b) => !b.hidden && b.offsetParent).map((b) => b.dataset.strip),
         tabs: [...document.querySelectorAll('#tabbar button')].filter((b) => b.offsetParent).map((b) => b.textContent.trim()),
@@ -406,7 +410,7 @@ try {
       }));
       check('rápido: loja enxuta — 4 estações e 1 tipo de poção', ui.strip.length === 4 && ui.recipes.length === 1, JSON.stringify(ui.strip));
       check('rápido: só os indicadores essenciais (sem lucro e reputação)', !ui.stats.some((t) => /Lucro|Reputação/.test(t)) && ui.stats.some((t) => /Entregues/.test(t)), JSON.stringify(ui.stats));
-      check('rápido: abas enxutas (sem Estoque e Fluxo)', !ui.tabs.some((t) => /Estoque|Fluxo/.test(t)) && ui.tabs.some((t) => /Pedidos/.test(t)), JSON.stringify(ui.tabs));
+      check('rápido: sem abas, sem caixa e sem velocidades — só um botão de Menu', ui.tabs.length === 0 && !ui.stats.some((t) => /Caixa/.test(t)) && (await m.evaluate(() => ![...document.querySelectorAll('.spd')].some((b) => b.offsetParent) && !!document.querySelector('#hud .hud-more').offsetParent)), JSON.stringify(ui));
     }
     const ff = (secs) =>
       m.evaluate((x) => {
@@ -423,75 +427,91 @@ try {
     const has = async (v) => !!(await m.$(`.turma-coach [data-action="quick-choice"][data-v="${v}"]`));
     const sheetOpen = () => m.evaluate(() => document.body.classList.contains('side-open'));
     await m.tap('#station-strip [data-strip="caldeirao"]');
-    check('rápido: tocar numa estação abre o painel de baixo', await sheetOpen());
-    await shot('02-painel');
-    await m.tap('.sheet-x');
-    check('rápido: o painel fecha e volta para a loja', !(await sheetOpen()));
+    check('rápido: tocar numa estação mostra o que ela faz no cartão, sem abrir painel', !(await sheetOpen()) && /Caldeirão: mistura e cozinha\. Fila: \d+/.test(await coach()));
+    await shot('02-estacao');
     await m.tap('#station-strip [data-strip="destilacao"]');
-    await m.tap('.sheet-x');
     await m.waitForTimeout(1100);
     await ff(30);
-    check('rápido: pergunta onde está o acúmulo', (await coach()).includes('acumulando'));
-    await choose('balcao');
-    check('rápido: resposta errada explicada com os números e convite a conversar', /fila na frente da estação Balcão tem \d+/.test(await coach()) && /Converse/.test(await coach()));
-    const top = await m.evaluate(() => {
-      const s = window.__pocao.game.sim;
-      return Object.values(s.stations).filter((x) => !x.locked).sort((a, b) => b.queue.length - a.queue.length)[0].id;
-    });
-    await choose(top);
-    await m.waitForTimeout(1400);
-    check('rápido: passo 1 (identificar) com opções de estação', (await coach()).includes('qual estação está limitando'));
+    check('rápido: passo 1 (identificar) direto, com opções de estação', (await coach()).includes('Qual estação está segurando a loja'));
+    check('rápido: sem avisos flutuantes por cima da loja', (await m.evaluate(() => document.querySelectorAll('#toasts .toast').length)) === 0);
     await shot('03-identificar');
     await choose('destilacao');
-    check('rápido: escolha errada explicada com os dados da estação', /Destilação não é o que limita a loja agora/.test(await coach()));
+    check('rápido: escolha errada explicada em uma frase, com botão para pedir dica', /Não é a Destilação: a fila dela é \d+/.test(await coach()) && !!(await m.$('.turma-coach [data-action="talk-mentor"]')));
     check('rápido: depois de um erro, a mentora acena com uma dica ("!")', (await m.evaluate(() => window.__pocao.game.talkAlert)) === 'mentora');
+    {
+      const y0 = await m.evaluate(() => document.getElementById('station-strip').getBoundingClientRect().top);
+      await m.tap('.turma-coach [data-action="talk-mentor"]');
+      await m.waitForSelector('.talk');
+      check('rápido: o botão abre a conversa com a Vó Morgana na hora (sem precisar achá-la)', /Vó Morgana/.test(await m.textContent('.talk')));
+      await m.tap('.talk [data-action="talk-close"]');
+      const y1 = await m.evaluate(() => document.getElementById('station-strip').getBoundingClientRect().top);
+      check('rápido: a faixa de estações não muda de lugar quando o cartão muda', Math.abs(y1 - y0) < 1, `${y0} → ${y1}`);
+    }
     await choose('caldeirao');
-    check('rápido: restrição confirmada com evidências', /Isso! Caldeirão está ocupada \d+%/.test(await coach()));
+    check('rápido: restrição confirmada com evidências simples (fila e ritmo)', /Isso! \d+ poções esperam na frente da estação Caldeirão/.test(await coach()));
     check('rápido: sem janela extra para o resultado da hipótese', (await m.$('.modal')) == null);
     await choose('ok');
-    { const t = await coach(); check('rápido: passo 2 (explorar) com escolhas sem custo dentro do cartão', t.includes('melhoria sem custo') && (await has('helper-preparo')), t.slice(0, 160)); }
+    { const t = await coach(); check('rápido: passo 2 (explorar) com escolhas sem custo, em linguagem de "você"', t.includes('sem gastar nada') && (await has('helper-preparo')) && /Você ajuda no Preparo/.test(t), t.slice(0, 200)); }
     await shot('04-explorar');
     // melhorar quem não é a restrição: medido, sem ganho, e dá para tentar outra
     await choose('helper-preparo');
     await ff(32);
-    check('rápido: ajudar o Preparo (não é a restrição) não aumenta as entregas — e a etapa não avança', /nada mudou/.test(await coach()) && (await has('setupExternal')), (await coach()).slice(0, 220));
+    check('rápido: ajudar o Preparo (não é a restrição) não aumenta as entregas — e a etapa não avança', /Não mudou nada/.test(await coach()) && (await has('setupExternal')), (await coach()).slice(0, 220));
     await choose('setupExternal');
     await ff(30);
-    check('rápido: explorar a restrição mostra o efeito medido', /ficava parado \d+% do tempo; agora \d+%/.test(await coach()));
-    await choose('ok');
-    check('rápido: passo 3 (subordinar) parte de "todo mundo ocupado"', (await coach()).includes('Como organizar o trabalho'));
-    await choose('empurrar');
-    await ff(42);
-    check('rápido: manter todo mundo ocupado é medido e explicado, e a corda continua disponível', /Todo mundo ocupado não faz/.test(await coach()) && (await has('corda')));
-    await choose('corda');
-    await ff(42);
     {
       const t = await coach();
-      const mm = /poções espalhadas pela loja: (\d+) → (\d+)/.exec(t);
-      check('rápido: corda diminui as poções espalhadas pela loja', !!mm && Number(mm[2]) < Number(mm[1]), mm ? mm[0] : t.slice(0, 200));
+      const mm = /O Caldeirão fazia ([\d,]+) poções por minuto; agora faz ([\d,]+)/.exec(t);
+      const num = (x) => Number(x.replace(',', '.'));
+      check('rápido: explorar a restrição mostra o efeito medido, e o número sobe de verdade', !!mm && num(mm[2]) > num(mm[1]), mm ? mm[0] : t.slice(0, 200));
     }
     await choose('ok');
-    check('rápido: passo 4 (elevar) com preço das opções', /Segundo caldeirão/.test(await coach()));
+    const shownWip = Number(/já são (\d+) poções esperando nas filas/.exec(await coach())?.[1]);
+    check('rápido: passo 3 (subordinar) parte de "todo mundo ocupado", sem nomes não apresentados', (await coach()).includes('Como trabalhar') && !/Tico/.test(await coach()));
+    await choose('empurrar');
+    await ff(42);
+    check('rápido: manter todo mundo ocupado é comparado com a outra escolha, e ela continua disponível', /Eram \d+ poções nas filas; com todo mundo ocupado, agora são \d+\. No ritmo do Caldeirão seriam \d+/.test(await coach()) && (await has('corda')), (await coach()).slice(0, 260));
+    check('rápido: o caixa ainda não aparece antes do passo de investir', !(await m.evaluate(() => !!document.querySelector('[data-qcash]').offsetParent)));
+    await choose('corda');
+    await ff(20.05); // lê logo que o resultado aparece (a fila continua andando depois)
+    {
+      const t = await coach();
+      const mm = /Eram (\d+) poções nas filas\. Agora, no ritmo do Caldeirão: (\d+)\. Se todo mundo continuasse ocupado, seriam (\d+)/.exec(t);
+      check('rápido: no ritmo da restrição ficam bem menos poções nas filas do que com todo mundo ocupado (mesmo instante)', !!mm && Number(mm[2]) < Number(mm[3]) * 0.8, mm ? mm[0] : t.slice(0, 200));
+      const visible = await m.evaluate(() => [...document.querySelectorAll('#station-strip button')].filter((b) => b.offsetParent).reduce((t, b) => t + Number((b.querySelector('.sqn')?.textContent || '0').match(/\d+/)?.[0] || 0), 0));
+      const dbgQ = await m.evaluate(() => { const s = window.__pocao.game.sim; return JSON.stringify(Object.fromEntries(Object.entries(s.stations).map(([k, v]) => [k, [v.queue.length, v.locked]]))) + ' t' + s.t.toFixed(1); });
+      check('rápido: o número de poções nas filas é a soma das filas que aparecem nas estações', !!mm && Math.abs(Number(mm[2]) - visible) <= 2, `cartão ${mm?.[2]} × faixa ${visible} ${dbgQ}`);
+      void shownWip;
+    }
+    await choose('ok');
+    check('rápido: passo 4 (elevar) com preço das opções e o caixa à vista', /Segundo caldeirão/.test(await coach()) && /\d+ moedas/.test(await coach()) && (await m.evaluate(() => !!document.querySelector('[data-qcash]').offsetParent)));
     await shot('05-elevar');
     await choose('bancada_extra');
     check('rápido: compra pede confirmação (segundo toque)', /Toque de novo para confirmar/.test(await coach()));
     await choose('bancada_extra');
     await ff(40);
-    check('rápido: investir fora da restrição mostra que nada melhorou e deixa tentar de novo', /não limitava a loja/.test(await coach()) && (await has('caldeirao_extra')), `caixa ${Math.round(await m.evaluate(() => window.__pocao.game.sim.cash))} | ${(await coach()).replace(/\s+/g, ' ').slice(0, 300)}`);
+    check('rápido: investir fora da restrição mostra que nada melhorou e deixa tentar de novo', /Não mudou nada/.test(await coach()) && (await has('caldeirao_extra')), `caixa ${Math.round(await m.evaluate(() => window.__pocao.game.sim.cash))} | ${(await coach()).replace(/\s+/g, ' ').slice(0, 300)}`);
     await choose('caldeirao_extra');
     await choose('caldeirao_extra');
     await ff(40);
-    check('rápido: investimento na restrição mostra o efeito', /Você elevou a restrição/.test(await coach()));
+    check('rápido: investimento na restrição mostra o efeito', /Você aumentou quem segurava a loja/.test(await coach()));
     await choose('ok');
     check('rápido: passo 5 (recomeçar)', (await coach()).includes('A loja mudou'));
+    check('rápido: no passo 5 as opções só aparecem depois de a fila crescer (sem chute)', !(await has('destilacao')));
+    for (let k = 0; k < 14 && !(await has('destilacao')); k++) await ff(5);
+    {
+      const q = await m.evaluate(() => window.__pocao.game.sim.stations.destilacao.queue.length);
+      check('rápido: quando as opções aparecem, a fila da nova restrição (Destilação) já está à vista', (await has('destilacao')) && q >= 3, `fila da Destilação: ${q}`);
+    }
     await choose('caldeirao');
-    check('rápido: a restrição antiga não é mais a resposta', /não é o que limita a loja agora/.test(await coach()));
+    check('rápido: a restrição antiga não é mais a resposta', /Não é o Caldeirão/.test(await coach()));
     await choose('destilacao');
-    check('rápido: nova restrição (destilação) confirmada', /Isso! Destilação/.test(await coach()));
+    check('rápido: nova restrição (destilação) confirmada', /Isso! \d+ poções esperam na frente da estação Destilação/.test(await coach()), (await coach()).slice(0, 200));
     await choose('ok');
     {
       const t = await coach();
-      check('rápido: fim compara começo e agora (entregas e poções espalhadas)', /Entregas: [\d,]+ → [\d,]+ poções\/min\. Poções espalhadas pela loja: \d+ → \d+/.test(t), t.slice(0, 220));
+      const mm = /No começo, a loja conseguia entregar ([\d,]+) poções por minuto; agora, ([\d,]+)\./.exec(t);
+      check('rápido: fim compara começo e agora com os mesmos números das etapas', !!mm && mm[1] === '4,4' && Number(mm[2].replace(',', '.')) > 4.4, t.slice(0, 260));
     }
     const tSim = await m.evaluate(() => window.__pocao.game.sim.t);
     check('rápido: a partida guiada dura entre 4 e 10 minutos de jogo (a 1×)', tSim >= 240 && tSim <= 600, `${Math.round(tSim)} s de jogo`);
@@ -505,9 +525,17 @@ try {
     await m.waitForSelector('.debrief .steps5');
     const statuses = await m.$$eval('.steps5 .step .chip', (els) => els.map((e) => e.textContent));
     check('rápido: resultado mostra os 5 passos com dados da partida', statuses.length === 5, statuses.join(' | '));
+    {
+      const d = await m.textContent('.debrief');
+      const fim = /No começo, a loja conseguia entregar ([\d,]+) poções por minuto; no fim, ([\d,]+)/.exec(d);
+      check('rápido: a avaliação usa os mesmos números do cartão final', !!fim && fim[1] === '4,4', fim ? fim[0] : d.slice(0, 200));
+      check('rápido: avaliação sem "corda", "tambor" ou "pulmão"', !/corda|tambor|pulmão/i.test(d));
+    }
+    check('rápido: avaliação curta (sem tabela de indicadores financeiros nem detalhamento da pontuação)', !(await m.$('.debrief .kv')) && !(await m.$('.debrief ul.score')) && /Você entregou \d+ poções/.test(await m.textContent('.debrief')));
     check('rápido: passo 1 "em parte" (houve um palpite errado)', statuses[0] === 'Em parte', statuses.join(' | '));
     await m.tap('.debrief [data-action="quiz"][data-v="0"]');
-    check('rápido: reflexão com resposta contextualizada pelos dados', /trabalhou \d+% do dia/.test(await m.textContent('.quiz-exp')));
+    check('rápido: reflexão curta, ligada às estações da partida, sem porcentagens', /Toda poção precisa passar pela restrição \(Caldeirão\)\. No começo do dia, Preparo e Destilação/.test(await m.textContent('.quiz-exp')) && !/%/.test(await m.textContent('.quiz-exp')));
+    check('rápido: sem janela de evento por cima da avaliação', (await m.$$('.modal')).length === 1);
     check('rápido: nada ultrapassa a largura da tela', await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     await shot('06-resultado');
     await m.tap('.debrief [data-action="retry"]');
@@ -519,7 +547,8 @@ try {
     await m.waitForSelector('.turma-coach');
     check('rápido: jogar de novo reinicia a partida', (await m.evaluate(() => window.__pocao.game.sim.t)) < 2);
     await ff(20);
-    await m.tap('.turma-coach [data-action="quick-restart"]');
+    await m.tap('#hud .hud-more');
+    await m.tap('.modal [data-action="quick-restart"]');
     await m.tap('.modal [data-confirm="yes"]');
     for (let i = 0; i < 3; i++) {
       const b = await m.$('[data-action="dialogue-next"]');
@@ -529,10 +558,11 @@ try {
     await m.waitForSelector('.turma-coach');
     check('rápido: "Recomeçar" reinicia a demonstração na hora', (await m.evaluate(() => window.__pocao.game.sim.t)) < 2);
     // pular dicas: tudo liberado e a partida segue
-    await m.tap('.turma-coach [data-action="quick-skip"]');
-    check('rápido: pular dicas libera as decisões e mostra Fluxo', !(await m.evaluate(() => window.__pocao.game.policyLocked('release'))) && (await m.evaluate(() => !!document.querySelector('#tabbar [data-tab-id="fluxo"]').offsetParent)));
+    await m.tap('#hud .hud-more');
+    await m.tap('.modal [data-action="quick-skip-menu"]');
+    check('rápido: "jogar sem as dicas" (pelo menu) libera as decisões e mostra Fluxo', !(await m.evaluate(() => window.__pocao.game.policyLocked('release'))) && (await m.evaluate(() => !!document.querySelector('#tabbar [data-tab-id="fluxo"]').offsetParent)));
     await m.tap('.turma-coach [data-action="quick-unskip"]');
-    check('rápido: dicas podem ser reabertas', /chegam mais rápido/.test(await coach()));
+    check('rápido: dicas podem ser reabertas', /chegam mais rápido/.test(await coach()) && !(await m.evaluate(() => !!document.querySelector('#tabbar').offsetParent)));
     await ctx.close();
   }
 
@@ -823,11 +853,12 @@ try {
     await p.waitForFunction(() => window.__pocao.game.scene.lina.arrived && !window.__pocao.game.scene.lina.steering);
     await p.evaluate(() => window.__pocao.game.camera.focus(204, 150));
     await p.waitForTimeout(1200);
+    const scrolled = await p.evaluate(() => document.getElementById('stage-wrap').scrollLeft + document.getElementById('stage-wrap').scrollTop);
     const cal = await scr(204, 140);
-    const dbg = await p.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); const g = window.__pocao.game; return (e?.id || e?.className) + ' ' + JSON.stringify(g.scene.pick(204, 140, g.sim, 8)); }, [cal.x, cal.y]);
+    const dbg = await p.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); const g = window.__pocao.game; return (e?.id || e?.className) + ' ' + JSON.stringify(g.scene.pick(204, 140, g.sim, 8)) + ' at ' + Math.round(x) + ',' + Math.round(y) + ' stage ' + document.getElementById('stage').style.transform + ' lina ' + Math.round(g.scene.lina.x) + ',' + Math.round(g.scene.lina.y) + ' modal ' + !!document.querySelector('.modal') + ' talk ' + !!document.querySelector('.talk'); }, [cal.x, cal.y]);
     await p.touchscreen.tap(cal.x, cal.y);
     await p.waitForTimeout(200);
-    check('andar/conversar não atrapalham: tocar no caldeirão ainda seleciona a estação', (await p.evaluate(() => window.__pocao.game.selected)) === 'caldeirao', dbg);
+    check('andar/conversar não atrapalham: tocar no caldeirão ainda seleciona a estação (a área da loja não rola sozinha)', (await p.evaluate(() => window.__pocao.game.selected)) === 'caldeirao' && scrolled === 0, dbg);
     await ctx.close();
 
     // computador: setas movem a bruxa; E conversa com quem estiver perto; mouse arrasta
@@ -938,7 +969,7 @@ try {
         const old = sz.vp.width > sz.vp.height ? Math.min((sz.vp.width - 64) / 480, (sz.vp.height - 57) / 270) : sz.vp.width / 480;
         const portrait = sz.vp.height > sz.vp.width;
         const noOverlap = portrait
-          ? m.wrap.b <= m.strip.t + 1 && (!m.coach || m.coach.t >= m.wrap.b - 1) && m.tab.t >= m.wrap.b
+          ? m.wrap.b <= m.strip.t + 1 && (!m.coach || m.coach.t >= m.wrap.b - 1) && (m.tab ? m.tab.t : m.ih) >= m.wrap.b
           : !m.coach || m.coach.l >= m.wrap.r - 1;
         check(
           `loja ampliada ${sz.name} (${ph === 'turma' ? 'modo rápido' : 'fase 1'}): escala ${m.s.toFixed(2)} (antes ${old.toFixed(2)}), loja ocupa a área, nada por cima`,

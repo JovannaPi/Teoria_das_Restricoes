@@ -428,7 +428,14 @@ export function refreshSettings(g: Game): void {
   if (el) el.innerHTML = settingsBody(g);
 }
 
-export function howToHtml(): string {
+export function howToHtml(quick = false): string {
+  if (quick)
+    return `<ol class="howto">
+    <li><b>Leia o cartão da mentora</b>, embaixo da loja: uma decisão de cada vez.</li>
+    <li><b>Toque nas estações</b> (botões logo abaixo da loja) para ver a fila de cada uma.</li>
+    <li><b>Arraste a loja</b> para ver o resto dela.</li>
+    <li><b>Ficou em dúvida?</b> Arraste a sua bruxa até alguém e toque na pessoa para conversar.</li>
+  </ol>`;
   return `<ol class="howto">
     <li><b>Toque numa estação</b> (na loja ou nos botões logo abaixo dela) para ver capacidade, fila e o que fazer.</li>
     <li><b>Pedidos</b> chegam sozinhos. A barra de cada cliente mostra quanto tempo ainda falta.</li>
@@ -448,7 +455,7 @@ export function tocHtml(): string {
 }
 
 export function howTo(g: Game): void {
-  open(g, { title: 'Como jogar', body: howToHtml(), cls: 'small sheet', footer: '<button class="primary" data-action="modal-close">Entendi</button>' });
+  open(g, { title: 'Como jogar', body: howToHtml(g.phase?.mode === 'turma'), cls: 'small sheet', footer: '<button class="primary" data-action="modal-close">Entendi</button>' });
 }
 
 export function whatIsToc(g: Game): void {
@@ -475,6 +482,21 @@ export function moreMenu(g: Game): void {
   });
 }
 
+/** Menu do modo rápido: poucas opções, sem painéis de análise. */
+export function quickMenu(g: Game): void {
+  const free = document.body.classList.contains('guide-free');
+  open(g, {
+    title: 'Menu',
+    body: `<div class="menu-list">
+      <button data-action="modal-close" class="primary">Continuar jogando</button>
+      <button data-action="open-howto">Como jogar</button>
+      <button data-action="quick-restart">Recomeçar do zero</button>
+      ${free ? '<button data-action="quick-unskip-menu">Voltar a ver as dicas da mentora</button>' : '<button data-action="quick-skip-menu">Jogar sem as dicas (modo livre)</button>'}
+      <button data-action="exit">Sair para o início</button></div>`,
+    cls: 'small',
+  });
+}
+
 export function gameMenu(g: Game): void {
   open(g, {
     title: 'Menu da partida',
@@ -492,6 +514,18 @@ export function gameMenu(g: Game): void {
 }
 
 // ------------------------------------------------------------------ avaliação
+
+/** No modo rápido não se fala em corda, tambor ou pulmão: só no "ritmo da restrição". */
+function plainDecision(t: string): string {
+  return t
+    .replace(new RegExp(`${heroName().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} passou a ajudar`, 'g'), 'você passou a ajudar')
+    .replace(/ e reamarrou a corda nela/, ' e passou a trabalhar no ritmo dela')
+    .replace(/, mas a corda ficou no lugar antigo/, ', mas o trabalho continuou no ritmo da restrição antiga')
+    .replace(/Você mudou a liberação: .*/, 'Você passou a trabalhar no ritmo da restrição, sem produzir além do que ela consegue.')
+    .replace(/A loja continuou liberando todo pedido assim que chegava \(empurrando\)\./, 'A loja continuou com todo mundo ocupado.')
+    .replace(/ — na restrição/g, ' (na restrição)')
+    .replace(/ — fora da restrição/g, ' (fora da restrição)');
+}
 
 export async function debrief(
   g: Game,
@@ -525,15 +559,36 @@ export async function debrief(
   const STATUS = { feito: ['Feito', 'good'], parcial: ['Em parte', 'warn'], nao: ['Oportunidade', 'idle'] } as const;
   const stepsHtml = steps
     .map(
-      (st) => `<details class="step" ${st.status !== 'feito' ? 'open' : ''}><summary><span class="sn">${st.n}</span><b>${esc(st.title)}</b><span class="chip ${STATUS[st.status][1]}">${STATUS[st.status][0]}</span></summary>
-      <p><b>Sua decisão:</b> ${esc(st.decision)}</p>
-      <ul class="list">${st.indicators.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>
-      <p><b>Resultado:</b> ${esc(st.result)}</p>
-      <p class="toc-note">${esc(st.toc)}</p></details>`,
+      (st) => {
+        // modo rápido: um passo com tentativa errada fica "Em parte", como o palpite errado do passo 1
+        const mk = g.guide?.marks;
+        // testar uma opção e corrigir faz parte do aprendizado; só o dinheiro gasto à toa tem custo real
+        const slip = turma && st.status === 'feito' && st.n === 4 && mk?.wastedBuy;
+        if (slip) st = { ...st, status: 'parcial' };
+        return `<details class="step" ${st.status !== 'feito' ? 'open' : ''}><summary><span class="sn">${st.n}</span><b>${esc(st.title)}</b><span class="chip ${STATUS[st.status][1]}">${STATUS[st.status][0]}</span></summary>
+      <p><b>O que você fez:</b> ${esc(turma ? plainDecision(st.decision) + (st.n === 3 && g.guide?.marks.triedBusy ? ' Antes, você testou "todo mundo ocupado" e viu as filas crescerem.' : '') + (st.n === 2 && g.guide?.marks.triedOutside ? ' Antes, você ajudou o Preparo e nada mudou.' : '') + (st.n === 4 && g.guide?.marks.wastedBuy ? ' Antes, você comprou algo fora da restrição e o dinheiro não trouxe resultado.' : '') : st.decision)}</p>
+      <p class="toc-note">${esc(st.toc.split('. ')[0].replace(/\.?$/, '.'))}</p></details>`;
+      },
     )
     .join('');
   const next = g.nextPhaseId();
-  const body = `
+  // modo rápido: avaliação curta — o que a loja fez, os cinco passos e uma pergunta
+  const marks = g.guide?.marks;
+  const fmt1 = (x: number) => x.toFixed(1).replace('.', ',');
+  // mesmos números do cartão final: o que a loja consegue entregar por minuto (no começo × agora)
+  const capNow = a.systemCapacityPerMin;
+  const quickBody = `
+    <div class="result win"><h3>Fim do dia!</h3><p>Você entregou <b>${s.stats.delivered}</b> poções.${
+      marks?.baseCap != null ? ` No começo, a loja conseguia entregar ${fmt1(marks.baseCap)} poções por minuto; no fim, ${fmt1(capNow)}.` : ''
+    }</p></div>
+    <h3>Os cinco passos na sua partida</h3><p class="muted small">Toque num passo para ver o que aconteceu.</p><div class="steps5">${stepsHtml}</div>
+    <h3>Para pensar</h3>
+    <div class="quiz" data-correct="${q.correct}"><p><b>${esc(q.question)}</b></p>
+      ${q.options.map((o, i) => `<button class="row-btn" data-action="quiz" data-v="${i}">${esc(o)}</button>`).join('')}
+      <div class="quiz-exp" hidden><p>${esc(explanation)}</p></div></div>
+    <p class="muted small">Pontuação no placar: <b>${score.total}/100</b> — ${score.parts.map((p, i) => `${esc(p.label.toLowerCase())} ${Math.round(p.points)}/${p.max}${i === 0 ? ` (${esc(p.detail)})` : ''}`).join(' · ')}.</p>
+    ${online ? '<p class="online-status" data-online-status>Enviando resultado ao placar da turma…</p>' : ''}`;
+  const body = turma ? quickBody : `
     <div class="result ${won ? 'win' : 'lose'}"><h3>${won ? 'Fase concluída!' : 'Fase não concluída'}</h3>${won ? `<div class="stars">${stars}</div>` : `<p>${esc(reason || '')}</p>`}</div>
     <p><b>Objetivo:</b> ${esc(phase.goalText)}</p>
     <ul class="objectives">${obj.map((o) => `<li class="${o.done ? 'done' : 'fail'}">${iconImg(o.done ? 'check' : 'cross')} ${esc(o.objective.label)} <small>${esc(o.text)}</small></li>`).join('')}</ul>
@@ -559,13 +614,15 @@ export async function debrief(
       <div class="quiz-exp" hidden><p>${esc(explanation)}</p></div></div>`;
   const footer = `<button data-action="board-open">Placar</button><button data-action="exit">Menu</button><button data-action="retry">Jogar de novo</button>${won && next && phase.mode !== 'turma' ? '<button class="primary" data-action="next-phase">Próxima fase</button>' : ''}`;
   const { el: dEl, promise } = open(g, { title: `Avaliação — ${esc(phase.title)}`, body, footer, cls: 'wide debrief', closable: false });
+  // abre sempre pelo começo (o foco no primeiro botão rolava a janela para o meio)
+  requestAnimationFrame(() => dEl.querySelectorAll('.modal-body, .body, section').forEach((x) => ((x as HTMLElement).scrollTop = 0)));
   void online?.then((st) => {
     const box = dEl.querySelector('[data-online-status]');
     if (!box) return;
     if (st === 'ignorado') box.remove();
     else if (st === 'enviado') box.innerHTML = won ? '<b class="pos">Resultado enviado ao placar da turma.</b> Toque em Placar para ver sua posição.' : 'Resultado registrado. Só fases <b>vencidas</b> somam pontos no placar.';
     else if (st === 'negado') box.innerHTML = '<b class="neg">O placar ainda não foi liberado no Firebase.</b> O resultado ficou guardado e será enviado depois que as regras forem configuradas.';
-    else box.innerHTML = '<b class="neg">Sem conexão:</b> o resultado ficou guardado e será enviado ao placar quando houver internet.';
+    else box.innerHTML = 'O resultado ficou guardado no celular e vai para o placar assim que houver internet.';
   });
   await promise;
 }

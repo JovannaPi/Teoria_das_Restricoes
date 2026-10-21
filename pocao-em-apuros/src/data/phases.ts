@@ -111,7 +111,7 @@ export const PHASES: PhaseDef[] = [
     goalText: 'Descubra por que a loja não dá conta dos pedidos e melhore a produção, um passo de cada vez.',
     // Versão enxuta para aula: 4 estações, 1 tipo de poção, pedidos aceitos e ingredientes repostos
     // sozinhos, sem eventos aleatórios. O Caldeirão é a restrição (≈4,4 poções/min para ≈6/min
-    // pedidas); depois do segundo caldeirão, quem limita é a Destilação (≈8,6/min para ≈9,8/min).
+    // pedidas); depois do segundo caldeirão, quem limita é a Destilação (6,7/min para ≈9,8/min: a fila na frente dela cresce à vista).
     scenario: scenario({
       id: 'turma',
       seed: 2026,
@@ -129,7 +129,7 @@ export const PHASES: PhaseDef[] = [
       policies: { release: 'empurrar', drum: 'caldeirao', bufferSize: 4, priority: 'fifo', inspection: 'final', keepBusy: true, autoAccept: true, autoReorder: true },
       upgrades: [],
       wipHoldingCost: 0.05,
-      spoilTime: 50,
+      spoilTime: 50, // poção feita antes da hora estraga esperando: é o custo de "todo mundo ocupado"
     }),
     objectives: [{ kind: 'reputation', target: 0, label: 'Chegar ao fim do expediente' }],
     intro: [{ who: 'mentora', text: 'Sua loja está atrasada: as poções se acumulam e os clientes esperam. Vamos descobrir o que trava a produção — uma decisão de cada vez.' }],

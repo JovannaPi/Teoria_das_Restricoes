@@ -96,4 +96,5 @@ Tecnologia: **TypeScript + Vite**, Canvas 2D próprio, HTML/CSS para a interface
 - [docs/seminario.md](docs/seminario.md) — Desafio da Turma: QR Code, roteiro do apresentador e debriefing
 - [docs/placar-online.md](docs/placar-online.md) — publicar online e configurar o placar da turma
 - [docs/validacao-com-alunos.md](docs/validacao-com-alunos.md) — roteiro para testar o modo rápido com quem nunca jogou
+- [docs/testes-com-jogadores-simulados.md](docs/testes-com-jogadores-simulados.md) — o que "jogadores novatos" simulados encontraram e o que mudou
 - [docs/limitacoes.md](docs/limitacoes.md) — limitações conhecidas e recursos visuais

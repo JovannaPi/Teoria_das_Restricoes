@@ -2727,6 +2727,7 @@ body.cam #stage-wrap {
   display: block;
   position: relative;
   overflow: hidden;
+  overflow: clip;
   padding: 0;
   touch-action: none;
   background: #0d0910;
@@ -3096,4 +3097,71 @@ body.quick .hud-stats .stat:nth-child(4) {
 .choices.grid2 .choice small {
   font-size: 0.74rem;
   line-height: 1.25;
+}
+
+/* ================================================================ modo rápido com a mentora: só o essencial
+   Sem abas, painéis, avisos e velocidades: a loja, a faixa de estações, o cartão da mentora e um
+   botão de menu. O caixa só aparece no passo de investir. "Jogar sem as dicas" devolve tudo. */
+body.quick:not(.guide-free) #tabbar,
+body.quick:not(.guide-free) .hud-menu,
+body.quick:not(.guide-free) .hud-time .spd,
+body.quick:not(.guide-free) #side,
+body.quick:not(.guide-free) #bottom,
+body.quick:not(.guide-free) #phase-bar,
+body.quick:not(.guide-free):not(.show-cash) [data-qcash] {
+  display: none !important;
+}
+body.quick:not(.guide-free) #hud .hud-more {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 48px;
+  min-height: 44px;
+}
+body.quick:not(.guide-free) #game-main {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+.hud-more .hm-l {
+  display: none;
+}
+body.quick:not(.guide-free) .hud-more .hm-l {
+  display: inline;
+}
+/* modo rápido em pé: o cartão da mentora tem altura fixa, para a faixa de estações nunca mudar de
+   lugar entre um toque e outro (os testes com jogadores mostraram toques caindo no lugar errado) */
+@media (orientation: portrait) and (max-width: 1024px) {
+  body.quick:not(.guide-free) .coach.turma-coach {
+    height: clamp(170px, 28dvh, 250px);
+    max-height: none;
+    overflow-y: auto;
+  }
+}
+.turma-coach .count {
+  font-variant-numeric: tabular-nums;
+}
+.turma-coach .talk-help {
+  margin-top: 6px;
+  width: 100%;
+}
+/* modo rápido: sem marcador de "tambor" (termo do modo completo) e sem o horário da loja, que
+   confundia o "por minuto" dos resultados; a barra do dia continua mostrando o andamento */
+body.quick:not(.guide-free) #overlay .tag.drum::before {
+  display: none;
+}
+body.quick:not(.guide-free) #station-strip button.drum .st::after,
+body.quick:not(.guide-free) #station-strip button.drum .sn::after {
+  content: none;
+}
+body.quick:not(.guide-free) [data-bind='clock'] {
+  display: none;
+}
+/* modo rápido: sem borda vermelha de "parada" nas etiquetas (parecia dizer "o problema é aqui"),
+   e nomes completos das estações cabendo na faixa em celulares estreitos */
+body.quick:not(.guide-free) #overlay .tag.stop {
+  border-color: rgba(239, 227, 204, 0.18);
+}
+body.quick:not(.guide-free) #station-strip .st {
+  font-size: clamp(10px, 2.9vw, 13px);
+  letter-spacing: -0.01em;
 }

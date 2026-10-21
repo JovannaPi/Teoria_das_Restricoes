@@ -8,6 +8,9 @@ let lastAt = 0;
 export function toast(text: string, kind: 'good' | 'bad' | 'info' = 'info'): void {
   const root = document.getElementById('toasts');
   if (!root) return;
+  // modo rápido com a mentora: o cartão já diz o que importa; avisos a mais só confundem
+  const b = document.body.classList;
+  if (b.contains('quick') && !b.contains('guide-free') && document.body.dataset.screen === 'game') return;
   const now = performance.now();
   if (text === last && now - lastAt < 1500) return;
   last = text;

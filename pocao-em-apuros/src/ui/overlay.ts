@@ -28,7 +28,9 @@ export function renderOverlay(g: Game): void {
     else if (s.t < st.downUntil) state = st.downReason || 'parada';
     else if (s.t < st.breakUntil) state = 'intervalo';
     else if (st.active.length === 0) state = 'ociosa';
-    const txt = (st.queue.length ? `fila ${st.queue.length}` : '') + (state ? (st.queue.length ? ' · ' : '') + state : '');
+    // modo rápido: só o nome e a fila (sem "ociosa", "intervalo"…)
+    const simple = document.body.classList.contains('quick') && !document.body.classList.contains('guide-free');
+    const txt = simple ? (st.queue.length ? `fila ${st.queue.length}` : '') : (st.queue.length ? `fila ${st.queue.length}` : '') + (state ? (st.queue.length ? ' · ' : '') + state : '');
     if (q.textContent !== txt) q.textContent = txt;
     el.classList.toggle('sel', g.selected === id);
     el.classList.toggle('warn', st.queue.length >= 6);
@@ -41,7 +43,10 @@ export function renderOverlay(g: Game): void {
     .map((f) => {
       const age = performance.now() / 1000;
       void age;
-      return `<span class="float ${f.cls}" style="left:${(f.x / W) * 100}%;top:${(f.y / H) * 100}%">${esc(f.text)}</span>`;
+      // modo rápido: palavra do dia a dia no lugar do termo técnico
+      const simple = document.body.classList.contains('quick') && !document.body.classList.contains('guide-free');
+      const text = simple && f.text === 'refugo' ? 'estragou' : f.text;
+      return `<span class="float ${f.cls}" style="left:${(f.x / W) * 100}%;top:${(f.y / H) * 100}%">${esc(text)}</span>`;
     })
     .join('');
   if (floats.dataset.h !== html) {
@@ -61,7 +66,7 @@ function renderStrip(g: Game): void {
   if (!stripBuilt || strip.childElementCount === 0) {
     strip.innerHTML = STATION_ORDER.map(
       (id) =>
-        `<button data-action="select-station" data-v="${id}" data-strip="${id}"><i class="dot" style="background:${STATION_COLORS[id]}"></i><span class="sn">${esc(STATIONS[id].short)}</span><span class="st">${TINY[id]}</span><span class="sq"><b class="sqn"></b><span class="sqs"></span></span><i class="sbar"><i></i></i></button>`,
+        `<button data-action="select-station" data-v="${id}" data-strip="${id}"><i class="dot" style="background:${STATION_COLORS[id]}"></i><span class="sn">${esc(STATIONS[id].short)}</span><span class="st">${STATION_ORDER.filter((x) => !s.stations[x].locked).length <= 4 ? esc(STATIONS[id].short) : TINY[id]}</span><span class="sq"><b class="sqn"></b><span class="sqs"></span></span><i class="sbar"><i></i></i></button>`,
     ).join('');
     stripBuilt = true;
   }

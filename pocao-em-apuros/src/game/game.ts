@@ -91,6 +91,11 @@ export class Game {
 
   // ---------------------------------------------------------------- estado de pausa
 
+  /** Modo rápido com o cartão da mentora: só o essencial na tela (sem painéis, abas e avisos). */
+  get simpleUi(): boolean {
+    return this.phase?.mode === 'turma' && !document.body.classList.contains('guide-free');
+  }
+
   get running(): boolean {
     return !!this.sim && !this.paused && this.modalPauses === 0 && !this.ended;
   }
@@ -184,7 +189,7 @@ export class Game {
       await this.tutorial.start(resume);
     } else if (phase.mode === 'turma') {
       this.tutorial = null;
-      if (!resume) await M.dialogue(this, phase.intro);
+      // sem janela de abertura: o cartão da mentora já apresenta o problema
       this.guide = new TurmaGuide(this);
       const saved = resume ? this.save.run?.guide : null;
       if (saved) {
@@ -347,7 +352,8 @@ export class Game {
         break;
       case 'event':
         sfx.event();
-        M.eventBanner(this, n.event);
+        // no modo rápido o cartão da mentora já conta a novidade
+        if (!this.simpleUi) M.eventBanner(this, n.event);
         break;
       case 'upgrade-ready':
         sfx.upgrade();
@@ -552,7 +558,7 @@ export class Game {
       if (pick.kind === 'station') {
         sfx.click();
         this.select(pick.id);
-        document.body.classList.add('side-open');
+        if (!this.simpleUi) document.body.classList.add('side-open');
       } else if (pick.kind === 'client') {
         this.selectedOrder = pick.order;
         this.openSide('pedidos');
@@ -749,6 +755,8 @@ export class Game {
     };
     a['talk-more'] = () => this.talk && this.openTalk(this.talk.npc, true);
     a['talk-close'] = () => this.closeTalk();
+    // atalho do cartão do modo rápido: conversa com a mentora sem precisar achá-la na loja
+    a['talk-mentor'] = () => this.openTalk('mentora', !!this.talk && this.talk.npc === 'mentora');
     a['speed'] = (el) => this.setSpeed(Number(el.dataset.v));
     a['side'] = (el) => this.openSide(el.dataset.v as SideView);
     a['close-side'] = () => {
@@ -758,7 +766,7 @@ export class Game {
     };
     a['select-station'] = (el) => {
       this.select(el.dataset.v as StationId);
-      document.body.classList.add('side-open');
+      if (!this.simpleUi) document.body.classList.add('side-open');
     };
     a['select-order'] = (el) => {
       this.selectedOrder = Number(el.dataset.v);
@@ -880,13 +888,22 @@ export class Game {
     a['quick-restart'] = async () => {
       const ok = await M.confirm(this, 'Recomeçar a demonstração do zero?', 'Recomeçar');
       if (!ok) return;
+      M.closeAll(this); // o menu de onde veio o pedido também fecha
       this.save.run = null;
       writeSave(this.save);
       void this.startPhase('turma');
     };
     a['open-toc'] = () => M.whatIsToc(this);
     a['open-settings'] = () => void M.settings(this);
-    a['open-menu'] = () => void M.gameMenu(this);
+    a['open-menu'] = () => (this.simpleUi ? M.quickMenu(this) : void M.gameMenu(this));
+    a['quick-skip-menu'] = () => {
+      M.closeAll(this);
+      this.guide?.skip();
+    };
+    a['quick-unskip-menu'] = () => {
+      M.closeAll(this);
+      this.guide?.unskip();
+    };
     a['open-more'] = () => void M.moreMenu(this);
     a['fullscreen'] = () => {
       M.closeAll(this);

@@ -10,11 +10,11 @@ import { UPGRADES } from '../data/upgrades';
 import { LOOKS, portraitUrl } from '../render/sprites';
 import * as A from '../sim/actions';
 import { analyzeCapacity, hypothesisMatches, observedUtilization, recentUtilization } from '../sim/analysis';
-import { addLog, deliveredBetween, startEvent, wipCount } from '../sim/engine';
-import type { SimNotice, StationId, UpgradeId } from '../sim/types';
+import { addLog, advance, deliveredBetween, startEvent, wipCount } from '../sim/engine';
+import type { SimNotice, SimState, StationId, UpgradeId } from '../sim/types';
 import { esc } from '../ui/dom';
 import type { Game } from './game';
-import { heroName, personalize } from './hero';
+import { personalize } from './hero';
 
 type Lockable = 'release' | 'drum' | 'bufferSize' | 'priority' | 'inspection' | 'keepBusy' | 'setupExternal' | 'breakCover';
 
@@ -27,6 +27,10 @@ export interface TurmaMarks {
   secondStart: number | null;
   secondIdentifiedAt: number | null;
   baseRate?: number; // entregas/min antes das decisões
+  baseCap?: number; // poções/min que a loja conseguia entregar no começo (= o que a restrição faz)
+  triedBusy?: boolean; // testou "todo mundo ocupado" antes da corda
+  triedOutside?: boolean; // no passo 2, ajudou quem não era a restrição
+  wastedBuy?: boolean; // no passo 4, comprou fora da restrição
   baseWip?: number;
 }
 
@@ -44,9 +48,11 @@ interface Card {
   feedback?: string;
   feedbackKind?: 'good' | 'bad' | 'info';
   wait?: string; // mensagem enquanto mede o efeito
+  help?: boolean; // mostra o botão de conversar com a mentora
 }
 
-const STEP = ['O problema', '1 · Identificar', '2 · Explorar', '3 · Subordinar', '4 · Elevar', '5 · Recomeçar', 'Resultado'];
+const OBSERVING = 'Repare em qual fila cresce…';
+const STEP = ['O problema', '1 · Identificar o gargalo', '2 · Explorar: tirar mais sem gastar', '3 · Subordinar: seguir o ritmo', '4 · Elevar: investir', '5 · Recomeçar', 'Resultado'];
 
 export class TurmaGuide {
   index = 0; // etapa atual (0..7)
@@ -55,7 +61,14 @@ export class TurmaGuide {
   private coach: HTMLElement | null = null;
   private viewed = new Set<StationId>();
   private card: Card = { step: '', text: '' };
-  private measure: { until: number; from: number; kind: string; base: { rate: number; wip: number; lost: number; queue: number; cap: number } } | null = null;
+  private measure: { until: number; from: number; kind: string; base: { wip: number; cap: number } } | null = null;
+  /** poções paradas mostradas no cartão do passo 3 (o "antes" do resultado é esse mesmo número) */
+  private cardWip = 0;
+  private gateFrom = 0;
+  private prevDemand = 0;
+  private spoiledAt = 0;
+  /** poções paradas na loja-gêmea (a escolha que o jogador não fez), para comparar */
+  private otherWip: number | null = null;
   private pendingBuy: UpgradeId | null = null;
   private tried = new Set<string>();
   private lastHtml = '';
@@ -64,6 +77,7 @@ export class TurmaGuide {
   constructor(private g: Game) {
     const a = analyzeCapacity(g.sim!);
     this.marks = {
+      baseCap: a.systemCapacityPerMin,
       initialConstraint: a.constraint,
       identifiedAt: null,
       revealedByMentor: false,
@@ -93,9 +107,7 @@ export class TurmaGuide {
     return (deliveredBetween(s, s.t - window, s.t) / window) * 60;
   }
 
-  private lostNow(id: StationId, window = 30): number {
-    return 1 - recentUtilization(this.s, id, window);
-  }
+
 
   // ------------------------------------------------------------------ etapas
 
@@ -106,6 +118,7 @@ export class TurmaGuide {
 
   private enter(): void {
     this.pendingBuy = null;
+    this.card = { step: '', text: '' };
     this.wrongTries = 0;
     this.tried.clear();
     const s = this.s;
@@ -113,11 +126,16 @@ export class TurmaGuide {
       case 0:
         this.card = {
           step: STEP[0],
-          text: 'Os pedidos chegam mais rápido do que a loja entrega. Toque em duas estações (na loja ou nos botões abaixo dela) para ver o que cada uma faz. Você também pode arrastar a sua bruxa e tocar nas pessoas para conversar.',
+          text: 'Os pedidos chegam mais rápido do que a loja entrega. Toque em duas estações para conhecer a loja.',
         };
         break;
       case 1: {
-        // onde está o acúmulo? (observação, com resposta conferida nos dados)
+        // a pergunta "onde acumula" repetia a de identificar: no modo rápido vamos direto a ela
+        this.index = 2;
+        this.enter();
+        return;
+      }
+      case 99: {
         this.card = {
           step: STEP[0],
           text: 'Olhe os números de "fila" nas estações. Onde as poções estão se acumulando?',
@@ -126,11 +144,9 @@ export class TurmaGuide {
         break;
       }
       case 2:
-        this.card = {
-          step: STEP[1],
-          text: 'Agora a pergunta da Teoria das Restrições: qual estação está limitando quantas poções a loja consegue entregar?',
-          choices: this.stationChoices(),
-        };
+        // a pergunta só vem quando a fila já mostra o problema (sem chute)
+        this.gateFrom = s.t;
+        this.card = { step: STEP[1], text: 'Repare nas filas das estações por alguns segundos…', wait: OBSERVING };
         break;
       case 3:
         this.marks.improveStart = s.t;
@@ -138,78 +154,104 @@ export class TurmaGuide {
         this.marks.baseWip ??= wipCount(s);
         this.card = {
           step: STEP[2],
-          text: `Antes de gastar dinheiro, tire mais do que já existe. Escolha uma melhoria sem custo — e veja o que ela faz com as entregas.`,
+          text: `Melhore o ${STATIONS[this.drum()].short} sem gastar nada. O que fazer?`,
           choices: this.exploreChoices(),
         };
         break;
       case 4: {
-        const q = s.stations[this.drum()].queue.length;
+        this.cardWip = queued(s);
         this.card = {
           step: STEP[3],
-          text: `O Tico quer todo mundo sempre ocupado: o Preparo produz mesmo sem pedido. Agora há ${wipCount(s)} poções espalhadas pela loja e ${q} esperando na frente do ${STATIONS[this.drum()].short}. Como organizar o trabalho?`,
+          text: `Os aprendizes produzem sem parar, mesmo sem pedido: já são ${this.cardWip} poções esperando nas filas, e as que esperam demais estragam. Como trabalhar?`,
           choices: this.subordinateChoices(),
         };
         break;
       }
       case 5: {
+        this.prevDemand = analyzeCapacity(s).demandPerMin;
         this.marks.surgeAt = s.t;
         startEvent(s, {
           kind: 'mudanca_demanda',
           demand: TURMA_SURGE,
-          message: 'A notícia correu e chegam mais clientes, pedindo mais Visão Noturna e Transformação.',
+          message: 'A notícia correu e chegam mais clientes.',
         });
         s.upgradesAvailable = [...TURMA_UPGRADES];
         this.card = {
           step: STEP[4],
-          text: `A procura aumentou! Só melhorar o que já existe não basta mais. Você tem ${Math.round(s.cash)} moedas para investir. Onde colocar o dinheiro?`,
+          text: `Chegaram mais clientes: antes chegavam ${fmt1(this.prevDemand)} poções por minuto; agora, ${fmt1(analyzeCapacity(s).demandPerMin)}. Onde investir? ${this.cashLine()}`,
           choices: this.elevateChoices(),
         };
         break;
       }
       case 6:
         this.marks.secondStart = s.t;
-        this.card = {
-          step: STEP[5],
-          text: 'A loja mudou. A restrição de antes ainda é a mesma? Olhe as filas de novo e escolha.',
-          choices: this.stationChoices(),
-        };
+        // as opções só aparecem quando a nova fila já dá para ver (sem chute)
+        this.gateFrom = s.t;
+        // a corda estava amarrada na restrição antiga: com ela, o excesso fica fora das filas (clientes
+        // esperando) e "olhe as filas" não funcionaria. Por enquanto todo pedido entra; depois de achar a
+        // nova restrição, a corda é amarrada nela.
+        A.setPolicy(s, 'release', 'empurrar');
+        A.setPolicy(s, 'keepBusy', false);
+        this.prevDemand = analyzeCapacity(s).demandPerMin;
+        {
+          const a = analyzeCapacity(s);
+          if (a.constraint === 'mercado' || a.loads[a.constraint].load < 1) {
+            // ninguém ficou sobrecarregado (ex.: comprou também o alambique): a procura sobe de novo e
+            // alguma estação volta a segurar a loja — o passo 5 continua sendo uma decisão de verdade
+            startEvent(s, { kind: 'mudanca_demanda', demand: { ...TURMA_SURGE, ordersPerMin: (TURMA_SURGE.ordersPerMin ?? 6.5) * 1.35 } });
+            this.card = { step: STEP[5], text: `A loja dava conta de tudo — e chegaram ainda mais clientes (${fmt1(analyzeCapacity(s).demandPerMin)} por minuto). Agora todo pedido entra na hora: observe as filas…`, wait: OBSERVING };
+            break;
+          }
+        }
+        this.card = { step: STEP[5], text: 'A loja mudou! Por enquanto, todo pedido entra assim que chega: observe em que fila ele se acumula…', wait: OBSERVING };
         break;
       case 7: {
         const fmt = (x: number) => x.toFixed(1).replace('.', ',');
         const cmp =
-          this.marks.baseRate != null
-            ? ` Entregas: ${fmt(this.marks.baseRate)} → ${fmt(this.rateNow(60))} poções/min. Poções espalhadas pela loja: ${this.marks.baseWip} → ${wipCount(s)}.`
+          this.marks.baseCap != null
+            ? ` No começo, a loja conseguia entregar ${fmt(this.marks.baseCap ?? 0)} poções por minuto; agora, ${fmt(analyzeCapacity(s).systemCapacityPerMin)}${analyzeCapacity(s).maxLoad <= 1 ? ' — tudo o que chega' : ''}.`
             : '';
         this.card = {
           step: STEP[6],
-          text: `Pronto! Você passou pelos cinco passos.${cmp} Pode continuar até ${this.endClock()} ou ver o resultado agora.`,
+          text: `Pronto: você passou pelos cinco passos!${cmp}`,
           choices: [{ v: 'fim', label: 'Ver o resultado agora', primary: true }],
         };
         break;
       }
     }
+    // o caixa só aparece quando há o que fazer com ele
+    document.body.classList.toggle('show-cash', this.index >= 5);
     // nas etapas que agem sobre a restrição, a câmera mostra a restrição
     if (this.index >= 3 && this.index <= 5) this.g.camera.focusStation(this.drum());
     this.render(true);
     this.g.refreshUi(true);
   }
 
+  /** De onde veio e para onde foi o dinheiro (fecha a conta do caixa). */
+  private cashLine(): string {
+    const s = this.s;
+    const start = this.g.phase?.scenario.startCash ?? 1000;
+    const sales = Math.round(s.acct.revenue);
+    const out = Math.round(start + sales - s.cash);
+    return `(Caixa ${Math.round(s.cash)}: ${start} do começo + ${sales} de vendas − ${out} de ingredientes e despesas.)`;
+  }
+
   private exploreChoices(): Choice[] {
     const c = this.drum();
     const C = STATIONS[c].short;
     return [
-      { v: 'setupExternal', label: 'Limpar em paralelo', sub: `uma aprendiz limpa o ${C} enquanto ele trabalha` },
-      { v: 'breakCover', label: 'Cobrir as pausas', sub: `alguém assume o ${C} na hora do chá` },
-      { v: 'helper', label: `${heroName()} ajuda no ${C}`, sub: '20% mais rápido enquanto ela estiver lá' },
-      { v: 'helper-preparo', label: `${heroName()} ajuda no Preparo`, sub: 'o Preparo fica 20% mais rápido' },
+      { v: 'setupExternal', label: 'Limpar em paralelo', sub: 'um ajudante limpa o caldeirão entre uma poção e outra' },
+      { v: 'breakCover', label: 'Cobrir as pausas', sub: 'alguém assume quando a equipe para para o chá' },
+      { v: 'helper', label: `Você ajuda no ${C}`, sub: 'sua bruxa vai até lá' },
+      { v: 'helper-preparo', label: 'Você ajuda no Preparo', sub: 'sua bruxa vai até lá' },
     ].filter((ch) => !this.tried.has(ch.v) && this.applicable(ch.v));
   }
 
   private subordinateChoices(): Choice[] {
     const C = STATIONS[this.drum()].short;
     return [
-      { v: 'corda', label: `Trabalhar no ritmo do ${C}`, sub: 'só começa uma poção quando ele tiver espaço (corda)' },
-      { v: 'empurrar', label: 'Manter todo mundo ocupado', sub: 'cada estação produz o máximo que conseguir' },
+      { v: 'corda', label: `No ritmo do ${C}`, sub: 'só começa uma poção quando ele puder' },
+      { v: 'empurrar', label: 'Todo mundo ocupado', sub: 'cada um produz o máximo' },
     ].filter((ch) => !this.tried.has(ch.v));
   }
 
@@ -218,7 +260,7 @@ export class TurmaGuide {
     return [
       ...opts
         .filter((u) => !this.s.upgradesOwned.some((o) => o.id === u))
-        .map((u) => ({ v: u, label: UPGRADES[u].name, sub: `${STATIONS[UPGRADES[u].station].short} · ${UPGRADES[u].price} moedas` })),
+        .map((u) => ({ v: u, label: UPGRADES[u].name, sub: `melhora: ${STATIONS[UPGRADES[u].station].short} · ${UPGRADES[u].price} moedas` })),
       { v: 'nada', label: 'Não investir agora' },
     ];
   }
@@ -246,7 +288,7 @@ export class TurmaGuide {
   choose(v: string): void {
     const s = this.s;
     if (v === 'ok') {
-      if (this.index === 6) A.setHelper(s, null);
+      // a bruxa continua onde está: tirá-la sem avisar mudava a capacidade depois do resultado
       this.next();
       return;
     }
@@ -277,14 +319,22 @@ export class TurmaGuide {
           if (this.index === 2) this.marks.identifiedAt = s.t;
           else this.marks.secondIdentifiedAt = s.t;
           s.policies.drum = id;
-          this.card.feedback = `Isso! ${STATIONS[id].short} está ocupada ${pct(recentUtilization(s, id))} do tempo, tem ${s.stations[id].queue.length} poções esperando e faz ${a.loads[id].mixCapacityPerMin.toFixed(1).replace('.', ',')} poções/min — a loja recebe ${a.demandPerMin.toFixed(1).replace('.', ',')}/min. Ela não dá conta: é a restrição.`;
+          if (this.index === 6) A.setPolicy(s, 'release', 'corda');
+          const capId = a.loads[id].mixCapacityPerMin;
+          this.card.feedback =
+            capId < a.demandPerMin
+              ? `Isso! ${n(s.stations[id].queue.length, 'poção espera', 'poções esperam')} na frente da estação ${STATIONS[id].short}: ela faz ${capId.toFixed(1).replace('.', ',')} poções por minuto, mas chegam ${a.demandPerMin.toFixed(1).replace('.', ',')}. Ela segura a loja: é a restrição (o gargalo).`
+              : `Isso! É a estação mais carregada da loja (${n(s.stations[id].queue.length, 'poção espera', 'poções esperam')} na frente dela): é a restrição (o gargalo).`;
+          if (this.index === 6) this.card.feedback += ' A loja volta a trabalhar no ritmo dela.';
           this.card.feedbackKind = 'good';
-          this.card.choices = [{ v: 'ok', label: this.index === 6 ? `Amarrar a corda no ${STATIONS[id].short} e continuar` : 'Continuar', primary: true }];
+          this.card.choices = [{ v: 'ok', label: 'Continuar', primary: true }];
         } else {
           this.wrongTries++;
+          // curto e com um número só: a fila dela, e o fato de ela dar conta
           this.card.feedback =
-            wrongExplanation(s, id, a.ranked[0], a.loads[id].load) +
-            (this.wrongTries >= 2 ? ` Dica: compare a capacidade (poções/min) com o que chega na loja.` : ` A Vó Morgana (balão "!" no fundo da loja) pode ajudar.`);
+            `Não é ${the(id)} ${STATIONS[id].short}: a fila ${the(id) === 'a' ? 'dela' : 'dele'} é ${s.stations[id].queue.length} e ${the(id) === 'a' ? 'ela' : 'ele'} dá conta do que chega.` +
+            (this.wrongTries >= 2 ? ' Procure a fila que só cresce.' : ' Peça uma dica à Vó Morgana.');
+          this.card.help = true;
           this.card.feedbackKind = 'bad';
           if (this.wrongTries >= 3 && this.index === 2) {
             this.marks.revealedByMentor = true;
@@ -299,30 +349,59 @@ export class TurmaGuide {
       case 3: {
         const id = this.drum();
         this.tried.add(v);
+        // o "antes" é medido antes de a decisão valer
+        const helper = v === 'helper' || v === 'helper-preparo';
+        if (v === 'helper-preparo') this.marks.triedOutside = true;
+        // a câmera mostra a bruxa indo até lá
+        if (helper) this.g.camera.focusStation(v === 'helper' ? id : 'preparo');
+        this.startMeasure(v === 'helper-preparo' ? 'explorar-fora' : 'explorar', helper ? 9 : 4);
         if (v === 'helper') this.g.actions['help-here']({ dataset: { v: id } } as unknown as HTMLElement);
         else if (v === 'helper-preparo') this.g.actions['help-here']({ dataset: { v: 'preparo' } } as unknown as HTMLElement);
-        else A.setStationPolicy(s, v as 'breakCover' | 'setupExternal', id, true);
-        this.startMeasure(v === 'helper-preparo' ? 'explorar-fora' : 'explorar');
+        else {
+          // a bruxa volta a ficar livre (não continua ajudando o Preparo sem motivo)
+          if (s.helper && s.helper !== id) A.setHelper(s, null);
+          A.setStationPolicy(s, v as 'breakCover' | 'setupExternal', id, true);
+        }
         this.card.choices = [];
-        this.card.wait = 'Medindo o efeito na loja…';
+        this.card.feedback = undefined;
+        this.card.wait = helper ? 'Sua bruxa está indo até lá…' : 'Vendo o que muda…';
         break;
       }
       case 4: {
         this.tried.add(v);
+        // o "eram N" de cada tentativa é a fila no momento da escolha
+        this.cardWip = queued(s);
         if (v === 'corda') {
           A.setPolicy(s, 'drum', this.drum());
           A.setPolicy(s, 'release', 'corda');
           A.setPolicy(s, 'keepBusy', false);
-        } else addLog(s, 'decisao', 'Manteve todo mundo ocupado (cada estação produz o máximo).');
-        this.startMeasure(v === 'corda' ? 'corda' : 'empurrar', 40);
+        } else {
+          this.marks.triedBusy = true;
+          addLog(s, 'decisao', 'Manteve todo mundo ocupado (cada estação produz o máximo).');
+        }
+        // a outra escolha roda numa cópia da loja, para comparar no mesmo instante
+        const twin = JSON.parse(JSON.stringify(s)) as SimState;
+        if (v === 'corda') {
+          A.setPolicy(twin, 'release', 'empurrar');
+          A.setPolicy(twin, 'keepBusy', true);
+        } else {
+          A.setPolicy(twin, 'drum', this.drum());
+          A.setPolicy(twin, 'release', 'corda');
+          A.setPolicy(twin, 'keepBusy', false);
+        }
+        advance(twin, 20);
+        this.otherWip = queued(twin);
+        this.spoiledAt = s.stats.spoiled;
+        this.startMeasure(v === 'corda' ? 'corda' : 'empurrar', 20);
         this.card.choices = [];
-        this.card.wait = 'Observando o que acontece com as filas…';
+        this.card.feedback = undefined;
+        this.card.wait = 'Repare nas poções paradas pela loja…';
         break;
       }
       case 5: {
         if (v === 'nada') {
           addLog(s, 'decisao', 'Decidiu não investir.');
-          this.card.feedback = 'Sem investimento, a loja continua com a mesma capacidade — e a procura agora é maior.';
+          this.card.feedback = 'Sem investir, a loja continua do mesmo tamanho — e agora chegam mais clientes.';
           this.card.feedbackKind = 'info';
           this.card.choices = [{ v: 'ok', label: 'Continuar', primary: true }];
           break;
@@ -330,20 +409,26 @@ export class TurmaGuide {
         const u = v as UpgradeId;
         if (this.pendingBuy !== u) {
           this.pendingBuy = u;
-          this.card.feedback = `${UPGRADES[u].name}: ${UPGRADES[u].price} moedas e +${(UPGRADES[u].opCostPerSec * 30).toFixed(1).replace('.', ',')} moedas/h de despesa. Toque de novo para confirmar.`;
+          this.card.feedback = `${UPGRADES[u].name} por ${UPGRADES[u].price} moedas. Toque de novo para confirmar.`;
           this.card.feedbackKind = 'info';
           break;
         }
+        this.startMeasure('elevar', UPGRADES[u].installTime + 2);
         const r = A.buyUpgrade(s, u);
         if (!r.ok) {
+          this.measure = null;
           this.card.feedback = r.message;
           this.card.feedbackKind = 'bad';
           break;
         }
         this.pendingBuy = null;
-        this.startMeasure('elevar', UPGRADES[u].installTime + 5);
+        // na aula, a instalação é rápida (o efeito aparece em segundos)
+        const own = s.upgradesOwned[s.upgradesOwned.length - 1];
+        if (own) own.activeAt = Math.min(own.activeAt, s.t + 5);
+        if (this.measure) this.measure.until = s.t + 7;
         this.card.choices = [];
-        this.card.wait = `Instalando ${UPGRADES[u].name} e medindo o efeito…`;
+        this.card.feedback = undefined;
+        this.card.wait = `Instalando: ${UPGRADES[u].name}…`;
         break;
       }
       case 7:
@@ -356,44 +441,47 @@ export class TurmaGuide {
     this.g.refreshUi(true);
   }
 
-  private startMeasure(kind: string, wait = 25): void {
+  /** O que a restrição consegue fazer por minuto (calculado pela simulação, sem o ruído de uma janela curta). */
+  private capNow(): number {
+    return analyzeCapacity(this.s).loads[this.drum()].mixCapacityPerMin;
+  }
+
+  private startMeasure(kind: string, wait: number): void {
     const s = this.s;
-    this.measure = {
-      until: s.t + wait,
-      from: s.t,
-      kind,
-      base: { rate: this.rateNow(45), wip: wipCount(s), lost: this.lostNow(this.drum(), 45), queue: s.stations[this.drum()].queue.length, cap: analyzeCapacity(s).systemCapacityPerMin },
-    };
+    this.measure = { until: s.t + wait, from: s.t, kind, base: { wip: wipCount(s), cap: this.capNow() } };
   }
 
   private finishMeasure(): void {
     const m = this.measure!;
     this.measure = null;
     const s = this.s;
-    const win = Math.max(10, s.t - m.from);
-    const rate = (deliveredBetween(s, m.from, s.t) / win) * 60;
     const fmt = (x: number) => x.toFixed(1).replace('.', ',');
     let text = '';
     let kind: Card['feedbackKind'] = 'good';
     let retry: Choice[] = [];
     const C = STATIONS[this.drum()].short;
-    // capacidade da loja = o que a restrição consegue fazer (calculada pela simulação, sem o ruído de uma janela curta)
-    const capNow = analyzeCapacity(s).systemCapacityPerMin;
-    const capTxt = `A loja consegue entregar ${fmt(m.base.cap)} → ${fmt(capNow)} poções/min`;
+    const cap = this.capNow();
     if (m.kind === 'explorar') {
-      const lost = this.lostNow(this.drum(), win);
-      text = `Resultado: o ${C} ficava parado ${pct(m.base.lost)} do tempo; agora ${pct(lost)}. ${capTxt}. Explorar a restrição é isso: tirar mais dela sem comprar nada.`;
+      const dem = analyzeCapacity(s).demandPerMin;
+      text =
+        `Boa! O ${C} fazia ${fmt(m.base.cap)} poções por minuto; agora faz ${fmt(cap)} — sem gastar nada.` +
+        (cap < dem * 0.97 ? ` Mas ainda chegam ${fmt(dem)} por minuto: ele continua segurando a loja.` : ` Agora ele faz o mesmo tanto que chega (${fmt(dem)} por minuto).`);
     } else if (m.kind === 'explorar-fora') {
-      const q = s.stations[this.drum()].queue.length;
-      text = `Resultado: ${capTxt} — nada mudou. O Preparo ficou mais rápido, mas toda poção ainda passa pelo ${C}, que continua no mesmo ritmo. A fila na frente dele: ${m.base.queue} → ${q}. Tente melhorar quem limita a loja.`;
+      text = `Não mudou nada: o ${C} continua fazendo ${fmt(cap)} poções por minuto, e toda poção passa por ele. Tente outra.`;
       kind = 'bad';
       retry = this.exploreChoices();
     } else if (m.kind === 'corda' || m.kind === 'empurrar') {
-      const w = wipCount(s);
+      // comparação justa: a mesma loja, no mesmo instante, com a outra escolha (simulação paralela)
+      const w = queued(s);
+      const other = this.otherWip ?? w;
+      const lost = s.stats.spoiled - this.spoiledAt;
+      const lostTxt = lost > 0 ? ` Nesse tempo, ${n(lost, 'poção feita antes da hora estragou', 'poções feitas antes da hora estragaram')}.` : '';
+      const rope = m.kind === 'corda' ? w : other;
+      const busy = m.kind === 'corda' ? other : w;
       if (m.kind === 'corda') {
-        text = `Resultado: poções espalhadas pela loja: ${m.base.wip} → ${w}, e as entregas ficaram em ${fmt(rate)} poções/min. As outras estações agora seguem o ritmo da restrição — às vezes ficam paradas, e tudo bem: produzir mais só criaria fila e poção estragada.`;
+        text = `Boa! Eram ${this.cardWip} poções nas filas. Agora, no ritmo do ${C}: ${rope}. Se todo mundo continuasse ocupado, seriam ${busy}. As entregas são as mesmas nos dois casos — produzir mais do que o ${C} só faz fila, dinheiro parado e poção estragada.${lostTxt}`;
       } else {
-        text = `Resultado: poções espalhadas pela loja: ${m.base.wip} → ${w}, e as entregas continuam em ${fmt(rate)} poções/min. Todo mundo ocupado não faz o ${C} andar mais rápido: só aumenta a fila, o dinheiro parado e as poções que estragam esperando.`;
+        text = `Eram ${this.cardWip} poções nas filas; com todo mundo ocupado, agora são ${busy}. No ritmo do ${C} seriam ${rope}. E as entregas não aumentam: o ${C} continua fazendo o mesmo.${lostTxt}`;
         kind = 'bad';
         retry = this.subordinateChoices();
       }
@@ -402,9 +490,10 @@ export class TurmaGuide {
       const st = own ? UPGRADES[own.id].station : null;
       const wasC = st === this.drum();
       text = wasC
-        ? `Resultado: ${capTxt}, e as entregas medidas foram ${fmt(rate)} poções/min. Você elevou a restrição: aumentou a capacidade de quem limitava a loja.`
-        : `Resultado: ${capTxt} — nada mudou. O investimento foi numa estação que não limitava a loja: a despesa subiu, mas o ${C} continua no mesmo ritmo.`;
+        ? `Boa! O ${C} fazia ${fmt(m.base.cap)} poções por minuto; agora faz ${fmt(cap)}. Você aumentou quem segurava a loja.`
+        : `Não mudou nada: a loja continua conseguindo entregar ${fmt(analyzeCapacity(s).systemCapacityPerMin)} poções por minuto, porque toda poção ainda passa pelo ${C}. Você gastou e nada melhorou.`;
       kind = wasC ? 'good' : 'bad';
+      if (!wasC) this.marks.wastedBuy = true;
       if (!wasC) retry = this.elevateChoices().filter((c) => c.v === 'nada' || UPGRADES[c.v as UpgradeId].price <= s.cash);
     }
     this.card.wait = undefined;
@@ -430,16 +519,27 @@ export class TurmaGuide {
       if (this.index === 0) {
         const id = data as StationId;
         const st = this.s.stations[id];
-        this.card.feedback = `${STATIONS[id].name}: ${STATIONS[id].verb}. Fila agora: ${st.queue.length}. Toque em outra estação para comparar.`;
+        this.card.feedback = `${STATIONS[id].short}: ${STATIONS[id].verb}. Fila: ${st.queue.length}.${this.viewed.size < 2 ? ' Toque em outra.' : ''}`;
         this.card.feedbackKind = 'info';
-        if (this.viewed.size >= 2) this.later(() => this.index === 0 && this.next(), 900);
+        if (this.viewed.size >= 2) this.later(() => this.index === 0 && this.next(), 400);
         this.render(true);
       }
     }
     if (kind === 'tick') {
-      if (this.measure && this.s.t >= this.measure.until) this.finishMeasure();
-      // o relógio é referência, não pressão: o dia se estende até o jogador passar pelos cinco passos
       const s = this.s;
+      if (this.measure && s.t >= this.measure.until) this.finishMeasure();
+      if ((this.index === 2 || this.index === 6) && this.card.wait === OBSERVING) {
+        const ids = STATION_ORDER.filter((id) => !s.stations[id].locked);
+        const q = ids.map((id) => s.stations[id].queue.length).sort((x, y) => y - x);
+        if ((q[0] >= 5 && q[0] - (q[1] ?? 0) >= 3) || s.t - this.gateFrom > (this.index === 2 ? 25 : 70)) {
+          this.card =
+            this.index === 2
+              ? { step: STEP[1], text: 'Qual estação está segurando a loja? Olhe as filas.', choices: this.stationChoices() }
+              : { step: STEP[5], text: 'Qual estação está segurando a loja agora? Olhe as filas.', choices: this.stationChoices() };
+          this.render(true);
+        }
+      }
+      // o relógio é referência, não pressão: o dia se estende até o jogador passar pelos cinco passos
       if (!this.skipped && this.index < 7 && s.duration - s.t < 30 && s.duration < 900) {
         s.duration += 60;
         if (s.nextArrivalAt === Number.POSITIVE_INFINITY) s.nextArrivalAt = s.t + 5;
@@ -519,16 +619,24 @@ export class TurmaGuide {
       .join('');
     const n = (c.choices || []).length;
     const grid = n >= 5 ? 'grid3' : n === 4 ? 'grid2' : 'stack';
+    if (this.index === 4 && !c.feedback && !c.wait) c.text = c.text.replace(/já são \d+ poções/, `já são ${queued(this.s)} poções`);
     const html = `<header><img class="portrait xs" src="${portraitUrl(LOOKS.morgana)}" alt=""><b>${esc(c.step)}</b><span class="dots" aria-hidden="true">${progress}</span>
-      <button class="mini ghost" data-action="quick-restart" aria-label="Recomeçar a demonstração">Recomeçar</button>
-      <button class="mini ghost" data-action="quick-skip" aria-label="Pular as dicas e jogar livre">Pular dicas</button></header>
-      <p>${esc(personalize(c.text))}</p>
+</header>
+      ${c.feedback && c.feedbackKind !== 'info' && !c.wait ? '' : `<p>${esc(personalize(c.text))}</p>`}
       ${c.feedback ? `<p class="fb ${c.feedbackKind || 'info'}" role="status">${esc(personalize(c.feedback))}</p>` : ''}
-      ${c.wait ? `<p class="fb info wait">${esc(c.wait)}</p>` : ''}
+      ${c.wait ? `<p class="fb info wait">${esc(c.wait)}${this.measure ? ` <b class="count">${Math.max(1, Math.ceil(this.measure.until - this.s.t))} s</b>` : ''}</p>` : ''}
+      ${c.help && !c.wait ? '<button class="mini ghost talk-help" data-action="talk-mentor">Pedir uma dica à Vó Morgana</button>' : ''}
       ${choices ? `<div class="choices ${grid}">${choices}</div>` : ''}`;
     if (!force && html === this.lastHtml) return;
     this.lastHtml = html;
     this.coach.innerHTML = html;
+    // no celular pequeno os botões podiam ficar escondidos embaixo do cartão: rola até eles
+    // mostra o resultado (ou o aviso de confirmar) no topo do cartão; os botões vêm logo abaixo
+    const fb = this.coach.querySelector('.fb') as HTMLElement | null;
+    if (fb) {
+      const top = fb.getBoundingClientRect().top - this.coach.getBoundingClientRect().top;
+      if (top > 40) this.coach.scrollTop += top - 36;
+    }
   }
 
   private stepIndex(): number {
@@ -540,6 +648,25 @@ export class TurmaGuide {
     this.coach?.remove();
     this.coach = null;
   }
+}
+
+/** artigo da estação ("a Destilação", "o Caldeirão") */
+function the(id: StationId): 'a' | 'o' {
+  return id === 'destilacao' || id === 'embalagem' ? 'a' : 'o';
+}
+
+/** Poções nas filas das estações (o mesmo que somam os números "fila" que o jogador vê). */
+function queued(s: SimState): number {
+  return STATION_ORDER.filter((id) => !s.stations[id].locked).reduce((t, id) => t + s.stations[id].queue.length, 0);
+}
+
+/** "1 poção espera" / "3 poções esperam" */
+function n(k: number, one: string, many: string): string {
+  return `${k} ${k === 1 ? one : many}`;
+}
+
+function fmt1(x: number): string {
+  return x.toFixed(1).replace('.', ',');
 }
 
 function pct(v: number): string {

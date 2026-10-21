@@ -15,7 +15,7 @@ export function buildHud(g: Game): void {
       <button class="hud-brand" data-action="open-menu" title="Menu da partida">${iconImg('hat')}<span><b>Poção em Apuros</b><small>${esc(phase.number ? `Círculo ${phase.number} — ` : '')}${esc(phase.title)}</small></span></button>
     </div>
     <div class="hud-stats" data-action="hud-expand" role="button" tabindex="0" aria-label="Mostrar todos os indicadores">
-      <div class="stat" title="Dinheiro em caixa"><span class="lbl">${iconImg('coin')}Caixa</span><b data-bind="cash">0</b></div>
+      <div class="stat" data-qcash title="Dinheiro em caixa"><span class="lbl">${iconImg('coin')}Caixa</span><b data-bind="cash">0</b></div>
       <div class="stat" data-qhide-always title="Lucro líquido do dia = Ganho − Despesa operacional"><span class="lbl">${iconImg('chart')}Lucro</span><b data-bind="np">0</b></div>
       <div class="stat" data-qhide-always title="Reputação da loja"><span class="lbl">${iconImg('heart')}Reputação</span><b data-bind="rep">0</b><i class="meter"><i data-bind="repbar"></i></i></div>
       <div class="stat" title="Poções entregues hoje"><span class="lbl">${iconImg('flask')}Entregues</span><b data-bind="deliv">0</b></div>
@@ -36,7 +36,7 @@ export function buildHud(g: Game): void {
       <button data-action="open-glossary" title="Glossário e os cinco passos">${iconImg('eye')}<span>Glossário</span></button>
       ${phase.hypothesisEnabled ? `<button data-action="hypothesis" class="hyp-btn" title="Registrar hipótese sobre a restrição">${iconImg('drum')}<span>Hipótese</span></button>` : ''}
     </nav>
-    <button class="hud-more" data-action="open-menu" aria-label="Menu da partida">${iconImg('gear')}</button>`;
+    <button class="hud-more" data-action="open-menu" aria-label="Menu da partida">${iconImg('gear')}<span class="hm-l">Menu</span></button>`;
   // barra de abas para celular (em pé: rodapé; deitado: trilho lateral)
   // qhide: some no modo rápido (as decisões ficam no cartão da mentora), volta ao "pular dicas"
   const tab = (action: string, v: string, icon: string, label: string, extra = '', qhide = false) =>
