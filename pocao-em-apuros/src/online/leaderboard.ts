@@ -134,8 +134,9 @@ export async function submitScore(e: ScoreEntry): Promise<SubmitResult> {
     await withTimeout(
       fs.addDoc(fs.collection(db, COLLECTION), {
         jogadorId: e.jogadorId.slice(0, 40),
-        jogador: e.jogador.slice(0, 24),
-        bruxa: e.bruxa.slice(0, 18),
+        // no modo rápido ninguém digita o próprio nome: usa o nome da bruxa (a regra exige um nome)
+        jogador: (e.jogador.trim() || e.bruxa || 'Bruxa').slice(0, 24),
+        bruxa: (e.bruxa || 'Bruxa').slice(0, 18),
         visual: e.visual.slice(0, 120),
         fase: e.fase,
         pontos: Math.max(0, Math.min(100, Math.round(e.pontos))),
