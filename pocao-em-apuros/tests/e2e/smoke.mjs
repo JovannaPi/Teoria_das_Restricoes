@@ -721,6 +721,82 @@ try {
     await ctx.close();
   }
 
+  // ---------------------------------------------------------------- sala da turma (telão ao vivo)
+  {
+    // o Firebase é trocado por uma versão em memória: nada vai para o placar real
+    const fake = () => {
+      window.__roomPuts = [];
+      window.__pocaoRoomBackend = {
+        put: async (id, data) => {
+          window.__roomPuts.push({ id, ...data });
+          return true;
+        },
+        watch: (code, onRows, onStatus) => {
+          onStatus('ok');
+          const send = () =>
+            onRows([
+              { sala: code, jogadorId: 'a', bruxa: 'Jade', passo: 7, erros: 1, preparo: true, ocupado: false, fora: true, capFim: 98, pontos: 82 },
+              { sala: code, jogadorId: 'b', bruxa: 'Runa', passo: 3, erros: 0, preparo: false, ocupado: true, fora: false, capFim: 0, pontos: -1 },
+              { sala: code, jogadorId: 'c', bruxa: 'Íris', passo: 1, erros: 0, preparo: false, ocupado: false, fora: false, capFim: 0, pontos: -1 },
+            ]);
+          const t = setTimeout(send, 50);
+          return () => clearTimeout(t);
+        },
+      };
+    };
+    // aluno entra pelo link da sala
+    const c1 = await browser.newContext({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    const st = await c1.newPage();
+    st.on('pageerror', (e) => errors.push('[sala aluno] ' + String(e)));
+    await st.addInitScript(fake);
+    await st.goto(URL + '?sala=TEST');
+    await st.waitForSelector('.play-btn');
+    check('sala: o celular mostra que está na sala TEST', /sala TEST/.test(await st.textContent('.room-tag')));
+    await st.tap('.play-btn');
+    await st.waitForSelector('.turma-coach');
+    const ff = (secs) => st.evaluate((x) => { const g = window.__pocao.game; for (let i = 0; i < Math.ceil(x / (0.1 * g.speed)); i++) g.tick(0.1); }, secs);
+    await st.tap('#station-strip [data-strip="caldeirao"]');
+    await st.tap('#station-strip [data-strip="preparo"]');
+    await st.waitForTimeout(700);
+    for (let k = 0; k < 10 && !(await st.$('.turma-coach [data-v="destilacao"]')); k++) await ff(3);
+    await st.tap('.turma-coach [data-action="quick-choice"][data-v="destilacao"]');
+    await st.tap('.turma-coach [data-action="quick-choice"][data-v="caldeirao"]');
+    await st.tap('.turma-coach [data-action="quick-choice"][data-v="ok"]');
+    await st.tap('.turma-coach [data-action="quick-choice"][data-v="helper-preparo"]');
+    await st.waitForTimeout(1200);
+    const puts = await st.evaluate(() => window.__roomPuts);
+    const last = puts[puts.length - 1] || {};
+    check('sala: o aluno envia o progresso para a sala (passo, erro de primeira, armadilha do Preparo)', last.sala === 'TEST' && last.passo === 2 && last.erros === 1 && last.preparo === true && last.pontos === -1 && last.id === `TEST_${last.jogadorId}`, JSON.stringify(last));
+    check('sala: o que vai para a sala não tem dado pessoal (só nome da bruxa e números)', Object.keys(last).sort().join(',') === 'bruxa,capFim,erros,fora,id,jogadorId,ocupado,passo,pontos,preparo,sala', Object.keys(last).join(','));
+    await c1.close();
+
+    // professor abre o painel no projetor
+    const c2 = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+    const pr = await c2.newPage();
+    pr.on('pageerror', (e) => errors.push('[sala painel] ' + String(e)));
+    await pr.addInitScript(fake);
+    await pr.goto(URL + '?apresentar');
+    await pr.waitForSelector('.presenter [data-action="room-open"]');
+    await pr.click('.presenter [data-action="room-open"]');
+    await pr.waitForSelector('.room-panel .rp-fact');
+    await pr.waitForTimeout(300);
+    const t = (await pr.textContent('.room-panel')).replace(/\s+/g, ' ');
+    const code = await pr.textContent('[data-room-code]');
+    // em localhost o painel avisa que o endereço é local (no site público, mostra o QR)
+    check('painel: abre uma sala com código curto e o link da sala (aviso de endereço local no lugar do QR)', /^[A-Z0-9]{4}$/.test(code) && t.includes(`?sala=${code}`) && /só funciona neste computador/.test(t), code);
+    check('painel: mostra quantos entraram e terminaram', /3 pessoas entraram · 1 terminaram/.test(t), t.slice(0, 160));
+    check('painel: mostra quantos acharam o gargalo de primeira e as armadilhas', /1 de 2\s*acharam o gargalo de primeira/.test(t) && /1\s*ajudaram o Preparo/.test(t) && /1\s*deixaram todo mundo ocupado/.test(t), t.slice(160, 520));
+    check('painel: ranking da sala e perguntas para o debate tiradas do que a turma fez', /Jade\s*82/.test(t) && /1 pessoa ajudou o Preparo e nada mudou/.test(t) && !/Runa/.test(t.split('Para o debate')[1] || ''), t.slice(-400));
+    await pr.screenshot({ path: join(shotsDir, 'sala-painel.png') });
+    const code1 = code;
+    await pr.click('[data-action="room-new"]');
+    await pr.waitForTimeout(200);
+    check('painel: "Nova sala" troca o código', (await pr.textContent('[data-room-code]')) !== code1);
+    await pr.click('[data-action="room-close"]');
+    check('painel: fecha', (await pr.$('.room-panel')) == null);
+    await c2.close();
+  }
+
   // ---------------------------------------------------------------- andar pela loja e conversar
   {
     const heroStart = (ph) => {

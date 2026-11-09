@@ -14,7 +14,8 @@ import { addLog, advance, deliveredBetween, startEvent, wipCount } from '../sim/
 import type { SimNotice, SimState, StationId, UpgradeId } from '../sim/types';
 import { esc } from '../ui/dom';
 import type { Game } from './game';
-import { personalize } from './hero';
+import { heroName, personalize } from './hero';
+import { reportRoom } from '../online/room';
 
 type Lockable = 'release' | 'drum' | 'bufferSize' | 'priority' | 'inspection' | 'keepBusy' | 'setupExternal' | 'breakCover';
 
@@ -31,6 +32,7 @@ export interface TurmaMarks {
   triedBusy?: boolean; // testou "todo mundo ocupado" antes da corda
   triedOutside?: boolean; // no passo 2, ajudou quem não era a restrição
   wastedBuy?: boolean; // no passo 4, comprou fora da restrição
+  firstWrong?: number; // palpites errados antes de achar o gargalo pela primeira vez
   baseWip?: number;
 }
 
@@ -219,6 +221,7 @@ export class TurmaGuide {
         break;
       }
     }
+    this.report();
     // o caixa só aparece quando há o que fazer com ele
     document.body.classList.toggle('show-cash', this.index >= 5);
     // nas etapas que agem sobre a restrição, a câmera mostra a restrição
@@ -234,6 +237,25 @@ export class TurmaGuide {
     const sales = Math.round(s.acct.revenue);
     const out = Math.round(start + sales - s.cash);
     return `(Caixa ${Math.round(s.cash)}: ${start} do começo + ${sales} de vendas − ${out} de ingredientes e despesas.)`;
+  }
+
+  /** Envia o progresso para a sala da turma (se o aluno entrou por um link de sala). */
+  report(end?: { pontos: number }): void {
+    const m = this.marks;
+    reportRoom(
+      {
+        jogadorId: this.g.save.playerId,
+        bruxa: heroName(),
+        passo: end ? 7 : this.stepIndex(),
+        erros: Math.min(20, m.firstWrong ?? 0),
+        preparo: !!m.triedOutside,
+        ocupado: !!m.triedBusy,
+        fora: !!m.wastedBuy,
+        capFim: end ? Math.round(analyzeCapacity(this.s).systemCapacityPerMin * 10) : 0,
+        pontos: end ? end.pontos : -1,
+      },
+      !!end,
+    );
   }
 
   private exploreChoices(): Choice[] {
@@ -330,6 +352,7 @@ export class TurmaGuide {
           this.card.choices = [{ v: 'ok', label: 'Continuar', primary: true }];
         } else {
           this.wrongTries++;
+          if (this.index === 2) this.marks.firstWrong = (this.marks.firstWrong ?? 0) + 1;
           // curto e com um número só: a fila dela, e o fato de ela dar conta
           this.card.feedback =
             `Não é ${the(id)} ${STATIONS[id].short}: a fila ${the(id) === 'a' ? 'dela' : 'dele'} é ${s.stations[id].queue.length} e ${the(id) === 'a' ? 'ela' : 'ele'} dá conta do que chega.` +
@@ -439,6 +462,7 @@ export class TurmaGuide {
     }
     this.render(true);
     this.g.refreshUi(true);
+    this.report();
   }
 
   /** O que a restrição consegue fazer por minuto (calculado pela simulação, sem o ruído de uma janela curta). */

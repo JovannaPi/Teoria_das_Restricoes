@@ -98,11 +98,13 @@ type Fs = {
   limit: (n: number) => unknown;
   onSnapshot: (q: unknown, next: (snap: { docs: { data: () => Record<string, unknown> }[] }) => void, err: (e: Error) => void) => () => void;
   serverTimestamp: () => unknown;
+  doc: (db: unknown, col: string, id: string) => unknown;
+  setDoc: (ref: unknown, data: unknown) => Promise<unknown>;
 };
 
 let fsPromise: Promise<{ fs: Fs; db: unknown } | null> | null = null;
 
-function loadFirestore(): Promise<{ fs: Fs; db: unknown } | null> {
+export function loadFirestore(): Promise<{ fs: Fs; db: unknown } | null> {
   if (fsPromise) return fsPromise;
   fsPromise = (async () => {
     if (typeof navigator !== 'undefined' && navigator.onLine === false) return null;
@@ -196,7 +198,7 @@ export function watchBoard(onData: (r: Ranking) => void, onStatus: (s: BoardStat
   };
 }
 
-function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+export function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return new Promise((resolve, reject) => {
     const t = setTimeout(() => reject(new Error('timeout')), ms);
     p.then(
