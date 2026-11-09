@@ -20,7 +20,7 @@
   html{-webkit-text-size-adjust:100%; touch-action:pan-y; height:100%;}
   body{
     margin:0; background-color:var(--cream); color:var(--ink);
-    font-family:"Press Start 2P", "Courier New", monospace; min-height:100vh; min-height:100dvh; line-height:1.6;
+    font-family:"Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; min-height:100vh; min-height:100dvh; line-height:1.5;
     touch-action:pan-y;
     padding:env(safe-area-inset-top) 0 max(24px,env(safe-area-inset-bottom));
     background-image:
@@ -298,6 +298,15 @@
   .quiz-btn:active{transform:scale(.97);}
   .quiz-btn.correct{background:var(--green); color:#fff;}
   .quiz-btn.wrong{background:var(--red); color:#fff;}
+  .lanes-tag{font-size:9px; background:var(--teal); color:#062; padding:1px 5px; border-radius:6px; margin-left:4px;}
+  .ptrack.lane2{margin-top:3px; opacity:.85;}
+  .lesson{margin:14px 0 4px; text-align:left; font-size:14px; line-height:1.5;}
+  .lesson h3{font-size:12px; margin:0 0 8px; color:var(--yellow);}
+  .lesson ol{margin:0 0 8px; padding-left:20px;}
+  .lesson li{margin-bottom:4px;}
+  .lesson-q{color:var(--yellow); font-weight:700;}
+  .mode-note{font-size:13px; margin:10px 0 0; text-align:center; opacity:.9;}
+  .mode-note a{color:var(--yellow);}
   .feedback{margin-top:12px; font-size:12.8px; font-weight:700; color:var(--ink-soft); line-height:1.5;}
 
   .supplier{
@@ -444,6 +453,7 @@
 
     <div style="margin-top:14px;">
       <button class="btn-main" id="startBtn">Entrar na confraria <svg class="icon" width="16" height="16"><use href="#i-chevron"/></svg></button>
+      <p class="mode-note" id="modeNote"></p>
       <div style="height:9px;"></div>
       <button class="btn-ghost" id="viewLbFromStart">Ver grim&oacute;rio da turma</button>
     </div>
@@ -503,6 +513,7 @@
       <div class="eyebrow">Produ&ccedil;&atilde;o encerrada</div>
       <div class="big" id="finalScore">0</div>
       <div class="sub" id="finalSummary">po&ccedil;&otilde;es entregues</div>
+      <div class="lesson" id="lessonBox"></div>
       <div class="rank-row" id="rankRow"></div>
       <div class="rank-label" id="rankLabel"></div>
       <div id="recordBadge" class="record-badge hidden"><svg class="icon" width="12" height="12"><use href="#i-star"/></svg>Novo recorde pessoal!</div>
@@ -600,7 +611,9 @@ try{
     {key:'engarraf',  name:'Engarrafamento',  icon:'i-st-flask',    acc:'teal',   baseTime:1000, bufferCap:3},
     {key:'entrega',   name:'Entrega',         icon:'i-st-owl',      acc:'ink',    baseTime:850,  bufferCap:0, isSink:true}
   ];
-  var TICK_MS=100, SPILL_MS=2600, T_IDENTIFY=8000, T_EXPLORE=100000, T_SUBORDINATE=100000, TOTAL_CYCLES=4;
+  /* Modo aula (padrão): 2 ciclos, ~5 min no total. Partida completa (?longo): 4 ciclos, ~14 min. */
+  var LONG = /[?&]longo\b/.test(location.search);
+  var TICK_MS=100, SPILL_MS=2600, T_IDENTIFY=8000, T_EXPLORE=LONG?100000:45000, T_SUBORDINATE=LONG?100000:35000, TOTAL_CYCLES=LONG?4:2;
   var MURPHY_STUN=[2000,3200], MURPHY_GAP=[8000,14000], COIN_PER_POTION=10;
   var COMBO_WINDOW=2600;
 
@@ -608,14 +621,14 @@ try{
     {id:'local',    icon:'i-coin',  name:'Fornecedor Local',    cost:50,  factor:0.80, susc:1.0, bufferBonus:0, desc:'Barato, rápido de achar — mas continua vulnerável a Murphy.'},
     {id:'regional', icon:'i-shield',name:'Fornecedor Regional', cost:130, factor:0.65, susc:0.5, bufferBonus:0, desc:'Mais caro, reduz o tempo e corta a chance de ataque pela metade.'},
     {id:'premium',  icon:'i-arrowup',name:'Fornecedor Premium', cost:220, factor:0.50, susc:0.0, bufferBonus:0, desc:'Caro, rápido, praticamente imune à Lei de Murphy.'},
-    {id:'paralela', icon:'i-st-cauldron', name:'Linha Paralela', cost:340, factor:0.42, susc:0.0, bufferBonus:2, desc:'Abre uma segunda estação lado a lado — muito mais capacidade e resistente a Murphy.'}
+    {id:'paralela', icon:'i-st-cauldron', name:'Linha Paralela', cost:340, factor:1.0, susc:0.5, bufferBonus:2, lanes:2, desc:'Uma segunda estação igual, lado a lado: duas poções ao mesmo tempo. A capacidade dobra (cada poção leva o mesmo tempo), e Murphy só para uma das duas.'}
   ];
   var ORDER_MIN_GAP=9000, ORDER_MAX_GAP=16000, ORDER_WINDOW=[8000,13000], ORDER_MAX_ACTIVE=3;
 
   var PHASE_META = {
     identify:    {step:1, icon:'i-search',  title:'Identificar',  desc:'Observe a linha rodando sozinha. Onde a fila mais se acumula?'},
     explore:     {step:2, icon:'i-target',  title:'Explorar'},
-    subordinate: {step:3, icon:'i-funnel',  title:'Subordinar', desc:'O resto já segue o ritmo sozinho. Alimente a Colheita sem deixar a restrição faminta.'},
+    subordinate: {step:3, icon:'i-funnel',  title:'Subordinar', desc:'Subordinar = liberar material no ritmo da restrição. Toque na Colheita só quando a fila da restrição precisar: nem deixá-la sem material, nem encher a linha à toa.'},
     elevate:     {step:4, icon:'i-arrowup', title:'Elevar'},
     repeat:      {step:5, icon:'i-loop',    title:'Repetir'}
   };
@@ -626,6 +639,7 @@ try{
   var stations=[], score=0, coins=0, cycle=1, phase='identify', phaseTimer=0, running=false, paused=false, currentOnDone=null;
   var tickHandle=null, murphyHandle=null, hintHandle=null, identifiedIdx=-1, lastDeliverTs=0, streak=0, streakHandle=null;
   var orders=[], orderSpawnTimer=0;
+  var history=[], cycleStartScore=0; /* um registro por ciclo, para o resumo didático do fim */
   function resetOrders(){ orders=[]; orderSpawnTimer=ORDER_MIN_GAP+Math.random()*(ORDER_MAX_GAP-ORDER_MIN_GAP); }
   function fulfillOrder(){
     var best=-1, bestRemain=Infinity;
@@ -672,31 +686,43 @@ try{
     buy:function(){ tone(600,0.07,'square',0,0.11); tone(950,0.09,'square',0.06,0.11); }
   };
 
-  /* ---------------- db (shared leaderboard) ---------------- */
-  var db=null, dbTried=false, lbUnsub=null;
+  /* ---------------- placar e telão (Firebase, funciona no GitHub Pages) ----------------
+     Mesmo projeto Firebase do Poção em Apuros, em coleções separadas:
+     confraria_placar (resultados finais) e confraria_sala (quem está jogando agora). */
+  var FB_VERSION='10.14.1';
+  var FB_CFG={apiKey:'AIzaSyDtwltPWQmwvcAMG9kU5t46a7PId4GgqbE', authDomain:'calendario-3b725.firebaseapp.com', projectId:'calendario-3b725', appId:'1:492897906274:web:ab44cf81ac1098593d2b3b'};
+  var db=null, dbTried=false, lbUnsub=null, fbPromise=null;
+  function loadFb(){
+    if(fbPromise) return fbPromise;
+    var base='https://www.gstatic.com/firebasejs/'+FB_VERSION;
+    fbPromise = Promise.all([import(base+'/firebase-app.js'), import(base+'/firebase-firestore.js')]).then(function(m){
+      var app=m[0].initializeApp(FB_CFG, 'confraria');
+      var fs=m[1];
+      return {fs:fs, db:fs.initializeFirestore(app, {experimentalForceLongPolling:true})};
+    }).catch(function(){ fbPromise=null; return null; });
+    return fbPromise;
+  }
   function initDb(){
     dbTried=true;
-    if(window.claude && window.claude.use){
-      window.claude.use('db').then(function(d){
-        db=d;
-        if(db){ attachLeaderboard(); if(location.hash==='#telao') attachRoom(); }
-        else { renderLeaderboard(null); renderRoom(null); }
-      }).catch(function(){ renderLeaderboard(null); renderRoom(null); });
-    } else {
-      renderLeaderboard(null); renderRoom(null);
-    }
+    loadFb().then(function(c){
+      db=c;
+      if(db){ attachLeaderboard(); if(location.hash==='#telao') attachRoom(); }
+      else { renderLeaderboard(null); renderRoom(null); }
+    });
   }
   function attachLeaderboard(){
     try{
       if(lbUnsub) lbUnsub();
-      lbUnsub = db.collection('leaderboard').orderBy('score','desc').limit(15).onSnapshot(function(snap){
+      var fs=db.fs, q=fs.query(fs.collection(db.db,'confraria_placar'), fs.orderBy('score','desc'), fs.limit(15));
+      lbUnsub = fs.onSnapshot(q, function(snap){
         renderLeaderboard(snap.docs.map(function(d){ return d.data(); }));
       }, function(){ renderLeaderboard(null); });
     }catch(e){ renderLeaderboard(null); }
   }
   function saveScoreToDb(name, sc){
     if(!db) return Promise.resolve(false);
-    return db.collection('leaderboard').add({name:name, score:sc, cycles:TOTAL_CYCLES, ts:Date.now()})
+    var fs=db.fs;
+    return fs.addDoc(fs.collection(db.db,'confraria_placar'), {name:String(name).slice(0,24)||'Bruxa', score:Math.max(0,Math.min(2000,Math.round(sc))), cycles:TOTAL_CYCLES, ts:fs.serverTimestamp()})
       .then(function(){ return true; }).catch(function(){ return false; });
   }
   function renderLeaderboard(list){
@@ -725,21 +751,35 @@ try{
     }catch(e){ return 'p_'+Math.random().toString(36).slice(2,10); }
   }
   var playerId=getPlayerId(), roomUnsub=null;
-  function joinRoom(name){
+  var roomState={name:'Bruxa', status:'jogando', score:0, cycle:1};
+  function pushRoom(){
     if(!db) return;
-    try{ db.collection('players').doc(playerId).set({name:name, status:'jogando', score:0, cycle:1, updatedAt:Date.now()}); }catch(e){}
+    var fs=db.fs;
+    try{
+      fs.setDoc(fs.doc(db.db,'confraria_sala',playerId), {name:String(roomState.name).slice(0,24)||'Bruxa', status:roomState.status, score:Math.max(0,Math.round(roomState.score)), cycle:Math.max(1,Math.min(8,roomState.cycle)), updatedAt:fs.serverTimestamp()}).catch(function(){});
+    }catch(e){}
+  }
+  var roomTimer=null;
+  function joinRoom(name){
+    roomState={name:name, status:'jogando', score:0, cycle:1};
+    if(db) pushRoom(); else loadFb().then(function(c){ if(c){ db=db||c; pushRoom(); } });
   }
   function updateRoom(patch){
-    if(!db) return;
-    try{ db.collection('players').doc(playerId).update(Object.assign({updatedAt:Date.now()}, patch)); }catch(e){
-      try{ db.collection('players').doc(playerId).set(Object.assign({name:$('playerName').value||'Bruxa sem nome', updatedAt:Date.now()}, patch)); }catch(e2){}
-    }
+    for(var k in patch){ if(k!=='updatedAt') roomState[k]=patch[k]; }
+    /* no máximo uma gravação a cada 2 s (cada entrega chamaria uma) */
+    if(roomTimer) return;
+    roomTimer=setTimeout(function(){ roomTimer=null; pushRoom(); }, patch.status==='concluido'?0:2000);
   }
   function attachRoom(){
     try{
       if(roomUnsub) roomUnsub();
-      roomUnsub = db.collection('players').orderBy('updatedAt','desc').limit(40).onSnapshot(function(snap){
-        renderRoom(snap.docs.map(function(d){ return d.data(); }));
+      var fs=db.fs, q=fs.query(fs.collection(db.db,'confraria_sala'), fs.orderBy('updatedAt','desc'), fs.limit(60));
+      roomUnsub = fs.onSnapshot(q, function(snap){
+        var since=Date.now()-3*3600*1000; /* só quem jogou nas últimas 3 horas (a aula de hoje) */
+        renderRoom(snap.docs.map(function(d){ return d.data(); }).filter(function(p){
+          var t=p.updatedAt && p.updatedAt.toMillis ? p.updatedAt.toMillis() : Date.now();
+          return t>=since;
+        }));
       }, function(){ renderRoom(null); });
     }catch(e){ renderRoom(null); }
   }
@@ -778,13 +818,13 @@ try{
   /* ---------------- game state ---------------- */
   function initGame(){
     stations = STATIONS_DEF.map(function(cfg){
-      return {cfg:Object.assign({},cfg,{time:cfg.baseTime, susc:1.0}), status:'idle', timer:0, buffer:0, murphy:false, murphyTimer:0, golden:false, stats:{processing:0,idle:0,blocked:0,bufferFull:0}};
+      return {cfg:Object.assign({},cfg,{time:cfg.baseTime, susc:1.0}), status:'idle', timer:0, buffer:0, murphy:false, murphyTimer:0, golden:false, lane2:null, stats:{processing:0,idle:0,blocked:0,bufferFull:0}};
     });
-    score=0; coins=0; cycle=1; identifiedIdx=-1; streak=0;
+    score=0; coins=0; cycle=1; identifiedIdx=-1; streak=0; history=[]; cycleStartScore=0;
   }
   function resetStationsForCycle(){
     resetOrders();
-    stations.forEach(function(st){ st.status='idle'; st.timer=0; st.buffer=0; st.murphy=false; st.murphyTimer=0; st.golden=false; st.stats={processing:0,idle:0,blocked:0,bufferFull:0}; });
+    stations.forEach(function(st){ st.status='idle'; st.timer=0; st.buffer=0; st.murphy=false; st.murphyTimer=0; st.golden=false; if(st.lane2){ st.lane2.status='idle'; st.lane2.timer=0; } st.stats={processing:0,idle:0,blocked:0,bufferFull:0}; });
   }
   function needsManualHarvest(){ return phase==='subordinate'; }
   function isClickable(i){
@@ -875,7 +915,9 @@ try{
         + '<button class="info-btn" data-info-idx="'+i+'" title="Ver estatísticas"><svg class="icon" width="13" height="13"><use href="#i-info"/></svg></button>'
         + '<span class="shield-flash" id="shield'+i+'"></span>'
         + '<div class="badge acc-'+st.cfg.acc+'"><svg class="icon" width="26" height="26"><use href="#'+st.cfg.icon+'"/></svg></div>'
-        + '<div class="body"><div class="name"><span class="flow-dot '+dot+'"></span>'+st.cfg.name+'</div><div class="status">'+statusText+'</div><div class="ptrack"><div class="pfill" style="width:'+pct+'%"></div></div></div>'
+        + '<div class="body"><div class="name"><span class="flow-dot '+dot+'"></span>'+st.cfg.name+(st.lane2?' <span class="lanes-tag">×2</span>':'')+'</div><div class="status">'+statusText+'</div><div class="ptrack"><div class="pfill" style="width:'+pct+'%"></div></div>'
+        + (st.lane2 ? '<div class="ptrack lane2" title="Segunda estação (Linha Paralela)"><div class="pfill" style="width:'+(st.lane2.status==='processing'?100-(st.lane2.timer/st.cfg.time*100):(st.lane2.status==='done'?100:0))+'%"></div></div>' : '')
+        + '</div>'
         + gaugeHtml
         + (clickable ? '<span class="chev"><svg class="icon" width="19" height="19"><use href="#i-chevron"/></svg></span>' : (isPulmao ? '<span class="chev" style="color:var(--teal)"><svg class="icon" width="17" height="17"><use href="#i-shield"/></svg></span>' : ''))
         + '</div>';
@@ -1013,6 +1055,7 @@ try{
   function simTick(){
     stations.forEach(function(st,i){
       if(!st.cfg.isSource && !st.cfg.isSink && st.buffer>=st.cfg.bufferCap){ st.stats.bufferFull+=TICK_MS; }
+      if(st.lane2) tickLane2(st, i);
       if(st.murphy){ st.murphyTimer-=TICK_MS; if(st.murphyTimer<=0) st.murphy=false; return; }
       if(st.status==='idle'){
         var manualSrc = st.cfg.isSource && needsManualHarvest();
@@ -1034,6 +1077,24 @@ try{
       }
     });
     tickOrders();
+  }
+  /* segunda estação da Linha Paralela: trabalha sozinha, puxando da mesma fila; Murphy só trava a principal */
+  function tickLane2(st, i){
+    var L=st.lane2;
+    if(L.status==='idle'){
+      if(st.buffer>0){ st.buffer--; L.status='processing'; L.timer=st.cfg.time; }
+    } else if(L.status==='processing'){
+      L.timer-=TICK_MS; st.stats.processing+=TICK_MS/2;
+      if(L.timer<=0){ L.status='done'; L.timer=0; }
+    } else if(L.status==='done'){
+      var next = st.cfg.isSink ? null : stations[i+1];
+      var deliversHere = st.cfg.isSink || (next && next.cfg.isSink);
+      if(deliversHere){
+        score++; coins+=COIN_PER_POTION;
+        var orderResult=fulfillOrder(); if(orderResult && orderResult.onTime) coins+=8;
+        L.status='idle';
+      } else if(next.buffer<next.cfg.bufferCap){ next.buffer++; L.status='idle'; }
+    }
   }
   function tickOrders(){
     if(phase!=='explore' && phase!=='subordinate'){ return; }
@@ -1089,7 +1150,7 @@ try{
     $('phaseTitle').textContent=m.title;
     if(phase==='explore'){
       var climax = cycle>=TOTAL_CYCLES ? ' Último ciclo — Murphy está no auge, mas poções douradas também!' : '';
-      $('phaseDesc').textContent='Foque só n'+genderSuffix()+' '+stations[identifiedIdx].cfg.name+': toque nela sempre que terminar. Encomendas com prazo vão aparecer — cada entrega alimenta a mais urgente.'+climax;
+      $('phaseDesc').textContent='Explorar = não desperdiçar a restrição. Toque n'+genderSuffix()+' '+stations[identifiedIdx].cfg.name+' sempre que terminar: cada segundo parad'+genderSuffix()+' é um segundo perdido pela linha inteira. Encomendas com prazo vão aparecer.'+climax;
     }
     else if(phase==='elevate') $('phaseDesc').textContent='Invista as moedas ganhas na restrição pra aumentar a capacidade dela.';
     else if(phase==='repeat') $('phaseDesc').textContent='A restrição pode ter mudado de lugar. Hora de descobrir qual é a nova.';
@@ -1180,6 +1241,7 @@ try{
           $('quizFeedback').textContent='Quase — repare que '+stations[correctIdx].cfg.name+' ficava sempre ocupada, enquanto essa esperava.';
         }
         identifiedIdx=correctIdx;
+        history.push({cycle:cycle, constraint:stations[correctIdx].cfg.name, guessed:stations[i].cfg.name, right:i===correctIdx, invest:null, capBefore:null, capAfter:null, potions:0});
         setTimeout(function(){ goToPhase('explore'); }, 1800);
       });
       grid.appendChild(btn);
@@ -1206,8 +1268,12 @@ try{
       if(affordable){
         div.addEventListener('click', function(){
           ensureAudio();
+          var capBefore = (st.lane2?2:1)*1000/st.cfg.time;
           st.cfg.time=Math.round(st.cfg.time*sup.factor); st.cfg.susc=sup.susc;
           if(sup.bufferBonus) st.cfg.bufferCap += sup.bufferBonus;
+          if(sup.lanes===2 && !st.lane2) st.lane2={status:'idle', timer:0};
+          var capAfter = (st.lane2?2:1)*1000/st.cfg.time;
+          var h=history[history.length-1]; if(h){ h.invest=sup.name; h.capBefore=capBefore; h.capAfter=capAfter; }
           coins -= sup.cost; if(coins<0) coins=0;
           sfx.buy(); div.classList.add('picked');
           Array.prototype.forEach.call(grid.children, function(c){ c.style.pointerEvents='none'; });
@@ -1220,6 +1286,7 @@ try{
 
   function showRecap(){
     phase='repeat'; setPhaseBanner(); $('pauseBtn').classList.add('hidden');
+    var hh=history[history.length-1]; if(hh){ hh.potions=score-cycleStartScore; } cycleStartScore=score;
     var zone=$('overlayZone');
     var last=cycle>=TOTAL_CYCLES;
     var nextIsLast = cycle+1>=TOTAL_CYCLES;
@@ -1232,11 +1299,35 @@ try{
     });
   }
 
+  /* ---------------- resumo didático do fim ---------------- */
+  function renderLesson(){
+    var box=$('lessonBox'); if(!box) return;
+    if(!history.length){ box.innerHTML=''; return; }
+    var f1=function(x){ return x.toFixed(1).replace('.',','); };
+    var rows=history.map(function(h){
+      return '<li><b>Ciclo '+h.cycle+':</b> a restrição era '+esc(h.constraint)
+        +(h.right?' (você acertou)':' (você apontou '+esc(h.guessed)+')')
+        +'. '+h.potions+' poções.'
+        +(h.invest?' Investiu em <b>'+esc(h.invest)+'</b>: de '+f1(h.capBefore)+' para '+f1(h.capAfter)+' poções por segundo nessa estação.':' Sem investimento.')
+        +'</li>';
+    }).join('');
+    var first=history[0], last=history[history.length-1];
+    var moved = history.length>1 && history.some(function(h){ return h.constraint!==first.constraint; });
+    var p1=first.potions, p2=last.potions;
+    var verdict = moved
+      ? 'A restrição mudou de lugar ('+esc(first.constraint)+' → '+esc(last.constraint)+'): depois de melhorar um elo, outro passa a ser o mais fraco. Por isso o passo 5 manda recomeçar.'
+      : 'A restrição continuou em '+esc(first.constraint)+': o investimento não foi suficiente para outro elo virar o mais fraco.';
+    box.innerHTML='<h3>O que aconteceu na sua linha</h3><ol>'+rows+'</ol>'
+      +'<p>'+verdict+(history.length>1?' Poções por ciclo: '+p1+' → '+p2+'.':'')+'</p>'
+      +'<p class="lesson-q">Para pensar: por que melhorar uma estação que não é a restrição não aumenta as entregas?</p>';
+  }
+
   /* ---------------- rank / confetti / share ---------------- */
   function calcRank(sc){
-    if(sc>=70) return {stars:3, label:'Mestre da Restrição!'};
-    if(sc>=40)  return {stars:2, label:'Bom domínio do fluxo'};
-    if(sc>=18)  return {stars:1, label:'Você pegou o jeito'};
+    var k=TOTAL_CYCLES/4; /* metas proporcionais ao número de ciclos */
+    if(sc>=70*k) return {stars:3, label:'Mestre da Restrição!'};
+    if(sc>=40*k)  return {stars:2, label:'Bom domínio do fluxo'};
+    if(sc>=18*k)  return {stars:1, label:'Você pegou o jeito'};
     return {stars:0, label:'Jogue de novo pra pegar o ritmo'};
   }
   function renderRank(sc){
@@ -1290,6 +1381,7 @@ try{
     $('screen-game').classList.add('hidden'); $('screen-end').classList.remove('hidden');
     updateRoom({status:'concluido', score:score, cycle:TOTAL_CYCLES});
     $('finalScore').textContent=score; $('finalSummary').textContent='poções entregues em '+TOTAL_CYCLES+' ciclos';
+    renderLesson();
     $('endPlayerName').value=$('playerName').value||'';
     var r=renderRank(score);
     var best=getBest();
@@ -1298,6 +1390,12 @@ try{
   }
 
   $('startBtn').addEventListener('click', startGame);
+  (function(){
+    var u=location.href.split('#')[0].replace(/[?&]longo\b/,'');
+    $('modeNote').innerHTML = LONG
+      ? 'Partida completa: 4 ciclos (~14 min). <a href="'+u+'">Modo aula (~5 min)</a>'
+      : 'Modo aula: 2 ciclos (~5 min). <a href="'+u+(u.indexOf('?')<0?'?':'&')+'longo">Partida completa (4 ciclos, ~14 min)</a>';
+  })();
   $('playAgainBtn').addEventListener('click', function(){
     $('screen-end').classList.add('hidden'); $('screen-start').classList.remove('hidden');
     refreshBestNote();
@@ -1350,6 +1448,10 @@ try{
   }
 
   initDb();
+  /* gancho só para testes automatizados (?teste): lê o estado e permite dar moedas */
+  if(/[?&]teste\b/.test(location.search)){
+    window.__confraria={state:function(){ return {score:score, coins:coins, phase:phase, cycle:cycle, cycles:TOTAL_CYCLES, history:history, lanes:stations.map(function(st){ return st.lane2?2:1; }), times:stations.map(function(st){ return st.cfg.time; })}; }, setCoins:function(v){ coins=v; }};
+  }
 
 }catch(err){
   document.body.innerHTML='<div style="padding:24px;font-family:sans-serif;color:#f5ead0;"><h2>Ops, algo quebrou</h2><p>'+(err&&err.message?err.message:String(err))+'</p></div>';

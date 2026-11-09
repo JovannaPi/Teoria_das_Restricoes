@@ -87,3 +87,33 @@ Cada celular envia só: código da sala, identificador anônimo do aparelho, nom
 - **Remover um resultado** (por exemplo, nome ofensivo ou resultado suspeito): no console do Firebase → Firestore → coleção `pocao_placar`, apague o documento.
 - **Limite honesto:** a pontuação é calculada no aparelho do aluno. As regras bloqueiam valores fora do intervalo (máximo 100 por fase), mas um aluno com conhecimento técnico poderia enviar um resultado inventado dentro desse limite. Para uma competição em sala, confira os primeiros colocados pedindo que mostrem a avaliação da fase no próprio celular.
 - Cada aparelho tem um identificador anônimo. Se um aluno jogar em dois aparelhos, aparece duas vezes (com o mesmo nome).
+
+## Confraria do Gargalo (`jogo.html`, usado nos slides)
+
+A Confraria também usa o Firebase do projeto `calendario-3b725` (antes dependia de `window.claude`, que só existe dentro do Claude e não funciona no GitHub Pages). Cole, junto com os blocos do Poção em Apuros:
+
+```
+    // ---- Confraria do Gargalo: placar e telão ----
+    match /confraria_placar/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['name', 'score', 'cycles', 'ts'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 24
+        && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score <= 2000
+        && request.resource.data.cycles is int && request.resource.data.cycles >= 1 && request.resource.data.cycles <= 8
+        && request.resource.data.ts == request.time;
+      allow update, delete: if false;
+    }
+    match /confraria_sala/{playerId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['name', 'status', 'score', 'cycle', 'updatedAt'])
+        && playerId.size() <= 40
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 24
+        && request.resource.data.status in ['jogando', 'concluido']
+        && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score <= 2000
+        && request.resource.data.cycle is int && request.resource.data.cycle >= 1 && request.resource.data.cycle <= 8
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+```
+
+O telão (`jogo.html#telao`, embutido no slide do QR) mostra só quem jogou nas últimas 3 horas.
