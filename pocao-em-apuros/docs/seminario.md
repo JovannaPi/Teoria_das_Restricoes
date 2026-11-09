@@ -18,10 +18,10 @@ O slide de acesso já contém: título, QR Code em destaque, "Aponte a câmera e
 | Tempo | O que fazer |
 |---|---|
 | 0–2 min | "Vocês vão administrar uma loja de poções atrasada. O objetivo é entregar mais pedidos e lucrar." **Não fale em gargalo ainda.** |
-| 2–4 min | Projete o slide do QR. Peça que todos toquem em **Jogar**. Quem não tiver celular joga em dupla. |
+| 2–4 min | Projete o **painel da sala** (`…/pocao/?painel`): ele mostra o QR da sala e acompanha a turma ao vivo. (Ou projete só o slide do QR.) Peça que todos toquem em **Jogar**. Quem não tiver celular joga em dupla. |
 | 4–12 min | Partida no **Modo rápido** (6 a 10 minutos). A loja tem 4 estações e 1 poção. A mentora mostra um cartão com **uma decisão por vez**: onde está o acúmulo → qual estação limita → uma melhoria sem custo → trocar "todo mundo ocupado" pelo ritmo da restrição → investir → qual limita agora. Cada decisão mostra o efeito medido; escolhas que não ajudam também são medidas, e o aluno tenta de novo. O dia se estende sozinho até o aluno passar pelos cinco passos. |
 | 12–14 min | Cada um lê a **avaliação dos cinco passos** no próprio celular e responde a pergunta final. Projete o **placar** (Mais modos → Apresentar → Projetar placar). |
-| 14–24 min | Debriefing com as perguntas abaixo. |
+| 14–24 min | Debriefing: comece pelos números do painel da sala (quantos acharam o gargalo de primeira, quantos caíram em cada armadilha) e pelas perguntas que o painel sugere; depois, as perguntas abaixo. |
 
 **O que pedir para observarem durante a partida** (sem entregar a resposta):
 

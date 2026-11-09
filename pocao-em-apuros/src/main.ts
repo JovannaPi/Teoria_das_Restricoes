@@ -6,6 +6,8 @@ import { resetOverlay } from './ui/overlay';
 import { applyHero } from './game/hero';
 import { flushPending, registerOnlineActions } from './ui/online';
 import { registerPresenterActions } from './ui/presenter';
+import { registerRoomActions, showRoomPanel } from './ui/room-panel';
+import { currentRoom } from './online/room';
 import { initFit } from './ui/fit';
 import { free } from './render/walk';
 
@@ -17,8 +19,12 @@ function boot(): void {
   registerTitleActions(game);
   registerOnlineActions(game);
   registerPresenterActions(game);
+  registerRoomActions(game);
+  currentRoom(); // guarda a sala do link (?sala=CODIGO) antes de qualquer navegação
   // ?apresentar abre direto a tela do QR Code (para o projetor)
   if (new URLSearchParams(location.search).has('apresentar')) setTimeout(() => game.actions['title-present'](document.body), 50);
+  // ?painel abre direto o painel da sala da turma (projetor)
+  if (new URLSearchParams(location.search).has('painel')) setTimeout(() => showRoomPanel(game), 50);
   window.addEventListener('pocao:hero', () => {
     if (document.body.dataset.screen === 'title') renderTitle(game);
   });

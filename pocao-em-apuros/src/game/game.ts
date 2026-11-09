@@ -419,6 +419,8 @@ export class Game {
     if (won) sfx.victory();
     else sfx.defeat();
     await M.dialogue(this, won ? phase.outroWin : phase.outroLose);
+    // sala da turma: o telão do professor recebe o resultado final deste aluno
+    if (phase.mode === 'turma') this.guide?.report({ pontos: score.total });
     const online = reportResult(this, {
       fase: phase.id,
       pontos: score.total,

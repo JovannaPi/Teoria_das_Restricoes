@@ -39,7 +39,28 @@ O placar usa o mesmo projeto Firebase do Calend.rio (`calendario-3b725`), numa c
     }
 ```
 
-3. Clique em **Publicar**.
+3. Para o **painel da sala da turma** (telão ao vivo), cole também, logo abaixo do trecho anterior:
+
+```
+    // ---- Poção em Apuros: sala da turma (painel ao vivo) ----
+    match /pocao_sala/{doc} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['sala', 'jogadorId', 'bruxa', 'passo', 'erros', 'preparo', 'ocupado', 'fora', 'capFim', 'pontos', 'atualizadoEm'])
+        && request.resource.data.sala is string && request.resource.data.sala.size() >= 4 && request.resource.data.sala.size() <= 6
+        && request.resource.data.jogadorId is string && request.resource.data.jogadorId.size() <= 40
+        && doc == request.resource.data.sala + '_' + request.resource.data.jogadorId
+        && request.resource.data.bruxa is string && request.resource.data.bruxa.size() <= 18
+        && request.resource.data.passo is int && request.resource.data.passo >= 0 && request.resource.data.passo <= 7
+        && request.resource.data.erros is int && request.resource.data.erros >= 0 && request.resource.data.erros <= 20
+        && request.resource.data.preparo is bool && request.resource.data.ocupado is bool && request.resource.data.fora is bool
+        && request.resource.data.capFim is int && request.resource.data.capFim >= 0 && request.resource.data.capFim <= 300
+        && request.resource.data.pontos is int && request.resource.data.pontos >= -1 && request.resource.data.pontos <= 100
+        && request.resource.data.atualizadoEm == request.time;
+      allow delete: if false;
+    }
+```
+
+4. Clique em **Publicar**.
 
 Pronto: qualquer pessoa com o link pode jogar e entrar no placar, **sem criar conta**. Os resultados só podem ser adicionados (ninguém consegue apagar ou editar o resultado de outra pessoa pelo jogo).
 
@@ -50,6 +71,15 @@ Pronto: qualquer pessoa com o link pode jogar e entrar no placar, **sem criar co
 - **Só fases vencidas contam.** Para cada fase vale a melhor pontuação do aluno (0 a 100). O **Geral** soma as 7 partidas (Desafio da Turma, Círculos 1 a 5 e Bruxa Mestra): no máximo 700 pontos. No seminário, a aba **Desafio da Turma** mostra só o desafio do dia. Empate: quem venceu mais fases e, depois, quem chegou primeiro.
 - No menu, **Placar da turma** mostra o Geral e cada fase. **Projetar na sala** abre o placar em tela cheia, com letras grandes, atualizando ao vivo, para mostrar no projetor.
 - Dica para a aula: ative o **Modo professor** (em Desafio dos Cinco Círculos) só no seu aparelho, se quiser mostrar fases sem jogar as anteriores.
+
+## Sala da turma (painel ao vivo no projetor)
+
+1. No projetor, abra `https://jovannapi.github.io/Teoria_das_Restricoes/pocao/?painel` (ou, na tela do QR Code, toque em **Abrir sala da turma**). O jogo cria uma sala com um código de 4 letras e mostra o QR Code **da sala**.
+2. Os alunos apontam a câmera para esse QR e tocam em **Modo rápido**. No celular aparece "Você está na sala ABCD".
+3. O telão mostra, ao vivo e **sem nomes**: quantos entraram e terminaram, em que passo cada um está, quantos acharam o gargalo de primeira, quantos ajudaram o Preparo, deixaram todo mundo ocupado ou investiram fora do gargalo, e quantas poções por minuto a loja da turma consegue no fim. Embaixo: o **ranking da sala** (nome da bruxa) e **perguntas para o debate** montadas com o que a própria turma fez.
+4. **Nova sala** troca o código (outra turma). Reabrir `?painel` no mesmo computador volta para a sala aberta nas últimas 12 horas.
+
+Cada celular envia só: código da sala, identificador anônimo do aparelho, nome da bruxa, passo atual, número de erros ao identificar, as três armadilhas (sim/não), a capacidade final e a pontuação. Nenhum dado pessoal.
 
 ## Durante e depois da competição
 

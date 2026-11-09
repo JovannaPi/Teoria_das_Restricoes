@@ -27,8 +27,9 @@ function render(root: HTMLElement): void {
     <div class="slide-tools">
       <label>Endereço do jogo <input type="url" data-presenter-url value="${esc(urlValue)}" inputmode="url"></label>
       <button data-action="presenter-download" ${local ? 'disabled' : ''}>Baixar QR em alta resolução</button>
+      <button class="primary" data-action="room-open">Abrir sala da turma (painel ao vivo)</button>
       <button data-action="board-project">Projetar placar</button>
-      <button class="primary" data-action="presenter-close">Fechar</button>
+      <button data-action="presenter-close">Fechar</button>
     </div>`;
   const c = root.querySelector('canvas');
   if (c) drawQr(c, urlValue, 640);
