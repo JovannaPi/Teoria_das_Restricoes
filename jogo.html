@@ -298,6 +298,7 @@
   .quiz-btn:active{transform:scale(.97);}
   .quiz-btn.correct{background:var(--green); color:#fff;}
   .quiz-btn.wrong{background:var(--red); color:#fff;}
+  .info-note{font-family:"Nunito",system-ui,sans-serif; font-size:12.5px; line-height:1.45; color:var(--ink-soft); margin:10px 0 0;}
   .lanes-tag{font-size:9px; background:var(--teal); color:#062; padding:1px 5px; border-radius:6px; margin-left:4px;}
   .ptrack.lane2{margin-top:3px; opacity:.85;}
   .lesson{margin:14px 0 4px; text-align:left; font-size:14px; line-height:1.5;}
@@ -608,12 +609,12 @@ try{
   var STATIONS_DEF = [
     {key:'colheita',  name:'Colheita',        icon:'i-st-leaf',     acc:'green',  baseTime:1100, bufferCap:3, isSource:true},
     {key:'caldeirao', name:'Caldeirão',       icon:'i-st-cauldron', acc:'yellow', baseTime:2500, bufferCap:3},
-    {key:'engarraf',  name:'Engarrafamento',  icon:'i-st-flask',    acc:'teal',   baseTime:1000, bufferCap:3},
+    {key:'engarraf',  name:'Engarrafamento',  icon:'i-st-flask',    acc:'teal',   baseTime:1500, bufferCap:3},
     {key:'entrega',   name:'Entrega',         icon:'i-st-owl',      acc:'ink',    baseTime:850,  bufferCap:0, isSink:true}
   ];
   /* Modo aula (padrão): 2 ciclos, ~5 min no total. Partida completa (?longo): 4 ciclos, ~14 min. */
   var LONG = /[?&]longo\b/.test(location.search);
-  var TICK_MS=100, SPILL_MS=2600, T_IDENTIFY=8000, T_EXPLORE=LONG?100000:45000, T_SUBORDINATE=LONG?100000:35000, TOTAL_CYCLES=LONG?4:2;
+  var TICK_MS=100, SPILL_MS=2600, T_IDENTIFY=12000, T_EXPLORE=LONG?100000:45000, T_SUBORDINATE=LONG?100000:35000, TOTAL_CYCLES=LONG?4:2;
   var MURPHY_STUN=[2000,3200], MURPHY_GAP=[8000,14000], COIN_PER_POTION=10;
   var COMBO_WINDOW=2600;
 
@@ -818,13 +819,13 @@ try{
   /* ---------------- game state ---------------- */
   function initGame(){
     stations = STATIONS_DEF.map(function(cfg){
-      return {cfg:Object.assign({},cfg,{time:cfg.baseTime, susc:1.0}), status:'idle', timer:0, buffer:0, murphy:false, murphyTimer:0, golden:false, lane2:null, stats:{processing:0,idle:0,blocked:0,bufferFull:0}};
+      return {cfg:Object.assign({},cfg,{time:cfg.baseTime, susc:1.0}), status:'idle', timer:0, buffer:0, murphy:false, murphyTimer:0, golden:false, lane2:null, stats:{processing:0,idle:0,blocked:0,bufferFull:0,time:0,out:0}};
     });
     score=0; coins=0; cycle=1; identifiedIdx=-1; streak=0; history=[]; cycleStartScore=0;
   }
   function resetStationsForCycle(){
     resetOrders();
-    stations.forEach(function(st){ st.status='idle'; st.timer=0; st.buffer=0; st.murphy=false; st.murphyTimer=0; st.golden=false; if(st.lane2){ st.lane2.status='idle'; st.lane2.timer=0; } st.stats={processing:0,idle:0,blocked:0,bufferFull:0}; });
+    stations.forEach(function(st){ st.status='idle'; st.timer=0; st.buffer=0; st.murphy=false; st.murphyTimer=0; st.golden=false; if(st.lane2){ st.lane2.status='idle'; st.lane2.timer=0; } st.stats={processing:0,idle:0,blocked:0,bufferFull:0,time:0,out:0}; });
   }
   function needsManualHarvest(){ return phase==='subordinate'; }
   function isClickable(i){
@@ -958,10 +959,12 @@ try{
     var st=stations[i];
     var total=st.stats.processing+st.stats.idle+st.stats.blocked;
     var util = total>0 ? Math.round(st.stats.processing/total*100) : 0;
-    var cap = Math.max(1, Math.round(60000/st.cfg.time));
+    var cap = Math.round((st.lane2?2:1)*60000/st.cfg.time);
+    var real = st.stats.time>=5000 ? Math.round(st.stats.out*60000/st.stats.time) : null;
     var isBnk = i===identifiedIdx && phase!=='identify';
     var rows = [];
-    rows.push(['Capacidade', cap+' poções/min']);
+    rows.push(['Capacidade teórica', cap+' poções/min'+(st.lane2?' (2 linhas)':'')]);
+    rows.push(['Produção real neste ciclo', real==null?'medindo…':real+' poções/min']);
     rows.push(['Tempo de ciclo', (st.cfg.time/1000).toFixed(1)+'s por poção']);
     if(!st.cfg.isSource){ rows.push(['Fila (estoque)', st.buffer+'/'+(st.cfg.bufferCap||0)]); }
     rows.push(['Utilização neste ciclo', util+'%', util>=85]);
@@ -971,6 +974,7 @@ try{
     rows.forEach(function(r){
       html += '<div class="info-stat'+(r[2]?' warn':'')+'"><span class="il">'+r[0]+'</span><span class="iv">'+r[1]+'</span></div>';
     });
+    html += '<p class="info-note">Teórica: sem paradas, sem Murphy e sem falta de material. Real: o que a estação fez de fato, porque ela também depende das vizinhas.</p>';
     html += '<button class="btn-ghost info-close" id="stationInfoClose">Fechar</button>';
     $('stationInfoCard').innerHTML = html;
     $('stationInfoOverlay').classList.remove('hidden');
@@ -1054,6 +1058,7 @@ try{
   /* ---------------- sim tick ---------------- */
   function simTick(){
     stations.forEach(function(st,i){
+      st.stats.time+=TICK_MS;
       if(!st.cfg.isSource && !st.cfg.isSink && st.buffer>=st.cfg.bufferCap){ st.stats.bufferFull+=TICK_MS; }
       if(st.lane2) tickLane2(st, i);
       if(st.murphy){ st.murphyTimer-=TICK_MS; if(st.murphyTimer<=0) st.murphy=false; return; }
@@ -1065,7 +1070,7 @@ try{
       } else if(st.status==='processing'){
         st.timer-=TICK_MS; st.stats.processing+=TICK_MS;
         if(st.timer<=0){
-          st.status='done'; st.timer=0;
+          st.status='done'; st.timer=0; st.stats.out++;
           if(i===identifiedIdx && phase==='explore' && Math.random()<(cycle>=TOTAL_CYCLES?0.34:0.22)){ st.golden=true; }
         }
       } else if(st.status==='done'){
@@ -1085,7 +1090,7 @@ try{
       if(st.buffer>0){ st.buffer--; L.status='processing'; L.timer=st.cfg.time; }
     } else if(L.status==='processing'){
       L.timer-=TICK_MS; st.stats.processing+=TICK_MS/2;
-      if(L.timer<=0){ L.status='done'; L.timer=0; }
+      if(L.timer<=0){ L.status='done'; L.timer=0; st.stats.out++; }
     } else if(L.status==='done'){
       var next = st.cfg.isSink ? null : stations[i+1];
       var deliversHere = st.cfg.isSink || (next && next.cfg.isSink);
@@ -1202,21 +1207,16 @@ try{
   }
 
   function currentBottleneckIdx(){
-    /* a restrição é onde o material mais se acumula esperando processamento —
-       não a estação mais "ocupada" (a fonte fica sempre ocupada e não é a restrição) */
-    var best=-1, bestVal=-1;
+    /* a restrição é a estação intermediária com a menor capacidade (poções por segundo, contando
+       a segunda linha). Em empate, vale a que ficou mais tempo com a fila cheia. A fonte e a entrega
+       não entram: a Colheita fica sempre ocupada e não é a restrição. */
+    var best=1, bestCap=Infinity, bestFull=-1;
     stations.forEach(function(st,i){
       if(st.cfg.isSource || st.cfg.isSink) return;
-      if(st.stats.bufferFull>bestVal){ bestVal=st.stats.bufferFull; best=i; }
+      var cap=(st.lane2?2:1)/st.cfg.time;
+      if(cap<bestCap-1e-9 || (Math.abs(cap-bestCap)<=1e-9 && st.stats.bufferFull>bestFull)){ best=i; bestCap=cap; bestFull=st.stats.bufferFull; }
     });
-    if(best>=0) return best;
-    var maxBusy=-1, idx=0;
-    stations.forEach(function(st,i){
-      var total=st.stats.processing+st.stats.idle+st.stats.blocked;
-      var busy=total>0?st.stats.processing/total:0;
-      if(busy>maxBusy){ maxBusy=busy; idx=i; }
-    });
-    return idx;
+    return best;
   }
 
   function showQuiz(){
@@ -1450,7 +1450,7 @@ try{
   initDb();
   /* gancho só para testes automatizados (?teste): lê o estado e permite dar moedas */
   if(/[?&]teste\b/.test(location.search)){
-    window.__confraria={state:function(){ return {score:score, coins:coins, phase:phase, cycle:cycle, cycles:TOTAL_CYCLES, history:history, lanes:stations.map(function(st){ return st.lane2?2:1; }), times:stations.map(function(st){ return st.cfg.time; })}; }, setCoins:function(v){ coins=v; }};
+    window.__confraria={state:function(){ return {score:score, coins:coins, phase:phase, cycle:cycle, cycles:TOTAL_CYCLES, history:history, lanes:stations.map(function(st){ return st.lane2?2:1; }), times:stations.map(function(st){ return st.cfg.time; }), stats:stations.map(function(st){ return {s:st.stats, b:st.buffer}; })}; }, setCoins:function(v){ coins=v; }};
   }
 
 }catch(err){
