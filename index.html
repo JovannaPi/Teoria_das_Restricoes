@@ -180,6 +180,11 @@
   .metric:nth-child(1) .icon{ background:var(--teal); }
   .metric:nth-child(2) .icon{ background:var(--red); }
   .metric:nth-child(3) .icon{ background:var(--green); }
+  .metric:nth-child(4) .icon{ background:var(--yellow); color:var(--ink); }
+  .metric:nth-child(5) .icon{ background:var(--ink); }
+  .toc-metrics.five{ gap:14px; }
+  .toc-metrics.five .metric{ flex:1 1 180px; padding:18px 18px; }
+  .toc-metrics.five .metric .d{ font-size:15px; }
   .metric .t{ font-family:"Baloo 2",sans-serif; font-weight:700; font-size:19px; margin-bottom:8px; }
   .metric .d{ font-size:16px; color:var(--muted); font-weight:700; line-height:1.45; }
 
@@ -311,7 +316,7 @@
     <div class="blob" style="width:140px;height:140px;background:var(--red);bottom:40px;right:90px;opacity:.9;animation-duration:6.5s;"></div>
     <div class="eyebrow">FERRAMENTAS DO STP</div>
     <h1>Teoria das<br><span class="hl">Restrições</span></h1>
-    <div class="sub">Nome do grupo · Nomes dos integrantes · Disciplina</div>
+    <div class="sub">Ana Letícia · Jovanna · Raíra<br>PCP II · Prof. M. Albertin · DEPRO/UFC · 17/11/2026</div>
     <div class="squeeze">
       <div class="pipe">
         <div class="seg seg1"></div><div class="seg seg2"></div><div class="seg seg3"></div>
@@ -489,12 +494,14 @@
   </section>
 
   <section class="slide">
-    <div class="eyebrow">SLIDE 5 — RELAÇÃO COM ESTRATÉGIA DE PRODUÇÃO</div>
-    <h1>TOC nas decisões de produção</h1>
-    <div class="toc-metrics">
-      <div class="metric"><div class="icon">1</div><div class="t">Capacidade</div><div class="d">Investir só faz sentido na restrição — em outro lugar não muda o resultado.</div></div>
-      <div class="metric"><div class="icon">2</div><div class="t">Programação</div><div class="d">O DBR usa a restrição como ponto único de controle da fábrica.</div></div>
-      <div class="metric"><div class="icon">3</div><div class="t">Trade-offs</div><div class="d">Vale sacrificar eficiência local pra ganhar throughput global.</div></div>
+    <div class="eyebrow">SLIDE 5 — CRITÉRIOS DE DESEMPENHO DA PRODUÇÃO</div>
+    <h1>O que a TOC melhora em cada critério</h1>
+    <div class="toc-metrics five">
+      <div class="metric"><div class="icon">⏱</div><div class="t">Rapidez</div><div class="d">Menos estoque em processo, filas menores: o pedido atravessa a fábrica mais rápido.</div></div>
+      <div class="metric"><div class="icon">✓</div><div class="t">Confiabilidade</div><div class="d">O pulmão protege a restrição de imprevistos, e o prazo prometido é cumprido.</div></div>
+      <div class="metric"><div class="icon">$</div><div class="t">Custo</div><div class="d">Investe só onde aumenta o ganho; menos inventário parado.</div></div>
+      <div class="metric"><div class="icon">⇄</div><div class="t">Flexibilidade</div><div class="d">Com pouco estoque na linha, mudar o mix ou a ordem dos pedidos fica mais fácil.</div></div>
+      <div class="metric"><div class="icon">★</div><div class="t">Qualidade</div><div class="d">Inspecionar antes da restrição: uma peça ruim ali é tempo perdido pela fábrica toda.</div></div>
     </div>
   </section>
 
@@ -520,12 +527,11 @@
   <section class="slide">
     <div class="eyebrow">CASOS DE APLICAÇÃO</div>
     <h1>💡 Um exemplo por integrante</h1>
-    <p>Cada integrante traz um exemplo real de onde a TOC se aplica — evitar case genérico; focar em algo que vocês dominam.</p>
+    <p>Onde cada uma de nós enxerga uma restrição e como os 5 passos ajudariam.</p>
     <div class="app-grid">
-      <div class="app-slot"><b>Integrante 1</b>preencher</div>
-      <div class="app-slot"><b>Integrante 2</b>preencher</div>
-      <div class="app-slot"><b>Integrante 3</b>preencher</div>
-      <div class="app-slot"><b>Integrante 4</b>preencher</div>
+      <div class="app-slot"><b>Ana Letícia</b>exemplo a definir</div>
+      <div class="app-slot"><b>Jovanna</b>exemplo a definir</div>
+      <div class="app-slot"><b>Raíra</b>exemplo a definir</div>
     </div>
   </section>
 
@@ -535,6 +541,16 @@
     <p>Volte ao slide da <b>Confraria do Gargalo</b> e deixe a turma escanear o QR pra jogar ao vivo — ou volte ao slide do simulador (<code>simulador.html</code>) e peça sugestões de onde mexer nos controles de velocidade, mostrando que só acelerar a estação-gargalo muda o resultado.</p>
   </section>
 
+  <section class="slide">
+    <div class="eyebrow">USO DE INTELIGÊNCIA ARTIFICIAL</div>
+    <h1>🤖 Como usamos IA</h1>
+    <div class="toc-metrics">
+      <div class="metric"><div class="icon">1</div><div class="t">Ferramentas</div><div class="d">Claude (programação do jogo, do simulador e dos slides) e ChatGPT (revisão crítica do conteúdo e do jogo).</div></div>
+      <div class="metric"><div class="icon">2</div><div class="t">Prompts (exemplos)</div><div class="d">"Dá para criar um modo específico para sala de aula, pra nossa apresentação?" · "Avalie o jogo: ele ensina os 5 passos da TOC corretamente?"</div></div>
+      <div class="metric"><div class="icon">3</div><div class="t">Validação</div><div class="d">Conferimos com a bibliografia, jogamos e testamos o jogo, pedimos revisão cruzada a outra IA e corrigimos o que ela apontou.</div></div>
+    </div>
+  </section>
+
   <section class="slide refs">
     <div class="eyebrow">REFERÊNCIAS</div>
     <h1>Bibliografia</h1>
@@ -542,7 +558,7 @@
       <li>ANTUNES JÚNIOR, José Antônio Valle; RODRIGUES, Luís Henrique. <b>A Teoria das Restrições como Balizadora para as Ações Visando a Troca Rápida de Ferramentas</b>. <i>Produção</i>, v. 3, n. 2, p. 73-86, dez. 1993. DOI: 10.1590/S0103-65131993000200001.</li>
       <li>NOREEN, E.; SMITH, D.; MACKEY, J. T. <b>A Teoria das Restrições e suas Implicações na Contabilidade Gerencial: um Relatório Independente</b>. São Paulo: Educator, 1996.</li>
       <li>RODRIGUES, L. H. <b>Análise Crítica da Teoria da Produção Otimizada e da Teoria das Restrições</b>. In: ENCONTRO ANUAL DA ANPAD, 14., 1990, Florianópolis. Anais [...]. Florianópolis: ANPAD, 1990.</li>
-      <li>ALBERTIN, M.; JAGUARIBE PONTES, H. L. <b>Gestão de Processos e Técnicas de Produção Enxuta</b>. [S.l.: s.n.], [20--?].</li>
+      <li>ALBERTIN, M.; JAGUARIBE PONTES, H. L. <b>Gestão de Processos e Técnicas de Produção Enxuta</b>. Curitiba: InterSaberes, [20--].</li>
     </ul>
     <div class="refs-note">Formatadas conforme ABNT NBR 6023.</div>
   </section>
