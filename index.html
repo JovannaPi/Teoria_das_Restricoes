@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Teoria das Restrições — Apresentação</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Chewy&family=Nunito:wght@500;700;800&display=swap');
   :root{
-    --bg:#fff3e6;
-    --panel:#ffffff;
-    --ink:#073b4c;
-    --muted:#4d7a8c;
-    --red:#ef476f;
-    --teal:#118ab2;
-    --green:#06d6a0;
-    --yellow:#ffd166;
+    --bg:#efe8c9;
+    --panel:#fbf6e4;
+    --ink:#1e022b;
+    --muted:#5a4466;
+    --red:#db682b;
+    --teal:#5b2a86;
+    --green:#7fb83a;
+    --yellow:#ffb347;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;margin:0;}
@@ -138,8 +138,8 @@
     font-size:26px; margin-bottom:14px;
   }
   .tl-card:nth-child(1) .tl-icon{ background:var(--yellow); }
-  .tl-card:nth-child(2) .tl-icon{ background:#ffd9e4; }
-  .tl-card:nth-child(3) .tl-icon{ background:#c8f5e9; }
+  .tl-card:nth-child(2) .tl-icon{ background:#f6d3b8; }
+  .tl-card:nth-child(3) .tl-icon{ background:#dfeec4; }
   .tl-year{ font-family:"Baloo 2",sans-serif; font-weight:800; font-size:16px; color:var(--red); margin-bottom:6px; }
   .tl-title{ font-family:"Baloo 2",sans-serif; font-weight:700; font-size:23px; margin-bottom:10px; }
   .tl-desc{ font-size:16.5px; color:var(--muted); font-weight:700; line-height:1.5; }
@@ -151,8 +151,8 @@
   }
   .link.weak{ border-color:var(--red); animation:pulseW 1.6s ease-in-out infinite; }
   @keyframes pulseW{
-    0%,100%{ box-shadow:0 0 0 0 rgba(239,71,111,0.45); transform:scale(1); }
-    50%{ box-shadow:0 0 0 14px rgba(239,71,111,0); transform:scale(1.08); }
+    0%,100%{ box-shadow:0 0 0 0 rgba(219,104,43,0.45); transform:scale(1); }
+    50%{ box-shadow:0 0 0 14px rgba(219,104,43,0); transform:scale(1.08); }
   }
   .chain-lab{ font-size:19px; color:var(--muted); font-weight:700; max-width:860px; line-height:1.5; }
   .chain-lab b{ color:var(--red); }
@@ -197,7 +197,7 @@
   .split-col.stp .lab{ color:var(--teal); }
   .split-col.toc .lab{ color:#fff; }
   .split-col.toc li{ color:#fff; }
-  .split-col.toc li b{ color:#ffe1e9; }
+  .split-col.toc li b{ color:#ffe2c7; }
   .split-col.toc li::before{ color:#fff; }
   .split-note{
     margin-top:20px; max-width:1080px; font-size:17px; color:var(--muted); font-weight:700;
@@ -222,17 +222,17 @@
     max-width:1040px; width:100%; position:relative; box-shadow:7px 7px 0 var(--ink);
   }
   .dbr-box{
-    width:92px; height:64px; border-radius:14px; border:4px solid #e4ecef;
+    width:92px; height:64px; border-radius:14px; border:4px solid #e2d8b8;
     display:flex; align-items:center; justify-content:center; text-align:center;
     font-family:"Baloo 2",sans-serif; font-size:13.5px; font-weight:700; color:var(--muted);
     flex:0 0 auto; transition:all .25s;
   }
-  .dbr-arrow{ color:#c9d6db; font-size:20px; font-weight:800; }
-  .dbr-box.pulmao{ background:#e6f6fb; }
-  .dbr-box.tambor{ background:#fde6ec; }
-  .dbr-diagram.show-tambor .dbr-box.tambor{ border-color:var(--red); color:var(--red); transform:scale(1.12); box-shadow:0 0 0 6px rgba(239,71,111,0.15); }
-  .dbr-diagram.show-pulmao .dbr-box.pulmao{ border-color:var(--teal); color:var(--teal); transform:scale(1.12); box-shadow:0 0 0 6px rgba(17,138,178,0.15); }
-  .dbr-rope{ position:absolute; left:26px; right:26px; bottom:6px; height:4px; background:#e4ecef; border-radius:2px; }
+  .dbr-arrow{ color:#b9a983; font-size:20px; font-weight:800; }
+  .dbr-box.pulmao{ background:#e8dcf0; }
+  .dbr-box.tambor{ background:#f8dcc6; }
+  .dbr-diagram.show-tambor .dbr-box.tambor{ border-color:var(--red); color:var(--red); transform:scale(1.12); box-shadow:0 0 0 6px rgba(219,104,43,0.15); }
+  .dbr-diagram.show-pulmao .dbr-box.pulmao{ border-color:var(--teal); color:var(--teal); transform:scale(1.12); box-shadow:0 0 0 6px rgba(91,42,134,0.15); }
+  .dbr-rope{ position:absolute; left:26px; right:26px; bottom:6px; height:4px; background:#e2d8b8; border-radius:2px; }
   .dbr-diagram.show-corda .dbr-rope{
     background-image:linear-gradient(to right, var(--yellow) 50%, transparent 50%);
     background-size:18px 4px; background-repeat:repeat-x; background-color:transparent;
@@ -268,7 +268,7 @@
   /* -------- app grid -------- */
   .app-grid{ display:flex; gap:20px; flex-wrap:wrap; margin-top:22px; max-width:1100px; width:100%; }
   .app-slot{
-    flex:1 1 240px; background:var(--panel); border:4px dashed #d8c9b8; border-radius:20px;
+    flex:1 1 240px; background:var(--panel); border:4px dashed #c9b98f; border-radius:20px;
     padding:24px; min-height:120px; color:var(--muted); font-weight:700; font-size:17px; line-height:1.5;
   }
   .app-slot b{ display:block; color:var(--ink); font-family:"Baloo 2",sans-serif; font-size:18px; margin-bottom:8px; }
@@ -286,23 +286,67 @@
   .refs-note{ margin-top:14px; font-size:14px; color:var(--muted); font-weight:700; }
 
   /* -------- nav / progress -------- */
-  .progress-track{ position:fixed; top:0; left:0; right:0; height:6px; background:#e9d9c4; z-index:20; }
+  .progress-track{ position:fixed; top:0; left:0; right:0; height:6px; background:#3d0b54; z-index:20; }
   .progress-fill{ height:100%; width:0%; background:var(--red); transition:width .35s ease; }
   .nav{
     position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
     display:flex; gap:10px; align-items:center; z-index:10;
     background:var(--ink); border-radius:999px; padding:10px 16px;
-    box-shadow:0 8px 24px rgba(7,59,76,0.25);
+    box-shadow:0 8px 24px rgba(30,2,43,0.25);
   }
   .nav button{ background:transparent; border:none; color:#fff; font-size:20px; cursor:pointer; padding:4px 10px; }
   .nav button:hover{ color:var(--yellow); }
   .dots{ display:flex; gap:6px; flex-wrap:wrap; max-width:340px; }
-  .dot{ width:8px; height:8px; border-radius:50%; background:#3a5a68; cursor:pointer; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:#5b3a70; cursor:pointer; }
   .dot.active{ background:var(--yellow); }
-  .counter{ font-size:12px; color:#a9c4cf; min-width:36px; text-align:center; font-weight:700; }
+  .counter{ font-size:12px; color:#cbb3dd; min-width:36px; text-align:center; font-weight:700; }
   .hint{ position:fixed; top:16px; right:20px; font-size:11px; color:var(--muted); font-weight:700; z-index:15; }
 
   @media (max-width:900px){ .squeeze{ display:none; } }
+
+  /* ================= tema "Fábrica das Bruxas" (mesmo clima do Canva) ================= */
+  h1{ font-family:"Chewy","Baloo 2",cursive; font-weight:400; letter-spacing:.01em; }
+  .eyebrow{ letter-spacing:.14em; text-transform:uppercase; }
+  .blob, .squeeze{ display:none !important; }
+  .slide{ background:var(--bg); }
+  /* papel bege com pinceladas */
+  .slide:not(.title-slide):not(.divider):not(.embed){
+    background:
+      radial-gradient(ellipse at 15% 10%, rgba(255,255,255,.45), transparent 55%),
+      radial-gradient(ellipse at 90% 95%, rgba(140,110,60,.10), transparent 50%),
+      var(--bg);
+  }
+  .scene{ position:absolute; inset:0; z-index:0 !important; pointer-events:none; overflow:hidden; }
+  .scene svg{ position:absolute; display:block; }
+  .scene .moon{
+    position:absolute; border-radius:50%;
+    background:radial-gradient(circle at 38% 35%, #ffffff 0%, #f4f1ff 55%, #dcd8ee 100%);
+    box-shadow:0 0 60px 18px rgba(255,255,255,.55), 0 0 160px 60px rgba(255,236,200,.35);
+  }
+  .scene .crater{ position:absolute; border-radius:50%; background:rgba(190,190,215,.35); }
+  .bat{ animation:batfly 6s ease-in-out infinite; transform-origin:center; }
+  .bat:nth-of-type(2){ animation-delay:-2s; } .bat:nth-of-type(3){ animation-delay:-4s; }
+  @keyframes batfly{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(12px,-10px); } }
+
+  /* capa: pôr do sol laranja, lua no centro, cemitério e casa assombrada */
+  .title-slide{
+    background:linear-gradient(180deg,#f7a541 0%,#ec8a35 35%,#db682b 70%,#b84a2a 100%) !important;
+    align-items:center !important; text-align:center; justify-content:flex-start !important; padding-top:11vh !important;
+  }
+  .title-slide::before{ display:none; }
+  .title-slide .eyebrow{ background:#1e022b; color:#ffb347; margin-bottom:2vh; }
+  .title-slide h1{ color:#1e022b; font-size:clamp(44px,7.2vh,92px) !important; line-height:1.02; max-width:min(56vh,44vw); margin:2vh auto 0; }
+  .title-slide h1 .hl{ background:none; box-shadow:none; color:#db682b; padding:0; display:inline; }
+  .title-slide .sub{ position:absolute; left:0; right:0; bottom:13vh; color:#fff; font-size:clamp(16px,2.3vh,24px); text-shadow:0 2px 0 #1e022b; }
+  /* capítulos: noite roxa com lua */
+  .divider{ background:linear-gradient(180deg,#2d0640 0%,#3d0b54 55%,#5b1a6e 100%) !important; }
+  .divider .shape{ display:none; }
+  .divider.c2{ background:linear-gradient(180deg,#f7a541 0%,#e57f32 45%,#c4552a 100%) !important; }
+  .divider.c3{ background:linear-gradient(180deg,#12001c 0%,#2d0640 60%,#4a1260 100%) !important; }
+  .divider h1{ text-shadow:0 4px 0 rgba(0,0,0,.35); }
+  .divider .chapnum{ background:#db682b; }
+  .progress-fill{ background:#db682b; }
+  .hint{ z-index:30 !important; color:#fff !important; text-shadow:0 1px 2px rgba(30,2,43,.7); }
 </style>
 </head>
 <body>
@@ -315,7 +359,7 @@
     <div class="blob" style="width:220px;height:220px;background:var(--green);bottom:-90px;left:-60px;opacity:.85;animation-duration:9s;"></div>
     <div class="blob" style="width:140px;height:140px;background:var(--red);bottom:40px;right:90px;opacity:.9;animation-duration:6.5s;"></div>
     <div class="eyebrow">FERRAMENTAS DO STP</div>
-    <h1>Teoria das<br><span class="hl">Restrições</span></h1>
+    <h1>A Fábrica das Bruxas e a <span class="hl">Teoria das Restrições</span></h1>
     <div class="sub">Ana Letícia · Jovanna · Raíra<br>PCP II · Prof. M. Albertin · DEPRO/UFC · 17/11/2026</div>
     <div class="squeeze">
       <div class="pipe">
@@ -385,46 +429,46 @@
         <defs>
           <path id="orbitPath" d="M 200,85 A 143,143 0 1 1 199,85" fill="none"/>
         </defs>
-        <line x1="200" y1="85" x2="318.9" y2="171.4" stroke="#d8c9b8" stroke-width="4"/>
-        <line x1="318.9" y1="171.4" x2="273.5" y2="311.1" stroke="#d8c9b8" stroke-width="4"/>
-        <line x1="273.5" y1="311.1" x2="126.5" y2="311.1" stroke="#d8c9b8" stroke-width="4"/>
-        <line x1="126.5" y1="311.1" x2="81.1" y2="171.4" stroke="#d8c9b8" stroke-width="4"/>
+        <line x1="200" y1="85" x2="318.9" y2="171.4" stroke="#c9b98f" stroke-width="4"/>
+        <line x1="318.9" y1="171.4" x2="273.5" y2="311.1" stroke="#c9b98f" stroke-width="4"/>
+        <line x1="273.5" y1="311.1" x2="126.5" y2="311.1" stroke="#c9b98f" stroke-width="4"/>
+        <line x1="126.5" y1="311.1" x2="81.1" y2="171.4" stroke="#c9b98f" stroke-width="4"/>
         <path d="M 81.1,171.4 Q 117,96 196,85" fill="none" stroke="var(--red)" stroke-width="4" stroke-dasharray="4 10" stroke-linecap="round"/>
-        <circle r="9" fill="#ffd166" stroke="#073b4c" stroke-width="3">
+        <circle r="9" fill="#ffb347" stroke="#1e022b" stroke-width="3">
           <animateMotion dur="5s" repeatCount="indefinite" rotate="auto">
             <mpath href="#orbitPath"/>
           </animateMotion>
         </circle>
-        <text x="105" y="105" fill="#ef476f" font-size="15" font-weight="800" font-family="Baloo 2, sans-serif">↺ repete</text>
+        <text x="105" y="105" fill="#db682b" font-size="15" font-weight="800" font-family="Baloo 2, sans-serif">↺ repete</text>
         <g>
-          <circle cx="200" cy="85" r="34" fill="#fff" stroke="#118ab2" stroke-width="5"/>
-          <text x="200" y="93" text-anchor="middle" fill="#073b4c" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">1</text>
-          <text x="200" y="28" text-anchor="middle" fill="#073b4c" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Identificar</text>
-          <text x="200" y="47" text-anchor="middle" fill="#4d7a8c" font-size="12" font-weight="700">achar o gargalo</text>
+          <circle cx="200" cy="85" r="34" fill="#fff" stroke="#5b2a86" stroke-width="5"/>
+          <text x="200" y="93" text-anchor="middle" fill="#1e022b" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">1</text>
+          <text x="200" y="28" text-anchor="middle" fill="#1e022b" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Identificar</text>
+          <text x="200" y="47" text-anchor="middle" fill="#5a4466" font-size="12" font-weight="700">achar o gargalo</text>
         </g>
         <g>
-          <circle cx="318.9" cy="171.4" r="34" fill="#fff" stroke="#118ab2" stroke-width="5"/>
-          <text x="318.9" y="179.4" text-anchor="middle" fill="#073b4c" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">2</text>
-          <text x="368" y="150" text-anchor="start" fill="#073b4c" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Explorar</text>
-          <text x="368" y="169" text-anchor="start" fill="#4d7a8c" font-size="12" font-weight="700">tirar o máximo dele</text>
+          <circle cx="318.9" cy="171.4" r="34" fill="#fff" stroke="#5b2a86" stroke-width="5"/>
+          <text x="318.9" y="179.4" text-anchor="middle" fill="#1e022b" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">2</text>
+          <text x="368" y="150" text-anchor="start" fill="#1e022b" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Explorar</text>
+          <text x="368" y="169" text-anchor="start" fill="#5a4466" font-size="12" font-weight="700">tirar o máximo dele</text>
         </g>
         <g>
-          <circle cx="273.5" cy="311.1" r="34" fill="#fff" stroke="#118ab2" stroke-width="5"/>
-          <text x="273.5" y="319.1" text-anchor="middle" fill="#073b4c" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">3</text>
-          <text x="305" y="348" text-anchor="start" fill="#073b4c" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Subordinar</text>
-          <text x="305" y="367" text-anchor="start" fill="#4d7a8c" font-size="12" font-weight="700">ajustar o resto</text>
+          <circle cx="273.5" cy="311.1" r="34" fill="#fff" stroke="#5b2a86" stroke-width="5"/>
+          <text x="273.5" y="319.1" text-anchor="middle" fill="#1e022b" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">3</text>
+          <text x="305" y="348" text-anchor="start" fill="#1e022b" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Subordinar</text>
+          <text x="305" y="367" text-anchor="start" fill="#5a4466" font-size="12" font-weight="700">ajustar o resto</text>
         </g>
         <g>
-          <circle cx="126.5" cy="311.1" r="34" fill="#fff" stroke="#118ab2" stroke-width="5"/>
-          <text x="126.5" y="319.1" text-anchor="middle" fill="#073b4c" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">4</text>
-          <text x="94" y="348" text-anchor="end" fill="#073b4c" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Elevar</text>
-          <text x="94" y="367" text-anchor="end" fill="#4d7a8c" font-size="12" font-weight="700">investir se precisar</text>
+          <circle cx="126.5" cy="311.1" r="34" fill="#fff" stroke="#5b2a86" stroke-width="5"/>
+          <text x="126.5" y="319.1" text-anchor="middle" fill="#1e022b" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">4</text>
+          <text x="94" y="348" text-anchor="end" fill="#1e022b" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Elevar</text>
+          <text x="94" y="367" text-anchor="end" fill="#5a4466" font-size="12" font-weight="700">investir se precisar</text>
         </g>
         <g>
-          <circle cx="81.1" cy="171.4" r="34" fill="#fff" stroke="#ef476f" stroke-width="5"/>
-          <text x="81.1" y="179.4" text-anchor="middle" fill="#073b4c" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">5</text>
-          <text x="30" y="150" text-anchor="end" fill="#073b4c" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Repetir</text>
-          <text x="30" y="169" text-anchor="end" fill="#4d7a8c" font-size="12" font-weight="700">o ciclo recomeça</text>
+          <circle cx="81.1" cy="171.4" r="34" fill="#fff" stroke="#db682b" stroke-width="5"/>
+          <text x="81.1" y="179.4" text-anchor="middle" fill="#1e022b" font-size="20" font-weight="800" font-family="Baloo 2, sans-serif">5</text>
+          <text x="30" y="150" text-anchor="end" fill="#1e022b" font-size="16" font-weight="800" font-family="Baloo 2, sans-serif">Repetir</text>
+          <text x="30" y="169" text-anchor="end" fill="#5a4466" font-size="12" font-weight="700">o ciclo recomeça</text>
         </g>
       </svg>
     </div>
@@ -573,6 +617,47 @@
 </div>
 
 <script>
+
+// cenário de Halloween (silhuetas desenhadas em SVG, sem imagens externas)
+(function(){
+  const INK='#1e022b';
+  const tree = (x,w,flip)=>`<svg viewBox="0 0 300 420" style="left:${x};bottom:12vh;width:${w};${flip?'transform:scaleX(-1);':''}" preserveAspectRatio="xMidYMax meet"><g fill="none" stroke="${INK}" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 420 C150 330 140 280 150 210 C158 160 150 120 160 70" stroke-width="22"/>
+    <path d="M150 260 C120 230 80 220 30 228" stroke-width="12"/><path d="M80 223 C60 200 55 185 40 160" stroke-width="6"/>
+    <path d="M148 200 C120 160 95 140 60 90" stroke-width="10"/><path d="M90 128 C70 120 50 120 25 108" stroke-width="5"/><path d="M75 108 C72 85 66 70 60 52" stroke-width="4"/>
+    <path d="M156 160 C185 130 220 115 270 112" stroke-width="10"/><path d="M230 116 C245 95 255 80 262 55" stroke-width="5"/><path d="M250 113 C268 125 280 128 296 126" stroke-width="4"/>
+    <path d="M155 240 C190 228 225 236 262 262" stroke-width="9"/><path d="M228 240 C238 222 246 212 256 200" stroke-width="4"/>
+    <path d="M160 70 C150 45 158 25 150 5" stroke-width="6"/><path d="M160 95 C175 75 190 68 205 45" stroke-width="5"/>
+  </g></svg>`;
+  const castle = (x,w)=>`<svg viewBox="0 0 260 380" style="right:${x};bottom:12vh;width:${w};" preserveAspectRatio="xMidYMax meet"><g fill="${INK}">
+    <rect x="85" y="140" width="95" height="240"/><polygon points="72,142 132,30 192,142"/>
+    <rect x="30" y="200" width="56" height="180"/><polygon points="22,202 58,120 94,202"/>
+    <rect x="180" y="175" width="58" height="205"/><polygon points="172,177 209,90 246,177"/>
+    <rect x="129" y="8" width="4" height="30"/><polygon points="133,8 156,15 133,22"/>
+    <rect x="0" y="330" width="260" height="50"/></g>
+    <g fill="#ffb347"><rect x="115" y="180" width="16" height="26" rx="8"/><rect x="138" y="180" width="16" height="26" rx="8"/>
+    <rect x="124" y="250" width="22" height="34" rx="11"/><rect x="50" y="240" width="14" height="22" rx="7"/><rect x="200" y="215" width="16" height="24" rx="8"/>
+    <rect x="200" y="280" width="16" height="24" rx="8"/><rect x="118" y="330" width="34" height="50" rx="17" fill="#f08a3c"/></g></svg>`;
+  const graves = (x,w,b)=>`<svg viewBox="0 0 400 120" style="left:${x};bottom:${b||'11.5vh'};width:${w};"><g fill="${INK}">
+    <path d="M20 120 V60 a30 30 0 0 1 60 0 V120 Z"/><rect x="128" y="40" width="10" height="80"/><rect x="113" y="58" width="40" height="10"/>
+    <path d="M190 120 V75 a22 22 0 0 1 44 0 V120 Z"/><rect x="292" y="30" width="12" height="90"/><rect x="274" y="52" width="48" height="11"/>
+    <path d="M340 120 V85 a18 18 0 0 1 36 0 V120 Z"/></g></svg>`;
+  const ground = (h)=>`<svg viewBox="0 0 1920 300" preserveAspectRatio="none" style="left:0;bottom:0;width:100%;height:${h};"><path fill="${INK}" d="M0 120 C300 40 600 60 900 110 C1200 160 1500 70 1920 90 V300 H0 Z"/></svg>`;
+  const bats = (top)=>`<svg viewBox="0 0 300 120" style="right:12vw;top:${top};width:min(22vw,300px);">${[[10,60,1],[120,20,.8],[210,70,.6]].map(([x,y,k])=>
+    `<g transform="translate(${x} ${y}) scale(${k})"><g class="bat"><path fill="${INK}" d="M0 14 C10 0 24 0 32 12 C35 7 39 6 42 10 C45 6 49 7 52 12 C60 0 74 0 84 14 C72 10 64 16 60 24 C55 18 50 20 46 26 C44 22 40 22 38 26 C34 20 29 18 24 24 C20 16 12 10 0 14 Z"/></g></g>`).join('')}</svg>`;
+  const moon = (left,top,size)=>`<div class="moon" style="left:${left};top:${top};width:${size};height:${size};">
+    <div class="crater" style="left:22%;top:30%;width:14%;height:14%"></div><div class="crater" style="left:60%;top:55%;width:10%;height:10%"></div><div class="crater" style="left:48%;top:18%;width:7%;height:7%"></div></div>`;
+  function add(sl, html){ const d=document.createElement('div'); d.className='scene'; d.innerHTML=html; sl.prepend(d); }
+  document.querySelectorAll('.title-slide').forEach(sl=>add(sl,
+    moon('calc(50% - min(37vh,29vw))','4vh','min(74vh,58vw)') + ground('26vh') + tree('-3vw','min(26vw,46vh)') + castle('-1vw','min(20vw,38vh)') + graves('17vw','min(20vw,36vh)','17.5vh') + bats('6vh')));
+  document.querySelectorAll('.divider').forEach((sl,i)=>add(sl,
+    moon(i%2?'8vw':'calc(100% - 8vw - min(30vh,22vw))','8vh','min(30vh,22vw)') + ground('22vh') + (i%2? castle('4vw','min(16vw,30vh)') : tree('2vw','min(20vw,36vh)')) + graves(i%2?'10vw':'60vw','min(24vw,40vh)') + bats('10vh')));
+  // slides de conteúdo: uma pincelada roxa no canto e um morcego, discretos
+  document.querySelectorAll('.slide:not(.title-slide):not(.divider):not(.embed)').forEach(sl=>add(sl,
+    `<svg viewBox="0 0 400 300" style="right:-60px;top:-50px;width:min(26vw,360px);opacity:.9"><path fill="#3d0b54" d="M60 20 C140 -10 260 0 380 30 C400 90 390 170 360 230 C330 190 300 200 280 240 C250 180 210 150 160 160 C190 120 150 90 100 100 C130 70 90 50 60 20 Z"/></svg>` +
+    `<svg viewBox="0 0 1920 60" preserveAspectRatio="none" style="left:0;bottom:0;width:100%;height:3.2vh;"><path fill="#1e022b" d="M0 30 C200 10 420 40 700 22 C980 6 1200 38 1500 20 C1700 10 1820 26 1920 18 V60 H0 Z"/></svg>`));
+})();
+
 (function(){
   const slides = [...document.querySelectorAll('.slide')];
   const dotsEl = document.getElementById('dots');
