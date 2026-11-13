@@ -289,6 +289,55 @@
     *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition:none !important; }
     .rv,.answer{ opacity:1 !important; }
   }
+
+  /* ---- imagens que explicam a TOC ---- */
+  .dark h1, .dark .answer{ max-width:min(1100px,60vw); }
+  .funnel{ position:absolute !important; right:7vw; top:50%; width:min(24vw,40vh); transform:translateY(-50%); }
+  .slide.active .funnel{ animation:fadein .8s .4s both; opacity:0; }
+  .funnel .drop{ animation:drop 1.35s ease-in infinite; }
+  @keyframes drop{ 0%{ transform:translateY(-30px); opacity:0;} 20%{ opacity:1;} 100%{ transform:translateY(118px); opacity:.0;} }
+  .funnel .out{ animation:out 2.7s ease-in infinite; }
+  @keyframes out{ 0%,55%{ transform:translateY(-18px); opacity:0;} 62%{ opacity:1;} 100%{ transform:translateY(64px); opacity:0;} }
+  .funnel .pile{ animation:jig 3s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  @keyframes jig{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-3px);} }
+  .chain{ width:clamp(260px,30vw,520px) !important; right:7vw !important; top:30vh !important; filter:none !important; animation:bob 6s ease-in-out infinite; }
+  .chain .weak{ animation:weak 1.6s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  @keyframes weak{ 0%,100%{ transform:scale(1); filter:drop-shadow(0 0 0 rgba(232,116,44,0));} 50%{ transform:scale(1.07); filter:drop-shadow(0 0 12px rgba(232,116,44,.9));} }
+  .hike{ position:relative; width:100%; background:linear-gradient(180deg,#efe2c2,#e6d5ae); border:1px solid var(--line); border-radius:24px; padding:16px 28px 18px; margin-bottom:2.4vh; overflow:hidden; display:grid; grid-template-columns:auto 1fr; gap:4px 32px; align-items:end; }
+  .walkers{ position:relative; display:flex; gap:clamp(8px,1.4vw,26px); align-items:flex-end; padding-top:22px; grid-row:1 / span 2; }
+  .walkers figure{ margin:0; position:relative; animation:walk .55s ease-in-out infinite alternate; animation-delay:calc(var(--s) * -.14s); }
+  .walkers img{ width:clamp(54px,5.4vw,92px); transform:scaleX(-1); display:block; }
+  .walkers figcaption{ position:absolute; top:-20px; left:50%; transform:translateX(-50%); white-space:nowrap; font-size:12.5px; font-weight:800; color:#fff; background:var(--pumpkin); border-radius:999px; padding:2px 10px; }
+  .walkers .herbie img{ filter:drop-shadow(0 0 10px rgba(232,116,44,.55)); }
+  @keyframes walk{ from{ transform:translateY(0) rotate(-2deg);} to{ transform:translateY(-6px) rotate(2deg);} }
+  .walkers .rope{ position:absolute; left:6%; right:6%; top:58%; height:3px; background:repeating-linear-gradient(90deg,#8a5a2b 0 10px,#c08a4e 10px 16px); border-radius:2px; z-index:-1; }
+  .trail{ position:absolute; left:0; right:0; bottom:12px; height:4px; background:repeating-linear-gradient(90deg,#b99a62 0 18px,transparent 18px 34px); animation:trail .9s linear infinite; }
+  @keyframes trail{ to{ background-position:-34px 0; } }
+  .hike p{ font-size:clamp(15px,1.25vw,19px); font-weight:600; color:#4a3656; line-height:1.45; padding-bottom:14px; }
+  .refs-slide{ padding-top:6vh; padding-bottom:7vh; }
+  .refs-slide h1{ margin-bottom:2vh; }
+  .refs-slide .refs-cols{ columns:3; column-gap:2.6vw; font-size:clamp(10.5px,.78vw,13.5px); line-height:1.38; }
+  .refs-slide .refs-cols p{ margin-bottom:6px; }
+  .refs-slide .refs-cols section{ break-inside:auto; margin-bottom:10px; }
+  @media (max-width:980px){ .funnel{ display:none; } .dark h1,.dark .answer{ max-width:none; } .hike{ grid-template-columns:1fr; } .refs-slide .refs-cols{ columns:1; } }
+
+  .qcard{ position:relative; display:grid; grid-template-columns:1fr auto; gap:2vw; align-items:center; background:linear-gradient(160deg,#2b0a3d,#170323); color:#fff; border-radius:24px; padding:20px 26px; margin:0 0 4vh; max-width:1150px; }
+  .qcard .tag{ color:var(--amber); }
+  .qcard .q{ font-family:var(--serif); font-size:clamp(20px,1.9vw,32px); font-weight:600; line-height:1.2; margin:6px 0 10px; }
+  .qcard .q em{ color:var(--amber); font-weight:800; }
+  .qcard .a{ font-size:clamp(15px,1.2vw,19px); font-weight:700; color:rgba(255,255,255,.85); opacity:0; }
+  .slide.active .qcard .a{ animation:rise .8s var(--ease) 3.5s both; }
+  .qcard .a b{ font-family:var(--serif); font-style:italic; color:var(--amber); font-size:1.2em; }
+  .qcard .funnel{ position:static !important; transform:none; width:clamp(110px,9vw,170px); opacity:1 !important; animation:none !important; }
+  .chain-obj{ position:absolute !important; right:0; top:-7vh; width:clamp(200px,16vw,300px); }
+  .chain-obj text{ fill:var(--pumpkin); }
+  .chain-obj rect[stroke="#f3ead3"]{ stroke:var(--violet); } .chain-obj rect[fill="#f3ead3"]{ fill:var(--violet); }
+  .chain-obj .weak{ animation:weak 1.6s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .hike{ margin-top:2.2vh; margin-bottom:1.4vh; padding:10px 24px 12px; }
+  .hike .walkers img{ width:clamp(46px,4.4vw,78px); }
+  .simlink{ display:inline-block; font-weight:800; font-size:14px; color:var(--violet); text-decoration:none; border-bottom:2px solid currentColor; }
+  .simlink:hover{ color:var(--pumpkin); }
+  @media (max-width:980px){ .qcard{ grid-template-columns:1fr; } .qcard .funnel{ display:none; } .chain-obj{ display:none; } }
 </style>
 </head>
 <body>
@@ -302,33 +351,34 @@
     <div class="names rv" style="--d:3">Ana Letícia · Jovanna · Raíra<span>Prof. M. Albertin · DEPRO/UFC · 17 de novembro de 2026</span></div>
   </section>
 
-  <!-- capítulo 1 -->
-  <section class="slide chapter" data-scene="night">
-    <img class="hero float" src="img/bola-cristal.webp" alt="" style="right:34vw;top:40vh">
-    <div class="num rv">I</div>
-    <div class="kicker rv" style="--d:1">Capítulo 1</div>
-    <h1 class="rv" style="--d:2">Fundamentos</h1>
-    <p class="lead rv" style="--d:3">De onde vem a TOC, qual é a meta de uma empresa e como medir se ela está chegando lá.</p>
-  </section>
-
-  <!-- pergunta -->
-  <section class="slide dark" data-scene="stars">
-    <img class="snail" src="img/caracol.webp" alt="">
-    <div class="kicker rv">1 · Origem · para começar</div>
-    <h1 class="rv" style="--d:1">“Se eu dobrar a velocidade da máquina que <em>não</em> é gargalo, quanto a fábrica vende a mais?”</h1>
-    <div class="answer"><img src="img/ampulheta.webp" alt=""><p><b>Nada.</b> A fábrica continua no ritmo do gargalo. Só sobra mais estoque parado na frente dele.</p></div>
-    <div class="foot"><span class="src">Goldratt &amp; Cox (1984)</span><span class="pg"></span></div>
-  </section>
-
   <!-- origem -->
   <section class="slide">
     <div class="wrap">
       <div class="kicker rv">1 · Origem</div>
       <h1 class="rv" style="--d:1">Um físico olhando para a <em>fábrica</em></h1>
-      <p class="lead rv" style="--d:2">Eliyahu M. Goldratt levou o raciocínio da física para a programação da produção. Em vinte anos, a ideia saiu do software e virou filosofia de gestão.</p>
+      <div class="qcard rv" style="--d:2">
+        <div class="qtext"><span class="tag">Para começar</span>
+          <p class="q">“Se eu dobrar a velocidade da máquina que <em>não</em> é gargalo, quanto a fábrica vende a mais?”</p>
+          <p class="a"><b>Nada.</b> A fábrica continua no ritmo do gargalo; só sobra estoque parado na frente dele.</p></div>
+        <svg class="funnel" viewBox="0 0 300 440" aria-label="Funil: entra muito, sai no ritmo do gargalo">
+      <defs><clipPath id="fclip"><path d="M24 24 H276 L172 252 V330 H128 V252 Z"/></clipPath></defs>
+      <path d="M24 24 H276 L172 252 V330 H128 V252 Z" fill="rgba(255,255,255,.06)" stroke="#f3ead3" stroke-width="4" stroke-linejoin="round"/>
+      <g clip-path="url(#fclip)" fill="#ffb347">
+        <circle cx="150" cy="312" r="14"/><circle cx="150" cy="284" r="14"/><circle cx="150" cy="256" r="14"/>
+        <circle cx="134" cy="230" r="14"/><circle cx="166" cy="230" r="14"/>
+        <circle cx="122" cy="204" r="14"/><circle cx="150" cy="204" r="14"/><circle cx="178" cy="204" r="14"/>
+        <circle cx="108" cy="178" r="14"/><circle cx="136" cy="178" r="14"/><circle cx="164" cy="178" r="14"/><circle cx="192" cy="178" r="14"/>
+        <circle cx="96" cy="152" r="14"/><circle cx="124" cy="152" r="14"/><circle cx="152" cy="152" r="14"/><circle cx="180" cy="152" r="14"/><circle cx="208" cy="152" r="14"/>
+        <circle class="pile" cx="110" cy="126" r="14"/><circle class="pile" cx="140" cy="126" r="14" style="animation-delay:-1s"/><circle class="pile" cx="170" cy="126" r="14" style="animation-delay:-2s"/><circle class="pile" cx="200" cy="126" r="14" style="animation-delay:-.5s"/>
+      </g>
+      <circle class="drop" cx="90" cy="0" r="13" fill="#ffb347"/><circle class="drop" cx="160" cy="0" r="13" fill="#ffb347" style="animation-delay:-.45s"/><circle class="drop" cx="220" cy="0" r="13" fill="#ffb347" style="animation-delay:-.9s"/>
+      <circle class="out" cx="150" cy="330" r="13" fill="#e8742c"/>
+      <text x="150" y="420" text-anchor="middle" fill="#f3ead3" font-size="17" font-weight="700" font-family="Nunito, sans-serif">entra rápido · sai no ritmo do gargalo</text>
+    </svg>
+      </div>
       <div class="tl">
         <div class="grid g6">
-          <div class="card rv" style="--d:3"><img class="ico float" src="img/computador.webp" alt=""><div class="year">fim dos anos 70</div><h3>OPT</h3><p>Software que programa a fábrica pelo recurso gargalo.</p></div>
+          <div class="card rv" style="--d:4"><img class="ico float" src="img/computador.webp" alt=""><div class="year">fim dos anos 70</div><h3>OPT</h3><p>Software que programa a fábrica pelo recurso gargalo.</p></div>
           <div class="card rv" style="--d:4"><img class="ico float" src="img/livro.webp" alt=""><div class="year">1984</div><h3>The Goal</h3><p><i>A Meta</i>: o romance que populariza a TOC.</p></div>
           <div class="card rv" style="--d:5"><img class="ico float" src="img/tambor.webp" alt=""><div class="year">1986</div><h3>The Race</h3><p>Apresenta o Tambor-Pulmão-Corda.</p></div>
           <div class="card rv" style="--d:6"><img class="ico float" src="img/lupa.webp" alt=""><div class="year">1990</div><h3>The Haystack Syndrome</h3><p>Contabilidade de ganhos e decisões pelo gargalo.</p></div>
@@ -345,6 +395,18 @@
     <div class="wrap">
       <div class="kicker rv">2 · Objetivo</div>
       <h1 class="rv" style="--d:1">A meta é ganhar dinheiro hoje <em>e no futuro</em></h1>
+      <svg class="chain-obj rv" style="--d:3" viewBox="0 0 520 200" aria-label="Corrente com um elo fraco">
+      <g transform="rotate(-10 260 100)" fill="none" stroke-linecap="round">
+        <rect x="10" y="70" width="110" height="60" rx="30" stroke="#f3ead3" stroke-width="14"/>
+        <rect x="95" y="92" width="80" height="16" rx="8" fill="#f3ead3" stroke="none"/>
+        <rect x="150" y="70" width="110" height="60" rx="30" stroke="#f3ead3" stroke-width="14"/>
+        <g class="weak"><rect x="238" y="80" width="96" height="40" rx="20" stroke="#e8742c" stroke-width="6" stroke-dasharray="70 10"/></g>
+        <rect x="310" y="70" width="110" height="60" rx="30" stroke="#f3ead3" stroke-width="14"/>
+        <rect x="395" y="92" width="80" height="16" rx="8" fill="#f3ead3" stroke="none"/>
+        <rect x="450" y="70" width="60" height="60" rx="30" stroke="#f3ead3" stroke-width="14" stroke-dasharray="120 400"/>
+      </g>
+      <text x="292" y="190" text-anchor="middle" fill="#ffb347" font-size="18" font-weight="800" font-family="Nunito, sans-serif">o elo mais fraco define a força da corrente</text>
+    </svg>
       <div class="meta">
         <div class="rv" style="--d:2">
           <span class="tag">Medidores operacionais</span>
@@ -363,15 +425,6 @@
       <p class="note rv" style="--d:6">Uma decisão é boa se <b>aumenta T</b> ou reduz I e OE sem derrubar o ganho.</p>
     </div>
     <div class="foot"><span class="src">Goldratt &amp; Cox (1984); Antunes &amp; Rodrigues (1993); Noreen <i>et al.</i> (1995)</span><span class="pg"></span></div>
-  </section>
-
-  <!-- capítulo 2 -->
-  <section class="slide chapter" data-scene="dusk">
-    <img class="hero float" src="img/alambique.webp" alt="">
-    <div class="num rv">II</div>
-    <div class="kicker rv" style="--d:1">Capítulo 2</div>
-    <h1 class="rv" style="--d:2">Como funciona</h1>
-    <p class="lead rv" style="--d:3">Os 5 passos, os tipos de restrição, o Tambor-Pulmão-Corda, o STP e os critérios de desempenho.</p>
   </section>
 
   <!-- 5 passos -->
@@ -403,22 +456,6 @@
       </div>
     </div>
     <div class="foot"><span class="src">Goldratt (1990, cap. 1)</span><span class="pg"></span></div>
-  </section>
-
-  <!-- DBR em um slide -->
-  <section class="slide">
-    <div class="wrap">
-      <div class="kicker rv">3 · Descrição</div>
-      <h1 class="rv" style="--d:1">Tambor, pulmão e <em>corda</em></h1>
-      <p class="lead rv" style="--d:2">Como programar a fábrica inteira a partir de um único ponto: a restrição.</p>
-      <div class="grid g3">
-        <div class="card rv" style="--d:3"><img class="ico float" src="img/tambor.webp" alt=""><h3>Tambor</h3><p>A restrição. A programação dela dita o ritmo de toda a fábrica.</p></div>
-        <div class="card rv" style="--d:4"><img class="ico float" src="img/escudo.webp" alt=""><h3>Pulmão</h3><p>Uma proteção em tempo antes da restrição, para ela nunca parar por falta de material.</p></div>
-        <div class="card rv" style="--d:5"><img class="ico float" src="img/corda.webp" alt=""><h3>Corda</h3><p>Libera matéria-prima só no ritmo do tambor e evita estoque acumulado no meio da linha.</p></div>
-      </div>
-      <p class="note rv" style="--d:6">Resultado: <b>menos estoque em processo</b>, lead time menor e prazos cumpridos, sem precisar de todo mundo ocupado o tempo todo.</p>
-    </div>
-    <div class="foot"><span class="src">Umble &amp; Srikanth (1990); Schragenheim &amp; Ronen (1990)</span><span class="pg"></span></div>
   </section>
 
   <!-- STP -->
@@ -458,7 +495,7 @@
   <section class="slide">
     <div class="wrap">
       <div class="kicker rv">6 · Diagrama</div>
-      <h1 class="rv" style="--d:1">O DBR num <em>sistema produtivo</em></h1>
+      <h1 class="rv" style="--d:1">Tambor-Pulmão-Corda num <em>sistema produtivo</em></h1>
       <div class="dbr-tabs rv" style="--d:2">
         <div class="dbr-tab active" data-part="tambor"><img src="img/tambor.webp" alt="">Tambor</div>
         <div class="dbr-tab" data-part="pulmao"><img src="img/escudo.webp" alt="">Pulmão</div>
@@ -475,22 +512,20 @@
         <div class="dbr-flow"><div class="dbr-packet"></div><div class="dbr-packet"></div><div class="dbr-packet"></div></div>
       </div>
       <div class="dbr-desc rv" style="--d:4" id="dbrDesc"></div>
+      <div class="hike rv" style="--d:5">
+        <div class="walkers">
+          <figure style="--s:0"><img src="img/andando-2.webp" alt=""></figure>
+          <figure style="--s:1"><img src="img/andando-3.webp" alt=""></figure>
+          <figure style="--s:2"><img src="img/andando-1.webp" alt=""></figure>
+          <figure class="herbie" style="--s:3"><img src="img/andando-4.webp" alt=""><figcaption>Herbie · o tambor</figcaption></figure>
+          <div class="rope"></div>
+        </div>
+        <div class="trail"></div>
+        <p>Na trilha de <i>A Meta</i>, o escoteiro mais lento vai na frente e dita o ritmo. Uma corda amarra o grupo, e a fila para de se espalhar.</p>
+      </div>
+      <a class="simlink rv" style="--d:6" href="simulador.html" target="_blank" rel="noopener">Abrir o simulador da linha de produção ↗</a>
     </div>
     <div class="foot"><span class="src">Goldratt &amp; Fox (1986); Schragenheim &amp; Dettmer (2000)</span><span class="pg"></span></div>
-  </section>
-
-  <!-- simulador -->
-  <section class="slide embed">
-    <iframe src="simulador.html" title="Simulador de linha de produção"></iframe>
-  </section>
-
-  <!-- capítulo 3 -->
-  <section class="slide chapter" data-scene="night2">
-    <img class="hero float pumpkin" src="img/abobora.webp" alt="">
-    <div class="num rv">III</div>
-    <div class="kicker rv" style="--d:1">Capítulo 3</div>
-    <h1 class="rv" style="--d:2">Na prática</h1>
-    <p class="lead rv" style="--d:3">Uma confecção, um ambulatório, um projeto e a dinâmica com a turma.</p>
   </section>
 
   <!-- aplicação 1 -->
@@ -552,45 +587,16 @@
     <div class="foot"><span class="src">Goldratt (1997); Newbold (1998)</span><span class="pg"></span></div>
   </section>
 
-  <!-- dinâmica -->
-  <section class="slide">
-    <div class="wrap">
-      <div class="kicker rv">Dinâmica em sala</div>
-      <h1 class="rv" style="--d:1">Agora é a vez da turma: <em>Confraria do Gargalo</em></h1>
-      <p class="lead rv" style="--d:2">Um jogo de bruxas sobre os 5 passos, no celular. No próximo slide tem o QR Code e o telão ao vivo.</p>
-      <div class="grid g3">
-        <div class="card rv" style="--d:3"><img class="ico float" src="img/celular.webp" alt=""><h3>Escaneie o QR</h3><p>O link abre direto no celular: escolha o nome da bruxa e jogue.</p></div>
-        <div class="card rv" style="--d:4"><img class="ico float" src="img/bruxa.webp" alt=""><h3>Ache o gargalo</h3><p>Identifique, explore, subordine e eleve a restrição. Ela pode mudar de lugar!</p></div>
-        <div class="card rv" style="--d:5"><img class="ico float" src="img/trofeu.webp" alt=""><h3>Dispute o placar</h3><p>Quem entrega mais poções sobe no placar ao vivo.</p></div>
-      </div>
-    </div>
-    <div class="foot"><span class="src plain">Jogo criado pelo grupo</span><span class="pg"></span></div>
-  </section>
-
-  <!-- telão -->
+  <!-- aplicação prática em sala: Confraria do Gargalo (QR + telão) -->
   <section class="slide embed">
     <iframe src="jogo.html#telao" title="Confraria do Gargalo — QR Code e placar ao vivo"></iframe>
   </section>
 
-  <!-- IA -->
-  <section class="slide">
+  <!-- referências -->
+  <section class="slide refs-slide">
     <div class="wrap">
-      <div class="kicker rv">Uso de inteligência artificial</div>
-      <h1 class="rv" style="--d:1">Como usamos <em>IA</em> neste trabalho</h1>
-      <div class="grid g3">
-        <div class="card rv" style="--d:2"><img class="ico float" src="img/robo.webp" alt=""><h3>Ferramentas</h3><p>Claude: programação do jogo, do simulador e dos slides. ChatGPT: revisão crítica do conteúdo e do jogo.</p></div>
-        <div class="card rv" style="--d:3"><img class="ico float" src="img/balao.webp" alt=""><h3>Prompts (exemplos)</h3><p>“Dá para criar um modo específico para sala de aula, pra nossa apresentação?” · “Avalie o jogo: ele ensina os 5 passos da TOC corretamente?”</p></div>
-        <div class="card rv" style="--d:4"><img class="ico float" src="img/check.webp" alt=""><h3>Validação</h3><p>Conferimos com a bibliografia, jogamos e testamos o jogo, pedimos revisão cruzada a outra IA e corrigimos o que ela apontou.</p></div>
-      </div>
-    </div>
-    <div class="foot"><span class="src plain">Ilustrações 3D: Fluent Emoji (Microsoft, licença MIT)</span><span class="pg"></span></div>
-  </section>
-
-  <!-- referências 1 -->
-  <section class="slide">
-    <div class="wrap">
-      <div class="kicker rv">7 · Bibliografia</div>
-      <h1 class="rv" style="--d:1">Referências <em>(1 de 2)</em></h1>
+      <div class="kicker rv">Bibliografia</div>
+      <h1 class="rv" style="--d:1">Referências</h1>
       <div class="refs-cols rv" style="--d:2">
         <section><h4>Fontes primárias</h4>
           <p>GOLDRATT, E. M.; COX, J. <b>The Goal</b>. North River Press, 1984. (Brasil: <i>A Meta</i>.)</p>
@@ -605,17 +611,6 @@
           <p>SCHRAGENHEIM, E.; DETTMER, H. W. <b>Manufacturing at Warp Speed</b>. St. Lucie Press, 2000.</p>
           <p>NOREEN, E.; SMITH, D.; MACKEY, J. T. <b>The Theory of Constraints and Its Implications for Management Accounting</b>. North River Press, 1995.</p>
           <p>NEWBOLD, R. C. <b>Project Management in the Fast Lane</b>. St. Lucie Press, 1998.</p></section>
-      </div>
-    </div>
-    <div class="foot"><span class="src plain">Formatadas conforme ABNT NBR 6023</span><span class="pg"></span></div>
-  </section>
-
-  <!-- referências 2 -->
-  <section class="slide">
-    <div class="wrap">
-      <div class="kicker rv">7 · Bibliografia</div>
-      <h1 class="rv" style="--d:1">Referências <em>(2 de 2)</em></h1>
-      <div class="refs-cols rv" style="--d:2">
         <section><h4>TOC: artigos em periódicos</h4>
           <p>ANTUNES JÚNIOR, J. A. V.; RODRIGUES, L. H. A Teoria das Restrições como balizadora para as ações visando a troca rápida de ferramentas. <b>Produção</b>, v. 3, n. 2, p. 73-86, 1993.</p>
           <p>SPENCER, M. S.; COX, J. F. OPT and TOC: analysis and genealogy. <b>International Journal of Production Research</b>, v. 33, n. 6, 1995.</p>
@@ -634,14 +629,14 @@
           <p>ALBERTIN, M.; JAGUARIBE PONTES, H. L. <b>Gestão de Processos e Técnicas de Produção Enxuta</b>. Curitiba: InterSaberes.</p></section>
       </div>
     </div>
-    <div class="foot"><span class="src plain">Formatadas conforme ABNT NBR 6023</span><span class="pg"></span></div>
+    <div class="foot"><span class="src plain">Formatadas conforme ABNT NBR 6023 · ilustrações 3D: Fluent Emoji (Microsoft, licença MIT)</span><span class="pg"></span></div>
   </section>
 
 </div>
 
 <div class="nav" id="nav">
   <button id="prevBtn" aria-label="Slide anterior">‹</button>
-  <span class="count" id="counter">1 / 21</span>
+  <span class="count" id="counter">1 / 12</span>
   <button id="nextBtn" aria-label="Próximo slide">›</button>
 </div>
 
