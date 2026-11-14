@@ -107,7 +107,7 @@ export const PHASES: PhaseDef[] = [
     number: 0,
     title: 'Modo rápido',
     subtitle: 'Desafio da Turma',
-    tocStep: 'Os cinco passos, em 6 a 10 minutos',
+    tocStep: 'Os cinco passos, em 8 a 12 minutos',
     goalText: 'Descubra por que a loja não dá conta dos pedidos e melhore a produção, um passo de cada vez.',
     // Versão enxuta para aula: 4 estações, 1 tipo de poção, pedidos aceitos e ingredientes repostos
     // sozinhos, sem eventos aleatórios. O Caldeirão é a restrição (≈4,4 poções/min para ≈6/min
@@ -122,7 +122,9 @@ export const PHASES: PhaseDef[] = [
       demand: { ordersPerMin: 4, mix: { brilho: 1 }, maxLines: 1, qtyMin: 1, qtyMax: 2 },
       startStock: { erva: 30, agua_lunar: 30 },
       stations: {
-        caldeirao: { breakEvery: 45, breakDuration: 9, setupTime: 3 },
+        // sem pausas da equipe (o intervalo do chá atrapalhava a leitura da fila); a limpeza entre lotes
+        // fica mais demorada para o Caldeirão continuar sendo a restrição (≈4,4 poções/min)
+        caldeirao: { breakEvery: 0, breakDuration: 0, setupTime: 5.75 },
         resfriamento: { locked: true },
         embalagem: { locked: true },
       },

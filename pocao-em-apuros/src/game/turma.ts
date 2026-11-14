@@ -1,4 +1,4 @@
-// Modo rápido (aula, 6 a 10 minutos): loja enxuta (4 estações, 1 poção), uma decisão por etapa,
+// Modo rápido (aula, 8 a 12 minutos): loja enxuta (4 estações, 1 poção), uma decisão por etapa,
 // tudo dentro de um cartão da mentora com botões grandes. Cada decisão age na simulação real e o
 // cartão mostra o efeito medido (antes → depois). Uma escolha que não ajuda (melhorar quem não é a
 // restrição, manter todo mundo ocupado, investir no lugar errado) também é medida, e o jogador pode
@@ -377,7 +377,7 @@ export class TurmaGuide {
         if (v === 'helper-preparo') this.marks.triedOutside = true;
         // a câmera mostra a bruxa indo até lá
         if (helper) this.g.camera.focusStation(v === 'helper' ? id : 'preparo');
-        this.startMeasure(v === 'helper-preparo' ? 'explorar-fora' : 'explorar', helper ? 9 : 4);
+        this.startMeasure(v === 'helper-preparo' ? 'explorar-fora' : 'explorar', helper ? 18 : 12);
         if (v === 'helper') this.g.actions['help-here']({ dataset: { v: id } } as unknown as HTMLElement);
         else if (v === 'helper-preparo') this.g.actions['help-here']({ dataset: { v: 'preparo' } } as unknown as HTMLElement);
         else {
@@ -415,7 +415,7 @@ export class TurmaGuide {
         advance(twin, 20);
         this.otherWip = queued(twin);
         this.spoiledAt = s.stats.spoiled;
-        this.startMeasure(v === 'corda' ? 'corda' : 'empurrar', 20);
+        this.startMeasure(v === 'corda' ? 'corda' : 'empurrar', 40);
         this.card.choices = [];
         this.card.feedback = undefined;
         this.card.wait = 'Repare nas poções paradas pela loja…';
@@ -436,7 +436,7 @@ export class TurmaGuide {
           this.card.feedbackKind = 'info';
           break;
         }
-        this.startMeasure('elevar', UPGRADES[u].installTime + 2);
+        this.startMeasure('elevar', UPGRADES[u].installTime + 6);
         const r = A.buyUpgrade(s, u);
         if (!r.ok) {
           this.measure = null;
@@ -447,8 +447,8 @@ export class TurmaGuide {
         this.pendingBuy = null;
         // na aula, a instalação é rápida (o efeito aparece em segundos)
         const own = s.upgradesOwned[s.upgradesOwned.length - 1];
-        if (own) own.activeAt = Math.min(own.activeAt, s.t + 5);
-        if (this.measure) this.measure.until = s.t + 7;
+        if (own) own.activeAt = Math.min(own.activeAt, s.t + 10);
+        if (this.measure) this.measure.until = s.t + 14;
         this.card.choices = [];
         this.card.feedback = undefined;
         this.card.wait = `Instalando: ${UPGRADES[u].name}…`;
@@ -555,7 +555,9 @@ export class TurmaGuide {
       if ((this.index === 2 || this.index === 6) && this.card.wait === OBSERVING) {
         const ids = STATION_ORDER.filter((id) => !s.stations[id].locked);
         const q = ids.map((id) => s.stations[id].queue.length).sort((x, y) => y - x);
-        if ((q[0] >= 5 && q[0] - (q[1] ?? 0) >= 3) || s.t - this.gateFrom > (this.index === 2 ? 25 : 70)) {
+        // observar leva um tempo mínimo (a fila precisa crescer à vista); depois, assim que a diferença aparece
+        const seen = s.t - this.gateFrom;
+        if ((seen >= (this.index === 2 ? 30 : 45) && q[0] >= 5 && q[0] - (q[1] ?? 0) >= 3) || seen > (this.index === 2 ? 50 : 100)) {
           this.card =
             this.index === 2
               ? { step: STEP[1], text: 'Qual estação está segurando a loja? Olhe as filas.', choices: this.stationChoices() }
@@ -568,7 +570,7 @@ export class TurmaGuide {
         s.duration += 60;
         if (s.nextArrivalAt === Number.POSITIVE_INFINITY) s.nextArrivalAt = s.t + 5;
       }
-      if (this.index === 0 && this.s.t > 25) this.next();
+      if (this.index === 0 && this.s.t > 35) this.next();
     }
   }
 
