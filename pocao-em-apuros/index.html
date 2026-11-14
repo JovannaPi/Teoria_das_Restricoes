@@ -44,5 +44,18 @@
       <div id="toasts" aria-live="polite"></div>
     </div>
     <script type="module" src="/src/main.ts"></script>
-  </body>
+  <script>
+  // se o jogo não abrir em 6 s (versão antiga guardada no aparelho), limpa o guardado e recarrega uma vez
+  setTimeout(function () {
+    var box = document.getElementById('title-menu');
+    if (!box || !/Carregando/.test(box.textContent || '')) return;
+    try { if (sessionStorage.getItem('pocao-recarregou')) return; sessionStorage.setItem('pocao-recarregou', '1'); } catch (e) { return; }
+    var done = function () { location.reload(); };
+    var jobs = [];
+    if (navigator.serviceWorker) jobs.push(navigator.serviceWorker.getRegistrations().then(function (r) { return Promise.all(r.map(function (x) { return x.unregister(); })); }));
+    if (window.caches) jobs.push(caches.keys().then(function (k) { return Promise.all(k.map(function (x) { return caches.delete(x); })); }));
+    Promise.all(jobs).then(done, done);
+  }, 6000);
+</script>
+</body>
 </html>

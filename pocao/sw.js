@@ -1,6 +1,6 @@
 // Service worker: guarda o jogo no aparelho para funcionar sem internet.
 // A versão é trocada a cada build (scripts/inline-build.mjs) para atualizar o cache.
-const CACHE = 'pocao-em-apuros-20261114184755';
+const CACHE = 'pocao-em-apuros-20261114185332';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
@@ -14,10 +14,12 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// Usa o que estiver guardado e atualiza em segundo plano quando houver rede.
+// Páginas (HTML): tenta a rede primeiro, para sempre pegar a versão nova do jogo; sem internet, usa a guardada.
+// Arquivos (js, css, imagens): usa o que estiver guardado e atualiza em segundo plano.
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  const isPage = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
   e.respondWith(
     caches.open(CACHE).then(async (cache) => {
       const hit = await cache.match(req, { ignoreSearch: true });
@@ -27,7 +29,7 @@ self.addEventListener('fetch', (e) => {
           return res;
         })
         .catch(() => hit);
-      return hit || net;
+      return isPage ? net.then((r) => r || hit) : hit || net;
     }),
   );
 });
