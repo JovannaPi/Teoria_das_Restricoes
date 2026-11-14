@@ -1,0 +1,66 @@
+<!--
+  Slides das aplicações (confecção, ambulatório e corrente crítica), guardados aqui enquanto as colegas
+  não mandam as aplicações reais. Os exemplos e os números são ilustrativos.
+  Para voltar com eles: cole estes <section> no index.html, antes do comentário "aplicação prática em sala".
+  Os estilos já estão no index.html (classes mix, flow, steps5, gantt, ticks); as imagens estão em img/.
+  Este arquivo não é publicado como slide.
+-->
+  <!-- aplicação 1 -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker rv">Aplicação 1 · Indústria (confecção)</div>
+      <h1 class="rv" style="--d:1">Qual peça merece o minuto da <em>costura</em>?</h1>
+      <p class="lead rv" style="--d:2">A costura é o gargalo. O mix certo vem do <b>ganho por minuto de gargalo</b>, não da margem de cada peça.</p>
+      <table class="mix rv" style="--d:3">
+        <tr><th>Produto</th><th>Preço</th><th>Material</th><th>Ganho (T)</th><th>Min. na costura</th><th>T por minuto de gargalo</th></tr>
+        <tr><td><div class="prod"><img src="img/calca.webp" alt="">Calça</div></td><td>R$ 140</td><td>R$ 50</td><td>R$ 90</td><td>25</td><td><div class="tm"><div class="bar"><i style="--w:62%"></i></div>R$ 3,60</div></td></tr>
+        <tr class="best"><td><div class="prod"><img src="img/vestido.webp" alt="">Vestido <span class="pill">melhor</span></div></td><td>R$ 120</td><td>R$ 50</td><td>R$ 70</td><td>12</td><td><div class="tm"><div class="bar"><i style="--w:100%"></i></div>R$ 5,83</div></td></tr>
+        <tr><td><div class="prod"><img src="img/camisa.webp" alt="">Camisa</div></td><td>R$ 80</td><td>R$ 30</td><td>R$ 50</td><td>10</td><td><div class="tm"><div class="bar"><i style="--w:86%"></i></div>R$ 5,00</div></td></tr>
+      </table>
+      <p class="note rv" style="--d:5">Pela margem, a calça parece a melhor. Pelo gargalo, a ordem é <b>vestido, camisa, calça</b>. <span style="color:var(--muted);font-weight:600">Números ilustrativos.</span></p>
+    </div>
+    <div class="foot"><span class="src">Goldratt (1990); Marques &amp; Cia (1998)</span><span class="pg"></span></div>
+  </section>
+
+  <!-- aplicação 2 -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker rv">Aplicação 2 · Serviço (ambulatório)</div>
+      <h1 class="rv" style="--d:1">Os 5 passos no fluxo de <em>pacientes</em></h1>
+      <div class="flow rv" style="--d:2">
+        <div class="st"><img src="img/recibo.webp" alt="">Recepção</div><div class="arr">→</div>
+        <div class="st"><img src="img/estetoscopio.webp" alt="">Triagem</div><div class="arr">→</div>
+        <div class="st bn"><div class="queue"><i></i><i></i><i></i><i></i></div><img src="img/medica.webp" alt="">Consulta médica</div><div class="arr">→</div>
+        <div class="st"><img src="img/tubo-ensaio.webp" alt="">Exames</div><div class="arr">→</div>
+        <div class="st"><img src="img/casa.webp" alt="">Alta</div>
+      </div>
+      <div class="grid g5 s5">
+        <div class="card rv" style="--d:3"><div class="n">1</div><h3>Identificar</h3><p>A fila cresce na porta do consultório: o médico é o gargalo.</p></div>
+        <div class="card rv" style="--d:4"><div class="n">2</div><h3>Explorar</h3><p>O médico só faz consulta; prontuário e triagem chegam prontos.</p></div>
+        <div class="card rv" style="--d:5"><div class="n">3</div><h3>Subordinar</h3><p>Recepção e triagem chamam no ritmo do consultório, com agendamento escalonado.</p></div>
+        <div class="card rv" style="--d:6"><div class="n">4</div><h3>Elevar</h3><p>Mais um turno ou mais um médico no horário de pico.</p></div>
+        <div class="card rv" style="--d:7"><div class="n">5</div><h3>Repetir</h3><p>A fila passou para os exames? Esse é o novo gargalo.</p></div>
+      </div>
+    </div>
+    <div class="foot"><span class="src">Goldratt &amp; Cox (1984); Cox &amp; Schleier (2010)</span><span class="pg"></span></div>
+  </section>
+
+  <!-- aplicação 3 -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker rv">Aplicação 3 · Projetos (Corrente Crítica)</div>
+      <h1 class="rv" style="--d:1">Um pulmão para o projeto, <em>não um para cada tarefa</em></h1>
+      <div class="gantt rv" style="--d:2">
+        <div class="grow-row"><div class="lab">Tradicional</div><div class="bars"><i class="t" style="flex:3;--k:0"></i><i class="m" style="flex:2;--k:1"></i><i class="t" style="flex:4;--k:2"></i><i class="m" style="flex:2;--k:3"></i><i class="t" style="flex:2;--k:4"></i><i class="m" style="flex:2;--k:5"></i></div></div>
+        <div class="grow-row"><div class="lab">Corrente crítica</div><div class="bars"><i class="t" style="flex:3;--k:0"></i><i class="t" style="flex:4;--k:1"></i><i class="t" style="flex:2;--k:2"></i><i class="b" style="flex:3;--k:3">pulmão do projeto</i><span style="flex:3"></span><b class="end" style="left:80%"><span>entrega antes</span></b></div></div>
+      </div>
+      <div class="ticks">
+        <div class="rv" style="--d:4">Cada tarefa é estimada <b>sem margem de segurança</b>, pelo tempo provável.</div>
+        <div class="rv" style="--d:5">As margens viram um <b>pulmão do projeto</b> no fim, menor que a soma delas.</div>
+        <div class="rv" style="--d:6"><b>Pulmões de convergência</b> protegem onde caminhos se juntam à corrente crítica.</div>
+        <div class="rv" style="--d:7">O acompanhamento é pelo <b>consumo do pulmão</b>, contra a síndrome do estudante e a lei de Parkinson.</div>
+      </div>
+    </div>
+    <div class="foot"><span class="src">Goldratt (1997); Newbold (1998)</span><span class="pg"></span></div>
+  </section>
+
