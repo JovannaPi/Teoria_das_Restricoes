@@ -92,9 +92,9 @@ Preservado: motor de simulação, as 5 fases do modo completo e seus parâmetros
 - **Falas montadas com os dados da partida** (`src/game/talk.ts`): cada aprendiz fala da própria estação (fila, tempo ocupado ou parado, ritmo, pausas e limpeza); a mentora ensina o passo da TOC em que o jogador está, detectado pelas decisões dele (identificar → explorar → subordinar → elevar → recomeçar).
 - **Dicas em níveis:** 1) uma pergunta ou um sinal para observar; 2) o porquê; 3) a orientação direta, com os números da partida. O nível sobe quando o jogador pede "Me explica melhor", volta a perguntar ou erra seguidas vezes. Exemplo (identificar): "Se você fosse uma poção, em que estação passaria mais tempo esperando?" → "Procure dois sinais juntos: fila crescendo e estação ocupada quase o tempo todo…" → "A loja recebe 6,4 poções/min e o Caldeirão faz só 4,8/min…".
 
-## Modo rápido para aula (8 a 12 minutos)
+## Modo rápido para aula (10 a 15 minutos)
 
-O modo completo não mudou. O modo rápido (botão **Modo rápido — 8 a 12 minutos**) agora é uma versão enxuta:
+O modo completo não mudou. O modo rápido (botão **Modo rápido — 10 a 15 minutos**) agora é uma versão enxuta:
 
 | Item | Modo completo | Modo rápido |
 |---|---|---|

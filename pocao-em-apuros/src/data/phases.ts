@@ -107,7 +107,7 @@ export const PHASES: PhaseDef[] = [
     number: 0,
     title: 'Modo rápido',
     subtitle: 'Desafio da Turma',
-    tocStep: 'Os cinco passos, em 8 a 12 minutos',
+    tocStep: 'Os cinco passos e um segundo dia, em 10 a 15 minutos',
     goalText: 'Descubra por que a loja não dá conta dos pedidos e melhore a produção, um passo de cada vez.',
     // Versão enxuta para aula: 4 estações, 1 tipo de poção, pedidos aceitos e ingredientes repostos
     // sozinhos, sem eventos aleatórios. O Caldeirão é a restrição (≈4,4 poções/min para ≈6/min

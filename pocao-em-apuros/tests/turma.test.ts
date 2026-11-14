@@ -152,6 +152,28 @@ describe('Modo rápido (aula)', () => {
     }
   });
 
+  it('segundo dia: com a Destilação como restrição, ajudar nela aumenta a capacidade, ajudar o Preparo não, e o alambique resolve', () => {
+    const s = sim();
+    advance(s, 60);
+    A.setStationPolicy(s, 'setupExternal', 'caldeirao', true);
+    surge(s);
+    s.cash = 2000;
+    A.buyUpgrade(s, 'caldeirao_extra');
+    advance(s, 30);
+    expect(analyzeCapacity(s).constraint).toBe('destilacao');
+    const base = analyzeCapacity(s).loads.destilacao.mixCapacityPerMin;
+    const outside = JSON.parse(JSON.stringify(s)) as SimState;
+    A.setHelper(outside, 'preparo');
+    expect(analyzeCapacity(outside).loads.destilacao.mixCapacityPerMin).toBeCloseTo(base, 5);
+    const inside = JSON.parse(JSON.stringify(s)) as SimState;
+    A.setHelper(inside, 'destilacao');
+    expect(analyzeCapacity(inside).loads.destilacao.mixCapacityPerMin).toBeGreaterThan(base * 1.1);
+    expect(A.buyUpgrade(s, 'alambique_duplo').ok).toBe(true);
+    advance(s, 40);
+    const a = analyzeCapacity(s);
+    expect(a.loads.destilacao.mixCapacityPerMin).toBeGreaterThan(base * 1.5);
+  });
+
   it('se comprar também o alambique, nenhuma estação fica sobrecarregada (o passo 5 não pede uma restrição)', () => {
     const s = sim();
     advance(s, 60);

@@ -56,7 +56,7 @@ export function tocStage(g: Game): TocStage {
   const s = g.sim!;
   if (g.phase?.mode === 'tutorial') return 'tutorial';
   if (g.guide && !g.guide.skipped) {
-    return (['identificar', 'identificar', 'identificar', 'explorar', 'subordinar', 'elevar', 'repetir', 'fim'] as TocStage[])[g.guide.index] ?? 'fim';
+    return (['identificar', 'identificar', 'identificar', 'explorar', 'subordinar', 'elevar', 'repetir', 'explorar', 'elevar', 'fim'] as TocStage[])[g.guide.index] ?? 'fim';
   }
   const c = constraintNow(s);
   if (!c) return 'manter';
