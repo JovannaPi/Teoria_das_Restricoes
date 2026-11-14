@@ -11,7 +11,7 @@ import type { StationId } from '../sim/types';
 export type CamMode = 'perto' | 'tudo';
 
 const MAX_SCALE = 3.2;
-const COMFORT = 1.6;
+const COMFORT = 1.35; // quanto a loja é ampliada no celular (menor = a câmera fica mais longe)
 const DRAG_START = 9; // px de tela antes de um toque virar arrasto
 
 export class Camera {
@@ -64,12 +64,12 @@ export class Camera {
     let vh = this.wrap.clientHeight;
     if (!vw || !vh) return;
     // em pé, num celular comprido, ampliar até preencher toda a altura mostraria só um terço da loja.
-    // A escala para quando ~45% da largura da loja está à vista; a altura que sobra vai para os pedidos.
+    // A escala para quando ~52% da largura da loja está à vista; a altura que sobra vai para os pedidos.
     const body = document.body;
     const portrait = vh > vw;
     const extra = body.classList.contains('stage-capped') ? (document.getElementById('bottom')?.offsetHeight ?? 0) : 0;
     const avail = vh + extra;
-    const sMax = Math.min(MAX_SCALE, vw / (W * 0.45));
+    const sMax = Math.min(MAX_SCALE, vw / (W * 0.52));
     const capped = portrait && this.mode === 'perto' && Math.max(vw / W, avail / H) > sMax * 1.02 && avail - H * sMax > 90;
     if (capped !== body.classList.contains('stage-capped') || (capped && Math.abs(vh - Math.round(H * sMax)) > 1)) {
       body.classList.toggle('stage-capped', capped);

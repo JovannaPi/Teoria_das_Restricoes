@@ -2,7 +2,7 @@
 // Só contagens (ninguém é exposto por ter errado); o ranking usa o nome da bruxa.
 import type { Game } from '../game/game';
 import { drawQr, isLocalUrl } from '../online/qr';
-import { debatePrompts, hostedRoom, newRoomCode, rememberHostedRoom, roomOpen, roomPlayers, roomUrl, setRoomOpen, STEP_NAMES, summarize, watchRoom, type RoomEntry } from '../online/room';
+import { debatePrompts, hostedRoom, newRoomCode, rememberHostedRoom, roomOpen, roomPlayers, roomUrl, setRoomOpen, summarize, watchRoom, type RoomEntry } from '../online/room';
 import { esc } from './dom';
 
 let stop: (() => void) | null = null;
@@ -18,7 +18,9 @@ function gateHtml(): string {
   if (open)
     return `<div class="rp-gate open"><b>Sala liberada</b> · ${quem}. Quem escanear agora cria a bruxa e entra direto.
       <button class="mini" data-action="room-gate">Fechar a sala</button></div>`;
-  const names = rows.map((r) => `<span>${esc(r.bruxa)}</span>`).join('');
+  // com muita gente, só os primeiros nomes (o painel cabe numa tela, sem rolar)
+  const shown = rows.slice(0, 14);
+  const names = shown.map((r) => `<span>${esc(r.bruxa)}</span>`).join('') + (rows.length > shown.length ? `<span>+${rows.length - shown.length}</span>` : '');
   return `<div class="rp-gate closed"><div><b>Sala fechada</b> · ${quem} esperando</div>
       <button class="primary big" data-action="room-gate">Liberar a turma</button>
       <small>Quando todo mundo aparecer aqui, libere: todos começam ao mesmo tempo.</small>
@@ -30,11 +32,6 @@ const pretty = (u: string) => u.replace(/^https?:\/\//, '');
 
 function liveHtml(): string {
   const s = summarize(rows);
-  const max = Math.max(1, ...s.porPasso);
-  const steps = STEP_NAMES.map(
-    (name, i) =>
-      `<li><span>${esc(name)}</span><i class="bar"><i style="width:${(s.porPasso[i] / max) * 100}%"></i></i><b>${s.porPasso[i]}</b></li>`,
-  ).join('');
   const fact = (n: string, label: string, sub = '') => `<div class="rp-fact"><b>${n}</b><span>${label}</span>${sub ? `<small>${sub}</small>` : ''}</div>`;
   const facts = [
     fact(s.identificaram ? `${s.dePrimeira} de ${s.identificaram}` : '—', 'acharam o gargalo de primeira'),
@@ -44,7 +41,7 @@ function liveHtml(): string {
     fact(s.capMedia != null ? fmt(s.capMedia) : '—', 'poções por minuto no fim', 'média de quem terminou · começo: 4,4'),
   ].join('');
   const rank = s.ranking.length
-    ? `<ol class="rp-rank">${s.ranking.map((r) => `<li><span>${esc(r.bruxa)}</span><b>${r.pontos}</b></li>`).join('')}</ol>`
+    ? `<ol class="rp-rank">${s.ranking.slice(0, 6).map((r) => `<li><span>${esc(r.bruxa)}</span><b>${r.pontos}</b></li>`).join('')}</ol>`
     : '<p class="muted">O ranking aparece quando alguém terminar.</p>';
   const debate = debatePrompts(s);
   const msg =
@@ -60,7 +57,6 @@ function liveHtml(): string {
   }
   return `${msg}
     <div class="rp-count"><b>${s.total}</b> ${s.total === 1 ? 'pessoa entrou' : 'pessoas entraram'} · <b>${s.terminaram}</b> terminaram</div>
-    <h2>Onde a turma está</h2><ul class="rp-steps">${steps}</ul>
     <h2>O que a turma fez</h2><div class="rp-facts">${facts}</div>
     <div class="rp-bottom">
       <div><h2>Ranking da sala</h2>${rank}</div>
