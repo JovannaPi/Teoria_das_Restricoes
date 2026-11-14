@@ -384,7 +384,7 @@ try {
     check('rápido: botão do modo rápido grande e visível sem rolar', pb.h >= 56 && pb.bottom <= pb.vh, `${Math.round(pb.h)} px de altura`);
     {
       const t = await m.evaluate(() => [...document.querySelectorAll('.main-actions .play-btn')].map((b) => ({ txt: b.textContent, vis: b.getBoundingClientRect().bottom <= innerHeight })));
-      check('início: duas opções claras — "Modo rápido — 8 a 12 minutos" e "Modo completo"', t.length === 2 && /Modo rápido — 8 a 12 minutos/.test(t[0].txt) && /Modo completo/.test(t[1].txt) && t.every((x) => x.vis), JSON.stringify(t));
+      check('início: duas opções claras — "Modo rápido — 10 a 15 minutos" e "Modo completo"', t.length === 2 && /Modo rápido — 10 a 15 minutos/.test(t[0].txt) && /Modo completo/.test(t[1].txt) && t.every((x) => x.vis), JSON.stringify(t));
     }
     await m.screenshot({ path: join(shotsDir, 'rapido-01-inicio.png') });
     await m.tap('.play-btn');
@@ -510,7 +510,29 @@ try {
     await choose('ok');
     {
       const t = await coach();
-      const mm = /No começo, a loja conseguia entregar ([\d,]+) poções por minuto; agora, ([\d,]+)\./.exec(t);
+      check('rápido: segundo dia — recomeça o ciclo na nova restrição (Destilação), com escolhas sem custo', /Dia 2/.test(t) && /Destilação/.test(t) && (await has('helper')) && (await has('helper-preparo')), t.slice(0, 200));
+    }
+    await choose('helper-preparo');
+    await ff(30);
+    check('rápido: dia 2 — ajudar quem não é a restrição não muda nada, e dá para tentar outra', /Não mudou nada: a Destilação/.test(await coach()) && (await has('helper')), (await coach()).slice(0, 200));
+    await choose('helper');
+    await ff(30);
+    {
+      const t = await coach();
+      const mm = /A Destilação fazia ([\d,]+) poções por minuto; agora faz ([\d,]+)/.exec(t);
+      check('rápido: dia 2 — ajudar na restrição aumenta o que ela faz (com o artigo certo)', !!mm && Number(mm[2].replace(',', '.')) > Number(mm[1].replace(',', '.')), mm ? mm[0] : t.slice(0, 200));
+    }
+    await choose('ok');
+    check('rápido: dia 2 — passo de investir de novo, com o alambique entre as opções', /Dia 2, passo de investir/.test(await coach()) && (await has('alambique_duplo')) && !(await has('caldeirao_extra')));
+    await choose('alambique_duplo');
+    await choose('alambique_duplo');
+    await ff(45);
+    check('rápido: dia 2 — investir de novo na restrição mostra o efeito', /A Destilação fazia ([\d,]+) poções por minuto; agora faz/.test(await coach()), (await coach()).slice(0, 200));
+    await choose('ok');
+    {
+      const t = await coach();
+      check('rápido: o fim lembra que o ciclo nunca acaba (restrição que se move ou o mercado)', /recomeçou o ciclo no segundo dia/.test(t) && /ciclo/.test(t.split('segundo dia')[1] || ''), t.slice(0, 300));
+      const mm = /No começo, a loja conseguia entregar ([\d,]+) poções por minuto; agora, ([\d,]+)(?: — tudo o que chega)?\./.exec(t);
       check('rápido: fim compara começo e agora com os mesmos números das etapas', !!mm && mm[1] === '4,4' && Number(mm[2].replace(',', '.')) > 4.4, t.slice(0, 260));
     }
     const tSim = await m.evaluate(() => window.__pocao.game.sim.t);
@@ -679,7 +701,7 @@ try {
     const read = jsQR(Uint8ClampedArray.from(px.data), px.w, px.h);
     check('QR do slide é lido e aponta para o endereço informado', read?.data === pub, read?.data || 'não lido');
     const slideText = await p.textContent('.slide');
-    check('slide tem título, instrução, tempo e endereço alternativo', /Poção em Apuros/.test(slideText) && /Aponte a câmera e jogue/.test(slideText) && /8 a 12 minutos/.test(slideText) && /jovannapi\.github\.io/.test(slideText));
+    check('slide tem título, instrução, tempo e endereço alternativo', /Poção em Apuros/.test(slideText) && /Aponte a câmera e jogue/.test(slideText) && /10 a 15 minutos/.test(slideText) && /jovannapi\.github\.io/.test(slideText));
     await p.screenshot({ path: join(shotsDir, 'slide-qr.png') });
     await p.close();
   }

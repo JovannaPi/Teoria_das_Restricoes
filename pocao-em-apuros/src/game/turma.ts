@@ -1,4 +1,4 @@
-// Modo rápido (aula, 8 a 12 minutos): loja enxuta (4 estações, 1 poção), uma decisão por etapa,
+// Modo rápido (aula, 10 a 15 minutos, dois dias): loja enxuta (4 estações, 1 poção), uma decisão por etapa,
 // tudo dentro de um cartão da mentora com botões grandes. Cada decisão age na simulação real e o
 // cartão mostra o efeito medido (antes → depois). Uma escolha que não ajuda (melhorar quem não é a
 // restrição, manter todo mundo ocupado, investir no lugar errado) também é medida, e o jogador pode
@@ -33,6 +33,7 @@ export interface TurmaMarks {
   triedOutside?: boolean; // no passo 2, ajudou quem não era a restrição
   wastedBuy?: boolean; // no passo 4, comprou fora da restrição
   firstWrong?: number; // palpites errados antes de achar o gargalo pela primeira vez
+  day2Start?: number; // segundo dia: quando começou
   baseWip?: number;
 }
 
@@ -54,10 +55,10 @@ interface Card {
 }
 
 const OBSERVING = 'Repare em qual fila cresce…';
-const STEP = ['O problema', '1 · Identificar o gargalo', '2 · Explorar: tirar mais sem gastar', '3 · Subordinar: seguir o ritmo', '4 · Elevar: investir', '5 · Recomeçar', 'Resultado'];
+const STEP = ['O problema', '1 · Identificar o gargalo', '2 · Explorar: tirar mais sem gastar', '3 · Subordinar: seguir o ritmo', '4 · Elevar: investir', '5 · Recomeçar', 'Dia 2 · Explorar a nova restrição', 'Dia 2 · Elevar de novo', 'Resultado'];
 
 export class TurmaGuide {
-  index = 0; // etapa atual (0..7)
+  index = 0; // etapa atual (0..9): 0-6 = primeiro dia, 7-8 = segundo dia, 9 = resultado
   marks: TurmaMarks;
   skipped = false;
   private coach: HTMLElement | null = null;
@@ -208,14 +209,39 @@ export class TurmaGuide {
         this.card = { step: STEP[5], text: 'A loja mudou! Por enquanto, todo pedido entra assim que chega: observe em que fila ele se acumula…', wait: OBSERVING };
         break;
       case 7: {
+        // segundo dia: o ciclo recomeça na nova restrição (a restrição se move, e a TOC manda recomeçar)
+        const C = STATIONS[this.drum()].short;
+        this.marks.day2Start = s.t;
+        this.card = {
+          step: STEP[6],
+          text: `Dia 2. A loja agora está do jeito que você deixou, e quem segura tudo é ${the(this.drum()) === 'a' ? 'a' : 'o'} ${C}. De novo: primeiro tire mais dela sem gastar nada. O que fazer?`,
+          choices: this.exploreChoices(),
+        };
+        break;
+      }
+      case 8: {
+        this.cardWip = queued(s);
+        this.card = {
+          step: STEP[7],
+          text: `Dia 2, passo de investir: a procura continua alta (${fmt1(analyzeCapacity(s).demandPerMin)} poções por minuto) e só dá para melhorar de verdade onde a loja trava. ${this.cashLine()}`,
+          choices: this.elevateChoices(),
+        };
+        break;
+      }
+      case 9: {
         const fmt = (x: number) => x.toFixed(1).replace('.', ',');
         const cmp =
           this.marks.baseCap != null
             ? ` No começo, a loja conseguia entregar ${fmt(this.marks.baseCap ?? 0)} poções por minuto; agora, ${fmt(analyzeCapacity(s).systemCapacityPerMin)}${analyzeCapacity(s).maxLoad <= 1 ? ' — tudo o que chega' : ''}.`
             : '';
+        const fin = analyzeCapacity(s);
+        const tail =
+          fin.maxLoad <= 1
+            ? ' Agora a loja dá conta de tudo o que chega: o limite saiu de dentro da loja e passou para o mercado. Mas o ciclo nunca acaba: se algo mudar, recomece do passo 1.'
+            : ` Mas agora ${the(fin.constraint === 'mercado' ? 'caldeirao' : fin.constraint) === 'a' ? 'a' : 'o'} ${fin.constraint === 'mercado' ? 'mercado' : STATIONS[fin.constraint].short} voltou a segurar a loja: a restrição se move, e o ciclo recomeça.`;
         this.card = {
-          step: STEP[6],
-          text: `Pronto: você passou pelos cinco passos!${cmp}`,
+          step: STEP[8],
+          text: `Pronto: você passou pelos cinco passos, e ainda recomeçou o ciclo no segundo dia!${cmp}${tail}`,
           choices: [{ v: 'fim', label: 'Ver o resultado agora', primary: true }],
         };
         break;
@@ -225,7 +251,7 @@ export class TurmaGuide {
     // o caixa só aparece quando há o que fazer com ele
     document.body.classList.toggle('show-cash', this.index >= 5);
     // nas etapas que agem sobre a restrição, a câmera mostra a restrição
-    if (this.index >= 3 && this.index <= 5) this.g.camera.focusStation(this.drum());
+    if ((this.index >= 3 && this.index <= 5) || this.index === 7 || this.index === 8) this.g.camera.focusStation(this.drum());
     this.render(true);
     this.g.refreshUi(true);
   }
@@ -246,7 +272,7 @@ export class TurmaGuide {
       {
         jogadorId: this.g.save.playerId,
         bruxa: heroName(),
-        passo: end ? 7 : this.stepIndex(),
+        passo: end ? 7 : this.roomStep(),
         erros: Math.min(20, m.firstWrong ?? 0),
         preparo: !!m.triedOutside,
         ocupado: !!m.triedBusy,
@@ -369,12 +395,13 @@ export class TurmaGuide {
         }
         break;
       }
-      case 3: {
+      case 3:
+      case 7: {
         const id = this.drum();
         this.tried.add(v);
         // o "antes" é medido antes de a decisão valer
         const helper = v === 'helper' || v === 'helper-preparo';
-        if (v === 'helper-preparo') this.marks.triedOutside = true;
+        if (v === 'helper-preparo' && this.index === 3) this.marks.triedOutside = true;
         // a câmera mostra a bruxa indo até lá
         if (helper) this.g.camera.focusStation(v === 'helper' ? id : 'preparo');
         this.startMeasure(v === 'helper-preparo' ? 'explorar-fora' : 'explorar', helper ? 18 : 12);
@@ -421,7 +448,8 @@ export class TurmaGuide {
         this.card.wait = 'Repare nas poções paradas pela loja…';
         break;
       }
-      case 5: {
+      case 5:
+      case 8: {
         if (v === 'nada') {
           addLog(s, 'decisao', 'Decidiu não investir.');
           this.card.feedback = 'Sem investir, a loja continua do mesmo tamanho — e agora chegam mais clientes.';
@@ -454,7 +482,7 @@ export class TurmaGuide {
         this.card.wait = `Instalando: ${UPGRADES[u].name}…`;
         break;
       }
-      case 7:
+      case 9:
         if (v === 'fim') {
           s.duration = Math.max(s.t + 0.2, 1);
         }
@@ -484,14 +512,18 @@ export class TurmaGuide {
     let kind: Card['feedbackKind'] = 'good';
     let retry: Choice[] = [];
     const C = STATIONS[this.drum()].short;
+    const fem = the(this.drum()) === 'a';
+    const art = fem ? 'a' : 'o';
+    const Art = fem ? 'A' : 'O';
+    const pron = fem ? 'ela' : 'ele';
     const cap = this.capNow();
     if (m.kind === 'explorar') {
       const dem = analyzeCapacity(s).demandPerMin;
       text =
-        `Boa! O ${C} fazia ${fmt(m.base.cap)} poções por minuto; agora faz ${fmt(cap)} — sem gastar nada.` +
-        (cap < dem * 0.97 ? ` Mas ainda chegam ${fmt(dem)} por minuto: ele continua segurando a loja.` : ` Agora ele faz o mesmo tanto que chega (${fmt(dem)} por minuto).`);
+        `Boa! ${Art} ${C} fazia ${fmt(m.base.cap)} poções por minuto; agora faz ${fmt(cap)} — sem gastar nada.` +
+        (cap < dem * 0.97 ? ` Mas ainda chegam ${fmt(dem)} por minuto: ${pron} continua segurando a loja.` : ` Agora ${pron} faz o mesmo tanto que chega (${fmt(dem)} por minuto).`);
     } else if (m.kind === 'explorar-fora') {
-      text = `Não mudou nada: o ${C} continua fazendo ${fmt(cap)} poções por minuto, e toda poção passa por ele. Tente outra.`;
+      text = `Não mudou nada: ${art} ${C} continua fazendo ${fmt(cap)} poções por minuto, e toda poção passa por ${pron}. Tente outra.`;
       kind = 'bad';
       retry = this.exploreChoices();
     } else if (m.kind === 'corda' || m.kind === 'empurrar') {
@@ -514,10 +546,10 @@ export class TurmaGuide {
       const st = own ? UPGRADES[own.id].station : null;
       const wasC = st === this.drum();
       text = wasC
-        ? `Boa! O ${C} fazia ${fmt(m.base.cap)} poções por minuto; agora faz ${fmt(cap)}. Você aumentou quem segurava a loja.`
-        : `Não mudou nada: a loja continua conseguindo entregar ${fmt(analyzeCapacity(s).systemCapacityPerMin)} poções por minuto, porque toda poção ainda passa pelo ${C}. Você gastou e nada melhorou.`;
+        ? `Boa! ${Art} ${C} fazia ${fmt(m.base.cap)} poções por minuto; agora faz ${fmt(cap)}. Você aumentou quem segurava a loja.`
+        : `Não mudou nada: a loja continua conseguindo entregar ${fmt(analyzeCapacity(s).systemCapacityPerMin)} poções por minuto, porque toda poção ainda passa pel${art} ${C}. Você gastou e nada melhorou.`;
       kind = wasC ? 'good' : 'bad';
-      if (!wasC) this.marks.wastedBuy = true;
+      if (!wasC && this.index === 5) this.marks.wastedBuy = true;
       if (!wasC) retry = this.elevateChoices().filter((c) => c.v === 'nada' || UPGRADES[c.v as UpgradeId].price <= s.cash);
     }
     this.card.wait = undefined;
@@ -566,7 +598,7 @@ export class TurmaGuide {
         }
       }
       // o relógio é referência, não pressão: o dia se estende até o jogador passar pelos cinco passos
-      if (!this.skipped && this.index < 7 && s.duration - s.t < 30 && s.duration < 900) {
+      if (!this.skipped && this.index < 9 && s.duration - s.t < 30 && s.duration < 900) {
         s.duration += 60;
         if (s.nextArrivalAt === Number.POSITIVE_INFINITY) s.nextArrivalAt = s.t + 5;
       }
@@ -666,7 +698,12 @@ export class TurmaGuide {
   }
 
   private stepIndex(): number {
-    return [0, 0, 1, 2, 3, 4, 5, 6][this.index] ?? 6;
+    return [0, 0, 1, 2, 3, 4, 5, 6, 7, 8][this.index] ?? 8;
+  }
+
+  /** Passo mostrado no telão da turma (o segundo dia conta como "Recomeçar"). */
+  private roomStep(): number {
+    return [0, 0, 1, 2, 3, 4, 5, 5, 5, 6][this.index] ?? 6;
   }
 
   dispose(): void {

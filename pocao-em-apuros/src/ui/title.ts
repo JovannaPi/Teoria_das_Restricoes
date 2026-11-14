@@ -80,12 +80,12 @@ export function renderTitle(g: Game): void {
       <p>Sua loja de poções está atrasada. Descubra o que trava a produção e salve o dia.</p>${s.hero ? `<p class="hero-tag">${esc(s.hero.name)}</p>` : ''}</div></div>
     ${room ? `<p class="room-tag">Você está na <b>sala ${esc(room)}</b>: seu progresso aparece no telão da turma (só o nome da bruxa).</p>
     <div class="menu-list main-actions">
-      <button class="primary play-btn" data-action="room-lobby">${iconImg('play')} Modo sala de aula <small>Guiado, 8 a 12 minutos. Sua pontuação entra no ranking da sala.</small></button>
+      <button class="primary play-btn" data-action="room-lobby">${iconImg('play')} Modo sala de aula <small>Guiado, 10 a 15 minutos. Sua pontuação entra no ranking da sala.</small></button>
       <button data-action="room-rank">${iconImg('star')} Ranking da sala</button>
       <button class="mini" data-action="room-leave">Sair da sala</button>
     </div>` : `<div class="menu-list main-actions">
       ${runPhase ? `<button class="primary" data-action="title-continue">${iconImg('play')} Continuar: ${esc(runPhase.title)}</button>` : ''}
-      <button class="${runPhase ? '' : 'primary'} play-btn" data-action="title-start" data-v="turma">${iconImg('play')} Modo rápido — 8 a 12 minutos <small>Guiado, ideal para a aula: os cinco passos da TOC na prática</small></button>
+      <button class="${runPhase ? '' : 'primary'} play-btn" data-action="title-start" data-v="turma">${iconImg('play')} Modo rápido — 10 a 15 minutos <small>Guiado, ideal para a aula: os cinco passos da TOC na prática</small></button>
       <button class="play-btn full-btn" data-action="title-more">${iconImg('book')} Modo completo <small>A experiência original: tutorial, 5 fases e a Bruxa Mestra</small></button>
       <div class="row2">
         <button data-action="title-howto">${iconImg('scroll')} Como jogar</button>
