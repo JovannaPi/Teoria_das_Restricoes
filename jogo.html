@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="vendor/qrcode.min.js"></script>
 <style>
   :root{
     --cream:#120a1f; --paper:#1e1233; --ink:#f4e9ff; --ink-soft:#a892d6;
@@ -39,7 +39,7 @@
   button:active{transform:scale(.95);}
   input[type=text]{font-family:"Press Start 2P", "Courier New", monospace;}
   .hidden{display:none !important;}
-  #screen-start:not(.hidden), #screen-game:not(.hidden), #screen-end:not(.hidden), #screen-telao:not(.hidden){
+  #screen-start:not(.hidden), #screen-game:not(.hidden), #screen-end:not(.hidden), #screen-telao:not(.hidden), #screen-char:not(.hidden), #screen-lobby:not(.hidden){
     animation:screenIn .32s cubic-bezier(.2,.8,.3,1);
   }
   @keyframes screenIn{from{opacity:0; transform:translateY(10px);}to{opacity:1; transform:translateY(0);}}
@@ -139,7 +139,7 @@
   .qr-card{background:var(--paper); border-radius:20px; padding:20px; display:flex; justify-content:center; box-shadow:3px 3px 0 rgba(0,0,0,0.3);}
   .qr-card #qrHolder{background:#ffffff; padding:12px; border-radius:12px; line-height:0;}
   .qr-fallback{text-align:center; font-size:9.5px; color:var(--ink-soft); font-weight:700;}
-  .room-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:9px;}
+  .room-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(128px,1fr)); gap:9px;}
   .witch-card{
     background:var(--paper); border-radius:15px; padding:12px 8px 10px; text-align:center;
     box-shadow:2px 2px 0 rgba(0,0,0,0.3); animation:witchJoin .35s cubic-bezier(.3,1.4,.5,1);
@@ -149,8 +149,36 @@
   @keyframes witchJoin{from{opacity:0; transform:scale(.6) translateY(8px);}to{opacity:1; transform:scale(1) translateY(0);}}
   .witch-card .wc-icon{width:34px; height:34px; border-radius:50%; background:var(--red-dim); color:var(--red); display:flex; align-items:center; justify-content:center; margin:0 auto 6px;}
   .witch-card.done .wc-icon{background:var(--green-dim); color:var(--green);}
-  .witch-card .wc-name{font-family:"Press Start 2P","Courier New",monospace; font-weight:700; font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .witch-card .wc-name{font-family:"Press Start 2P","Courier New",monospace; font-weight:700; font-size:9.5px; line-height:1.5; overflow:hidden; overflow-wrap:anywhere;}
   .witch-card .wc-score{font-size:10.5px; color:var(--ink-soft); font-weight:800; margin-top:2px; font-variant-numeric:tabular-nums;}
+
+  /* ================= rodada da turma: personagem, sala de espera e controle do telão ================= */
+  .avatar{display:block; image-rendering:auto;}
+  .char-preview{display:flex; justify-content:center; margin:6px 0 4px;}
+  .char-preview .avatar{width:132px; height:132px; filter:drop-shadow(4px 4px 0 rgba(0,0,0,.35)); animation:avatarBob 2.4s ease-in-out infinite;}
+  @keyframes avatarBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+  .opt-row{display:flex; align-items:center; gap:10px; margin-top:12px;}
+  .opt-row .lab{flex:none; width:64px; font-family:"Press Start 2P","Courier New",monospace; font-size:9px; color:var(--ink-soft);}
+  .swatches{display:flex; gap:8px; flex-wrap:wrap;}
+  .swatch{width:32px; height:32px; border:2px solid rgba(244,233,255,.35); padding:0;}
+  .swatch.on{border-color:var(--yellow); box-shadow:0 0 0 3px var(--yellow); transform:scale(1.08);}
+  .lobby-box{text-align:center; padding:26px 16px;}
+  .lobby-box .avatar{width:150px; height:150px; margin:0 auto 12px; animation:avatarBob 2.4s ease-in-out infinite;}
+  .lobby-name{font-family:"Press Start 2P","Courier New",monospace; font-size:14px; margin-bottom:14px;}
+  .lobby-msg{font-family:"Nunito",system-ui,sans-serif; font-size:17px; font-weight:800; line-height:1.45; color:var(--ink-soft);}
+  .lobby-dots i{display:inline-block; width:9px; height:9px; margin:14px 4px 0; background:var(--yellow); animation:lobbyDot 1.2s ease-in-out infinite;}
+  .lobby-dots i:nth-child(2){animation-delay:.2s;} .lobby-dots i:nth-child(3){animation-delay:.4s;}
+  @keyframes lobbyDot{0%,100%{opacity:.25; transform:translateY(0);}50%{opacity:1; transform:translateY(-6px);}}
+  .countdown{font-family:"Press Start 2P","Courier New",monospace; font-size:84px; color:var(--yellow); margin-top:10px; animation:countPop .9s ease-out infinite;}
+  @keyframes countPop{0%{transform:scale(1.5); opacity:0;}25%{transform:scale(1); opacity:1;}100%{transform:scale(.9); opacity:.7;}}
+  .gate{margin-top:14px; background:var(--paper); padding:14px; text-align:center;}
+  .gate-state{font-family:"Press Start 2P","Courier New",monospace; font-size:11px; line-height:1.6; margin-bottom:10px;}
+  .gate-state.open{color:var(--green);} .gate-state.closed{color:var(--yellow);}
+  .gate-hint{font-family:"Nunito",system-ui,sans-serif; font-size:13px; font-weight:700; color:var(--ink-soft); margin-top:10px;}
+  .gate .btn-ghost{margin-top:8px;}
+  .witch-card .avatar{width:54px; height:54px; margin:0 auto 4px;}
+  .witch-card.waiting{border-color:var(--yellow);}
+  .lb-row .avatar{width:24px; height:24px; flex:none; margin-right:6px;}
 
   /* ================= HUD ================= */
   .hud{
@@ -460,11 +488,52 @@
     </div>
   </div>
 
+  <!-- ============ RODADA DA TURMA: criar personagem ============ -->
+  <div id="screen-char" class="hidden">
+    <div class="telao-head">
+      <h1 class="spell-title small">Confraria do <span>Gargalo</span></h1>
+      <p class="tag">rodada da turma &middot; monte sua bruxa (ou bruxo)</p>
+    </div>
+    <div class="card name-card">
+      <div class="char-preview" id="charPreview"></div>
+      <label for="charName">Seu nome</label>
+      <div class="name-row">
+        <input type="text" id="charName" class="field" placeholder="Ex: Bruxa das Bolhas" maxlength="16">
+        <button class="dice-btn" id="charDice" type="button" title="Sortear nome e apar&ecirc;ncia"><svg class="icon" width="18" height="18"><use href="#i-dice"/></svg></button>
+      </div>
+      <div class="opt-row"><span class="lab">Chap&eacute;u</span><div class="swatches" data-part="0"></div></div>
+      <div class="opt-row"><span class="lab">Roupa</span><div class="swatches" data-part="1"></div></div>
+      <div class="opt-row"><span class="lab">Pele</span><div class="swatches" data-part="2"></div></div>
+      <div class="opt-row"><span class="lab">Cabelo</span><div class="swatches" data-part="3"></div></div>
+    </div>
+    <div style="margin-top:14px;">
+      <button class="btn-main" id="charGo">Entrar na sala <svg class="icon" width="16" height="16"><use href="#i-chevron"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ============ RODADA DA TURMA: sala de espera ============ -->
+  <div id="screen-lobby" class="hidden">
+    <div class="card lobby-box">
+      <div id="lobbyAvatar"></div>
+      <div class="lobby-name" id="lobbyName"></div>
+      <div id="lobbyWait">
+        <div class="lobby-msg">Voc&ecirc; est&aacute; na sala!<br>O jogo come&ccedil;a quando a professora liberar no tel&atilde;o.</div>
+        <div class="lobby-dots"><i></i><i></i><i></i></div>
+      </div>
+      <div id="lobbyCount" class="hidden"><div class="lobby-msg">Preparar&hellip;</div><div class="countdown" id="lobbyNum">3</div></div>
+    </div>
+    <div style="margin-top:14px;">
+      <button class="btn-ghost" id="lobbyBack">Mudar nome ou apar&ecirc;ncia</button>
+      <div style="height:9px;"></div>
+      <button class="btn-ghost hidden" id="lobbySolo">Sem conex&atilde;o com a sala &mdash; jogar assim mesmo</button>
+    </div>
+  </div>
+
   <!-- ============ TELÃO (host) ============ -->
   <div id="screen-telao" class="hidden">
     <div class="telao-head">
       <h1 class="spell-title small">Confraria do <span>Gargalo</span></h1>
-      <p class="tag">escaneie pra entrar na confraria e jogar no seu celular</p>
+      <p class="tag">escaneie, monte sua bruxa e espere a libera&ccedil;&atilde;o</p>
     </div>
     <div class="qr-card">
       <div id="qrHolder"></div>
@@ -472,6 +541,12 @@
         <p>N&atilde;o deu pra desenhar o c&oacute;digo aqui &mdash; copie o link:</p>
         <button class="btn-ghost" id="copyLinkBtn">Copiar link</button>
       </div>
+    </div>
+    <div class="card gate" id="gateBox">
+      <div class="gate-state closed" id="gateState">Conectando&hellip;</div>
+      <button class="btn-main hidden" id="gateOpen">Liberar a turma</button>
+      <button class="btn-ghost hidden" id="gateClose">Fechar a sala e come&ccedil;ar nova rodada</button>
+      <div class="gate-hint" id="gateHint"></div>
     </div>
     <div class="lb-head">
       <h3>Bruxas na sala</h3>
@@ -737,12 +812,74 @@ try{
     list.sort(function(a,b){ return b.score-a.score; });
     var html='';
     list.slice(0,15).forEach(function(e,i){
-      html += '<div class="lb-row '+(i===0?'top1':'')+'"><span class="rk">'+(i+1)+'</span><span class="nm">'+esc(e.name||'Equipe')+'</span><span class="sc">'+e.score+'</span></div>';
+      html += '<div class="lb-row '+(i===0?'top1':'')+'"><span class="rk">'+(i+1)+'</span>'+(splitName(e.name).code?avatarSvg(splitName(e.name).code):'')+'<span class="nm">'+esc(splitName(e.name).name||'Equipe')+'</span><span class="sc">'+e.score+'</span></div>';
     });
     box.innerHTML = html;
   }
 
   /* ---------------- db (live room / who's playing) ---------------- */
+  /* ---------------- rodada da turma (?turma): personagem, sala de espera e liberação pelo telão ----------------
+     A aparência vai junto do nome, como "Nome~0123" (4 dígitos: chapéu, roupa, pele, cabelo), para caber
+     nas regras do Firestore que já existem. O documento confraria_sala/_controle guarda o estado da sala:
+     status 'concluido' = fechada (esperando), 'jogando' = liberada; score = minuto do dia em que a rodada abriu. */
+  var TURMA = /[?&]turma\b/.test(location.search);
+  var AV = [
+    ['#7c4dff','#ff4d6d','#39e6a4','#ffd23f','#4ec9ff','#ff9f45'],
+    ['#5b2a86','#c2255c','#1f9d74','#d9a514','#2478c2','#d9642b'],
+    ['#ffdbb4','#eac086','#c68642','#8d5524','#5c3a21','#b6f2a1'],
+    ['#2b1b12','#7a4a21','#e8b04a','#d9482b','#f4e9ff','#b48bff']
+  ];
+  var avatarCode = [0,0,0,0];
+  function splitName(full){
+    var m = /^(.*)~([0-5]{4})$/.exec(String(full||''));
+    return m ? {name:m[1], code:m[2].split('').map(Number)} : {name:String(full||''), code:null};
+  }
+  function fullName(){
+    var n = ($('charName').value.trim() || 'Bruxa').slice(0,16);
+    return n + '~' + avatarCode.join('');
+  }
+  function avatarSvg(code){
+    var c = code || [0,0,0,0], hat=AV[0][c[0]], robe=AV[1][c[1]], skin=AV[2][c[2]], hair=AV[3][c[3]];
+    return '<svg class="avatar" viewBox="0 0 64 64" aria-hidden="true">'
+      + '<path d="M12 64 Q14 45 32 43 Q50 45 52 64 Z" fill="'+robe+'"/>'
+      + '<path d="M28 44 L32 50 L36 44 Z" fill="rgba(0,0,0,.25)"/>'
+      + '<path d="M18 31 Q18 17 32 17 Q46 17 46 31 L47 47 Q40 42 32 42 Q24 42 17 47 Z" fill="'+hair+'"/>'
+      + '<circle cx="32" cy="32" r="11" fill="'+skin+'"/>'
+      + '<circle cx="28" cy="31" r="1.7" fill="#1e1233"/><circle cx="36" cy="31" r="1.7" fill="#1e1233"/>'
+      + '<path d="M28 36 Q32 39.5 36 36" fill="none" stroke="#1e1233" stroke-width="1.6" stroke-linecap="round"/>'
+      + '<circle cx="25" cy="35" r="1.8" fill="rgba(255,90,120,.45)"/><circle cx="39" cy="35" r="1.8" fill="rgba(255,90,120,.45)"/>'
+      + '<path d="M20 22 L35 1 L44 22 Z" fill="'+hat+'"/>'
+      + '<ellipse cx="32" cy="22.5" rx="21" ry="4.6" fill="'+hat+'"/>'
+      + '<rect x="21.5" y="16.5" width="21.5" height="4" fill="rgba(0,0,0,.3)"/><rect x="29.5" y="16" width="5" height="5" fill="#ffd23f"/>'
+      + '</svg>';
+  }
+  var CTRL_ID='_controle', CTRL_NAME='__controle__', ROUND_MAX_MS=3*3600*1000;
+  var ctrl={known:false, open:false, start:Date.now()-ROUND_MAX_MS};
+  function readCtrl(snap){
+    var d = snap && snap.exists() ? snap.data() : null;
+    var t = d && d.updatedAt && d.updatedAt.toMillis ? d.updatedAt.toMillis() : (d ? Date.now() : 0);
+    var fresh = !!d && Date.now()-t < ROUND_MAX_MS;
+    var start = Date.now()-ROUND_MAX_MS;
+    if(fresh){
+      var day=new Date(); day.setHours(0,0,0,0);
+      start = day.getTime() + (d.score||0)*60000;
+      if(start > Date.now()+60000) start -= 24*3600*1000;
+    }
+    return {known:true, exists:!!d, fresh:fresh, open:fresh && d.status==='jogando', start:start};
+  }
+  function writeCtrl(open, keepStart){
+    if(!db) return Promise.resolve(false);
+    var fs=db.fs, now=new Date();
+    var minute = keepStart ? Math.max(0, Math.min(1439, Math.round((ctrl.start - new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime())/60000))) : now.getHours()*60+now.getMinutes();
+    if(keepStart && ctrl.start < new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime()) minute = 0;
+    return fs.setDoc(fs.doc(db.db,'confraria_sala',CTRL_ID), {name:CTRL_NAME, status:open?'jogando':'concluido', score:minute, cycle:1, updatedAt:fs.serverTimestamp()})
+      .then(function(){ return true; }).catch(function(){ return false; });
+  }
+  function watchCtrl(cb, onError){
+    var fs=db.fs;
+    return fs.onSnapshot(fs.doc(db.db,'confraria_sala',CTRL_ID), function(snap){ cb(readCtrl(snap)); }, function(){ if(onError) onError(); });
+  }
+
   var PLAYER_ID_KEY='oficina_gargalo_player_id';
   function getPlayerId(){
     try{
@@ -774,14 +911,23 @@ try{
   function attachRoom(){
     try{
       if(roomUnsub) roomUnsub();
-      var fs=db.fs, q=fs.query(fs.collection(db.db,'confraria_sala'), fs.orderBy('updatedAt','desc'), fs.limit(60));
-      roomUnsub = fs.onSnapshot(q, function(snap){
-        var since=Date.now()-3*3600*1000; /* só quem jogou nas últimas 3 horas (a aula de hoje) */
-        renderRoom(snap.docs.map(function(d){ return d.data(); }).filter(function(p){
+      var fs=db.fs, q=fs.query(fs.collection(db.db,'confraria_sala'), fs.orderBy('updatedAt','desc'), fs.limit(90));
+      var lastDocs=[];
+      var paint=function(){
+        var since=Math.max(Date.now()-ROUND_MAX_MS, ctrl.start); /* só quem entrou nesta rodada */
+        renderRoom(lastDocs.filter(function(p){
+          if(p.name===CTRL_NAME) return false;
           var t=p.updatedAt && p.updatedAt.toMillis ? p.updatedAt.toMillis() : Date.now();
           return t>=since;
         }));
-      }, function(){ renderRoom(null); });
+      };
+      roomUnsub = fs.onSnapshot(q, function(snap){ lastDocs=snap.docs.map(function(d){ return d.data(); }); paint(); }, function(){ renderRoom(null); });
+      var firstCtrl=true;
+      watchCtrl(function(c){
+        /* sem controle, ou controle de outro dia: abre uma rodada nova, fechada */
+        if(firstCtrl && !c.fresh){ firstCtrl=false; writeCtrl(false, false); return; }
+        firstCtrl=false; ctrl=c; renderGate(); paint();
+      }, function(){ $('gateState').textContent='Sem conexão com a sala'; });
     }catch(e){ renderRoom(null); }
   }
   function renderRoom(list){
@@ -796,20 +942,32 @@ try{
     });
     var html='<div class="room-grid">';
     list.forEach(function(p){
-      var done=p.status==='concluido';
-      html += '<div class="witch-card'+(done?' done':'')+'">'
-        + '<div class="wc-icon"><svg class="icon" width="17" height="17"><use href="#'+(done?'i-star':'i-st-cauldron')+'"/></svg></div>'
-        + '<div class="wc-name">'+esc(p.name||'Bruxa')+'</div>'
-        + '<div class="wc-score">'+(p.score||0)+' po&ccedil;&otilde;es'+(done?'':' &middot; ciclo '+(p.cycle||1))+'</div>'
+      var done=p.status==='concluido', waiting=!ctrl.open && !done, n=splitName(p.name);
+      html += '<div class="witch-card'+(done?' done':'')+(waiting?' waiting':'')+'">'
+        + (n.code ? avatarSvg(n.code) : '<div class="wc-icon"><svg class="icon" width="17" height="17"><use href="#'+(done?'i-star':'i-st-cauldron')+'"/></svg></div>')
+        + '<div class="wc-name">'+esc(n.name||'Bruxa')+'</div>'
+        + '<div class="wc-score">'+(waiting ? 'na sala' : (p.score||0)+' po&ccedil;&otilde;es'+(done?'':' &middot; ciclo '+(p.cycle||1)))+'</div>'
         + '</div>';
     });
     html += '</div>';
     box.innerHTML = html;
+    roomCount = list.length; renderGate();
   }
+  var roomCount=0;
+  function renderGate(){
+    var st=$('gateState'); if(!st || !ctrl.known) return;
+    var n=roomCount, quem = n===1 ? '1 bruxa na sala' : n+' bruxas na sala';
+    st.className='gate-state '+(ctrl.open?'open':'closed');
+    st.textContent = ctrl.open ? 'Sala liberada · '+quem : 'Sala fechada · '+quem+' esperando';
+    $('gateOpen').classList.toggle('hidden', ctrl.open);
+    $('gateClose').classList.toggle('hidden', !ctrl.open);
+    $('gateHint').textContent = ctrl.open ? 'Quem escanear o QR agora monta a bruxa e entra direto no jogo.' : 'Quando todo mundo aparecer aqui embaixo, libere: todos começam ao mesmo tempo.';
+  }
+  function turmaUrl(){ return location.href.split('#')[0].split('?')[0]+'?turma'; }
   function initQr(){
     try{
       if(window.QRCode){
-        new QRCode($('qrHolder'), {text: location.href.split('#')[0], width:200, height:200, colorDark:'#000000', colorLight:'#ffffff'});
+        new QRCode($('qrHolder'), {text: turmaUrl(), width:200, height:200, colorDark:'#000000', colorLight:'#ffffff'});
       } else { throw new Error('no qrcode lib'); }
     }catch(e){
       $('qrFallback').classList.remove('hidden');
@@ -1367,7 +1525,8 @@ try{
   /* ---------------- lifecycle ---------------- */
   function startGame(){
     ensureAudio(); initGame();
-    var witchName=$('playerName').value.trim()||'Bruxa sem nome';
+    var witchName=TURMA ? fullName() : ($('playerName').value.trim()||'Bruxa sem nome');
+    $('screen-char').classList.add('hidden'); $('screen-lobby').classList.add('hidden');
     $('screen-start').classList.add('hidden'); $('screen-end').classList.add('hidden'); $('screen-game').classList.remove('hidden');
     document.querySelector('#screen-end .result').classList.remove('hidden');
     $('saveCard').classList.remove('hidden');
@@ -1383,6 +1542,12 @@ try{
     $('finalScore').textContent=score; $('finalSummary').textContent='poções entregues em '+TOTAL_CYCLES+' ciclos';
     renderLesson();
     $('endPlayerName').value=$('playerName').value||'';
+    if(TURMA){
+      /* na rodada da turma o resultado vai sozinho para o placar */
+      $('endPlayerName').value=splitName(fullName()).name;
+      $('saveCard').classList.add('hidden');
+      saveScoreToDb(fullName(), score);
+    }
     var r=renderRank(score);
     var best=getBest();
     if(score>best){ setBest(score); $('recordBadge').classList.remove('hidden'); } else { $('recordBadge').classList.add('hidden'); }
@@ -1397,6 +1562,7 @@ try{
       : 'Modo aula: 2 ciclos (~5 min). <a href="'+u+(u.indexOf('?')<0?'?':'&')+'longo">Partida completa (4 ciclos, ~14 min)</a>';
   })();
   $('playAgainBtn').addEventListener('click', function(){
+    if(TURMA){ $('screen-end').classList.add('hidden'); enterLobby(); return; }
     $('screen-end').classList.add('hidden'); $('screen-start').classList.remove('hidden');
     refreshBestNote();
   });
@@ -1426,7 +1592,7 @@ try{
     $('playerName').value = WITCH_NAMES[Math.floor(Math.random()*WITCH_NAMES.length)];
   });
   $('copyLinkBtn').addEventListener('click', function(){
-    var url=location.href.split('#')[0];
+    var url=turmaUrl();
     if(navigator.clipboard) navigator.clipboard.writeText(url).then(function(){
       var b=$('copyLinkBtn'); var old=b.textContent; b.textContent='Copiado!'; setTimeout(function(){ b.textContent=old; }, 1500);
     });
@@ -1437,6 +1603,67 @@ try{
     if(best>0){ $('bestNoteText').textContent='Seu recorde: '+best+' poções'; $('bestNote').classList.remove('hidden'); }
   }
   updateMuteIcon(); refreshBestNote();
+
+  /* ---------- rodada da turma: telas de personagem e sala de espera ---------- */
+  function paintChar(){
+    $('charPreview').innerHTML = avatarSvg(avatarCode);
+    [].forEach.call(document.querySelectorAll('#screen-char .swatches'), function(row){
+      var part=+row.dataset.part;
+      row.innerHTML = AV[part].map(function(col,i){ return '<button type="button" class="swatch'+(avatarCode[part]===i?' on':'')+'" data-i="'+i+'" style="background:'+col+'" aria-label="opção '+(i+1)+'"></button>'; }).join('');
+    });
+    try{ localStorage.setItem('confraria_personagem', JSON.stringify({n:$('charName').value, c:avatarCode})); }catch(e){}
+  }
+  $('screen-char').addEventListener('click', function(ev){
+    var b=ev.target.closest('.swatch'); if(!b) return;
+    avatarCode[+b.parentNode.dataset.part] = +b.dataset.i; paintChar(); vibrate(8);
+  });
+  $('charName').addEventListener('input', function(){ try{ localStorage.setItem('confraria_personagem', JSON.stringify({n:this.value, c:avatarCode})); }catch(e){} });
+  $('charDice').addEventListener('click', function(){
+    $('charName').value = WITCH_NAMES[Math.floor(Math.random()*WITCH_NAMES.length)].slice(0,16);
+    avatarCode = AV.map(function(a){ return Math.floor(Math.random()*a.length); }); paintChar();
+  });
+  var lobbyUnsub=null, lobbyTimer=null, lobbyFallback=null, lobbyStarting=false;
+  function leaveLobby(){ if(lobbyUnsub){ lobbyUnsub(); lobbyUnsub=null; } clearInterval(lobbyTimer); clearTimeout(lobbyFallback); lobbyStarting=false; }
+  function lobbyCountdown(){
+    if(lobbyStarting) return; lobbyStarting=true;
+    $('lobbyWait').classList.add('hidden'); $('lobbyCount').classList.remove('hidden'); $('lobbyBack').classList.add('hidden'); $('lobbySolo').classList.add('hidden');
+    var n=3; $('lobbyNum').textContent=n;
+    lobbyTimer=setInterval(function(){
+      n--; if(n>0){ $('lobbyNum').textContent=n; return; }
+      leaveLobby(); startGame();
+    }, 900);
+  }
+  function enterLobby(){
+    ensureAudio(); leaveLobby();
+    var me=splitName(fullName());
+    $('playerName').value = me.name;
+    $('lobbyAvatar').innerHTML = avatarSvg(avatarCode); $('lobbyName').textContent = me.name;
+    $('lobbyWait').classList.remove('hidden'); $('lobbyCount').classList.add('hidden'); $('lobbyBack').classList.remove('hidden'); $('lobbySolo').classList.add('hidden');
+    $('screen-char').classList.add('hidden'); $('screen-lobby').classList.remove('hidden');
+    joinRoom(fullName());
+    /* se a sala não responder em alguns segundos, a pessoa pode jogar mesmo assim */
+    lobbyFallback=setTimeout(function(){ $('lobbySolo').classList.remove('hidden'); }, 8000);
+    loadFb().then(function(c){
+      if(!c){ $('lobbySolo').classList.remove('hidden'); return; }
+      db=db||c;
+      if($('screen-lobby').classList.contains('hidden')) return;
+      lobbyUnsub = watchCtrl(function(st){
+        clearTimeout(lobbyFallback); $('lobbySolo').classList.add('hidden');
+        if(st.open) lobbyCountdown();
+      }, function(){ $('lobbySolo').classList.remove('hidden'); });
+    });
+  }
+  $('charGo').addEventListener('click', enterLobby);
+  $('lobbyBack').addEventListener('click', function(){ leaveLobby(); $('screen-lobby').classList.add('hidden'); $('screen-char').classList.remove('hidden'); });
+  $('lobbySolo').addEventListener('click', function(){ leaveLobby(); startGame(); });
+  $('gateOpen').addEventListener('click', function(){ this.disabled=true; var b=this; writeCtrl(true, true).then(function(){ b.disabled=false; }); });
+  $('gateClose').addEventListener('click', function(){ this.disabled=true; var b=this; writeCtrl(false, false).then(function(){ b.disabled=false; }); });
+
+  if(TURMA && !location.hash){
+    try{ var saved=JSON.parse(localStorage.getItem('confraria_personagem')||'null'); if(saved && saved.c && saved.c.length===4){ avatarCode=saved.c.map(function(x){ return Math.max(0,Math.min(5,x|0)); }); $('charName').value=String(saved.n||'').slice(0,16); } else { avatarCode = AV.map(function(a){ return Math.floor(Math.random()*a.length); }); } }catch(e){}
+    paintChar();
+    $('screen-start').classList.add('hidden'); $('screen-char').classList.remove('hidden');
+  }
 
   if(location.hash==='#placar'){
     $('screen-start').classList.add('hidden'); $('screen-end').classList.remove('hidden');
