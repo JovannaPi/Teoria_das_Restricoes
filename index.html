@@ -24,7 +24,7 @@
   .deck{ position:relative; width:100vw; height:100vh; }
   .slide{
     position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:flex-start;
-    padding:7vh 7vw 9vh; opacity:0; visibility:hidden; transition:opacity .6s var(--ease), visibility 0s .6s;
+    padding:6vh 7vw 14vh; opacity:0; visibility:hidden; transition:opacity .6s var(--ease), visibility 0s .6s;
     overflow:hidden; isolation:isolate;
     background-color:var(--paper);
     background-image:
@@ -338,6 +338,26 @@
   .simlink{ display:inline-block; font-weight:800; font-size:14px; color:var(--violet); text-decoration:none; border-bottom:2px solid currentColor; }
   .simlink:hover{ color:var(--pumpkin); }
   @media (max-width:980px){ .qcard{ grid-template-columns:1fr; } .qcard .funnel{ display:none; } .chain-obj{ display:none; } }
+
+  /* ---- ajustes do slide a slide ---- */
+  .cyc .gl{ fill:none; stroke:var(--violet); stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; }
+  .cyc .gl .solid{ fill:var(--violet); stroke:none; }
+  .types .card{ padding:14px 18px; }
+  .crit .card{ display:flex; flex-direction:column; gap:2px; }
+  .crit .card h3{ margin:8px 0 6px; }
+  .chip{ align-self:flex-start; font-size:12px; font-weight:800; letter-spacing:.04em; color:var(--violet); background:rgba(91,42,134,.1); border-radius:999px; padding:3px 10px; }
+  .ind{ margin-top:auto; padding-top:10px; font-size:clamp(12px,.95vw,14.5px); line-height:1.4; color:var(--muted); font-weight:600; border-top:1px dashed var(--line); }
+  .ind b{ display:block; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--pumpkin); margin-bottom:2px; }
+  .dbr-box .ic{ width:clamp(30px,3vw,46px); height:auto; display:block; margin:0 auto 6px; }
+  .dbr-tab .dot{ width:12px; height:12px; border-radius:50%; background:var(--pumpkin); flex:none; }
+  .dbr-tab .dot.d2{ background:var(--violet); } .dbr-tab .dot.d3{ background:var(--amber); }
+  .hike .walkers{ position:relative; padding-top:0; width:clamp(220px,24vw,340px); align-self:end; }
+  .scouts{ width:100%; height:auto; display:block; overflow:visible; }
+  .scouts .fig{ animation:walk .55s ease-in-out infinite alternate; animation-delay:calc(var(--k) * -.14s); transform-box:fill-box; }
+  .scouts .leg{ transform-box:fill-box; transform-origin:50% 0; animation:stride .55s ease-in-out infinite alternate; }
+  .scouts .leg.l2{ animation-direction:alternate-reverse; }
+  @keyframes stride{ from{ transform:rotate(-14deg);} to{ transform:rotate(14deg);} }
+  .herbie-tag{ position:absolute; right:2%; top:-14px; font-size:12.5px; font-weight:800; color:#fff; background:var(--pumpkin); border-radius:999px; padding:2px 10px; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -354,7 +374,6 @@
   <!-- origem -->
   <section class="slide">
     <div class="wrap">
-      <div class="kicker rv">1 · Origem</div>
       <h1 class="rv" style="--d:1">Um físico olhando para a <em>fábrica</em></h1>
       <div class="qcard rv" style="--d:2">
         <div class="qtext"><span class="tag">Para começar</span>
@@ -378,22 +397,21 @@
       </div>
       <div class="tl">
         <div class="grid g6">
-          <div class="card rv" style="--d:4"><img class="ico float" src="img/computador.webp" alt=""><div class="year">fim dos anos 70</div><h3>OPT</h3><p>Software que programa a fábrica pelo recurso gargalo.</p></div>
-          <div class="card rv" style="--d:4"><img class="ico float" src="img/livro.webp" alt=""><div class="year">1984</div><h3>The Goal</h3><p><i>A Meta</i>: o romance que populariza a TOC.</p></div>
-          <div class="card rv" style="--d:5"><img class="ico float" src="img/tambor.webp" alt=""><div class="year">1986</div><h3>The Race</h3><p>Apresenta o Tambor-Pulmão-Corda.</p></div>
-          <div class="card rv" style="--d:6"><img class="ico float" src="img/lupa.webp" alt=""><div class="year">1990</div><h3>The Haystack Syndrome</h3><p>Contabilidade de ganhos e decisões pelo gargalo.</p></div>
-          <div class="card rv" style="--d:7"><img class="ico float" src="img/trevo.webp" alt=""><div class="year">1994</div><h3>It's Not Luck</h3><p>Processos de raciocínio: a TOC além da fábrica.</p></div>
-          <div class="card rv" style="--d:8"><img class="ico float" src="img/correntes.webp" alt=""><div class="year">1997</div><h3>Critical Chain</h3><p>A TOC aplicada à gestão de projetos.</p></div>
+          <div class="card rv" style="--d:4"><div class="year">fim dos anos 70</div><h3>OPT</h3><p>Software que programa a fábrica pelo recurso gargalo.</p></div>
+          <div class="card rv" style="--d:4"><div class="year">1984</div><h3>The Goal</h3><p><i>A Meta</i>: o romance que populariza a TOC.</p></div>
+          <div class="card rv" style="--d:5"><div class="year">1986</div><h3>The Race</h3><p>Apresenta o Tambor-Pulmão-Corda.</p></div>
+          <div class="card rv" style="--d:6"><div class="year">1990</div><h3>The Haystack Syndrome</h3><p>Contabilidade de ganhos e decisões pelo gargalo.</p></div>
+          <div class="card rv" style="--d:7"><div class="year">1994</div><h3>It's Not Luck</h3><p>Processos de raciocínio: a TOC além da fábrica.</p></div>
+          <div class="card rv" style="--d:8"><div class="year">1997</div><h3>Critical Chain</h3><p>A TOC aplicada à gestão de projetos.</p></div>
         </div>
       </div>
     </div>
-    <div class="foot"><span class="src">Goldratt &amp; Cox (1984); Goldratt &amp; Fox (1986); Spencer &amp; Cox (1995)</span><span class="pg"></span></div>
+    <div class="foot"><span class="src">Goldratt &amp; Cox (1984); Goldratt &amp; Fox (1986); Spencer &amp; Cox (1995)</span></div>
   </section>
 
   <!-- objetivo -->
   <section class="slide">
     <div class="wrap">
-      <div class="kicker rv">2 · Objetivo</div>
       <h1 class="rv" style="--d:1">A meta é ganhar dinheiro hoje <em>e no futuro</em></h1>
       <svg class="chain-obj rv" style="--d:3" viewBox="0 0 520 200" aria-label="Corrente com um elo fraco">
       <g transform="rotate(-10 260 100)" fill="none" stroke-linecap="round">
@@ -424,23 +442,22 @@
       </div>
       <p class="note rv" style="--d:6">Uma decisão é boa se <b>aumenta T</b> ou reduz I e OE sem derrubar o ganho.</p>
     </div>
-    <div class="foot"><span class="src">Goldratt &amp; Cox (1984); Antunes &amp; Rodrigues (1993); Noreen <i>et al.</i> (1995)</span><span class="pg"></span></div>
+    <div class="foot"><span class="src">Goldratt &amp; Cox (1984); Antunes &amp; Rodrigues (1993); Noreen <i>et al.</i> (1995)</span></div>
   </section>
 
   <!-- 5 passos -->
   <section class="slide">
     <div class="wrap">
-      <div class="kicker rv">3 · Descrição</div>
       <h1 class="rv" style="--d:1">Os 5 passos de <em>focalização</em></h1>
       <div class="steps">
         <svg class="cyc rv" style="--d:2" viewBox="-150 -50 700 500" aria-label="Ciclo dos 5 passos">
           <path id="orb" class="ring" d="M200,50 A150,150 0 1 1 199.9,50"/>
           <circle r="9" fill="#e8742c"><animateMotion dur="7.5s" repeatCount="indefinite"><mpath href="#orb"/></animateMotion></circle>
-          <g class="node"><circle cx="200" cy="50" r="40"/><image href="img/lupa.webp" x="176" y="26" width="48" height="48"/></g>
-          <g class="node"><circle cx="342.7" cy="153.6" r="40"/><image href="img/alvo.webp" x="318.7" y="129.6" width="48" height="48"/></g>
-          <g class="node"><circle cx="288.2" cy="321.4" r="40"/><image href="img/corda.webp" x="264.2" y="297.4" width="48" height="48"/></g>
-          <g class="node"><circle cx="111.8" cy="321.4" r="40"/><image href="img/foguete.webp" x="87.8" y="297.4" width="48" height="48"/></g>
-          <g class="node"><circle cx="57.3" cy="153.6" r="40"/><image href="img/repetir.webp" x="33.3" y="129.6" width="48" height="48"/></g>
+          <g class="node"><circle cx="200" cy="50" r="40"/><g class="gl"><circle cx="197" cy="47" r="9"/><path d="M204 54 L212 62"/></g></g>
+          <g class="node"><circle cx="342.7" cy="153.6" r="40"/><g class="gl"><circle cx="342.7" cy="153.6" r="12"/><circle cx="342.7" cy="153.6" r="4.5" class="solid"/></g></g>
+          <g class="node"><circle cx="288.2" cy="321.4" r="40"/><g class="gl"><path d="M276.2 315.4 H294.2 M276.2 327.4 H300.2"/><path d="M290.2 309.4 L300.2 315.4 L290.2 321.4"/></g></g>
+          <g class="node"><circle cx="111.8" cy="321.4" r="40"/><g class="gl"><path d="M111.8 333.4 V309.4 M102.8 318.4 L111.8 309.4 L120.8 318.4"/></g></g>
+          <g class="node"><circle cx="57.3" cy="153.6" r="40"/><g class="gl"><path d="M68.3 150.6 A12 12 0 1 0 65.3 161.6"/><path d="M69.3 141.6 V151.6 H59.3"/></g></g>
           <text x="200" y="-16" text-anchor="middle" font-size="19">1 · Identificar</text><text class="sub" x="200" y="2" text-anchor="middle">achar a restrição</text>
           <text x="392" y="146" font-size="19">2 · Explorar</text><text class="sub" x="392" y="166">não desperdiçar</text><text class="sub" x="392" y="182">nenhum minuto dela</text>
           <text x="300" y="384" font-size="19">3 · Subordinar</text><text class="sub" x="300" y="404">o resto anda no ritmo dela</text>
@@ -449,145 +466,95 @@
         </svg>
         <div class="types">
           <span class="tag rv" style="--d:3">Tipos de restrição</span>
-          <div class="card rv" style="--d:4"><img class="ico float" src="img/engrenagem.webp" alt=""><div><h3>Física</h3><p>máquina, pessoas, material ou espaço que não dão conta da demanda.</p></div></div>
-          <div class="card rv" style="--d:5"><img class="ico float" src="img/carrinho.webp" alt=""><div><h3>De mercado</h3><p>a fábrica consegue produzir mais do que o mercado compra.</p></div></div>
-          <div class="card rv" style="--d:6"><img class="ico float" src="img/pergaminho.webp" alt=""><div><h3>Política</h3><p>regras e métricas, como eficiência local ou lote grande, que travam o fluxo. É a mais comum.</p></div></div>
+          <div class="card rv" style="--d:4"><div><h3>Física</h3><p>máquina, pessoas, material ou espaço que não dão conta da demanda.</p></div></div>
+          <div class="card rv" style="--d:5"><div><h3>De mercado</h3><p>a fábrica consegue produzir mais do que o mercado compra.</p></div></div>
+          <div class="card rv" style="--d:6"><div><h3>Política</h3><p>regras e métricas, como eficiência local ou lote grande, que travam o fluxo. É a mais comum.</p></div></div>
         </div>
       </div>
     </div>
-    <div class="foot"><span class="src">Goldratt (1990, cap. 1)</span><span class="pg"></span></div>
+    <div class="foot"><span class="src">Goldratt (1990, cap. 1)</span></div>
   </section>
 
   <!-- STP -->
   <section class="slide">
     <div class="wrap">
-      <div class="kicker rv">4 · Relação com o STP</div>
       <h1 class="rv" style="--d:1">Duas abordagens que <em>se completam</em></h1>
       <div class="vs">
-        <div class="side stp rv" style="--d:2"><img class="float" src="img/fabrica.webp" alt=""><h3>Sistema Toyota</h3>
+        <div class="side stp rv" style="--d:2"><h3>Sistema Toyota</h3>
           <ul><li>Ataca os <b>7 desperdícios</b> em toda a fábrica.</li><li>Busca <b>fluxo contínuo</b> e produção puxada.</li><li>Melhoria contínua em todos os postos.</li></ul></div>
         <div class="plus rv" style="--d:3">&amp;</div>
-        <div class="side toc rv" style="--d:4"><img class="float" src="img/alvo.webp" alt=""><h3>Teoria das Restrições</h3>
+        <div class="side toc rv" style="--d:4"><h3>Teoria das Restrições</h3>
           <ul><li>Ataca <b>primeiro a restrição</b>: foco cirúrgico.</li><li>Melhorar fora dela não melhora o sistema.</li><li>Diz <b>onde</b> aplicar a melhoria.</li></ul></div>
       </div>
       <div class="chips rv" style="--d:6"><em>Juntas: achar o gargalo com a TOC e aplicar nele</em><span>Kaizen</span><span>Poka-Yoke</span><span>Troca Rápida de Ferramenta</span><span>Kanban e corda</span></div>
     </div>
-    <div class="foot"><span class="src">Ohno (1997); Liker (2005); Antunes <i>et al.</i> (2008)</span><span class="pg"></span></div>
+    <div class="foot"><span class="src">Ohno (1997); Liker (2005); Antunes <i>et al.</i> (2008)</span></div>
   </section>
 
   <!-- critérios -->
   <section class="slide">
     <div class="wrap">
-      <div class="kicker rv">5 · Critérios de desempenho</div>
       <h1 class="rv" style="--d:1">O que a TOC melhora em <em>cada critério</em></h1>
-      <div class="grid g5">
-        <div class="card rv" style="--d:2"><img class="ico float" src="img/cronometro.webp" alt=""><h3>Rapidez</h3><p>Menos estoque em processo, filas menores: o pedido atravessa a fábrica mais rápido.</p></div>
-        <div class="card rv" style="--d:3"><img class="ico float" src="img/check.webp" alt=""><h3>Confiabilidade</h3><p>O pulmão protege a restrição de imprevistos, e o prazo prometido é cumprido.</p></div>
-        <div class="card rv" style="--d:4"><img class="ico float" src="img/dinheiro.webp" alt=""><h3>Custo</h3><p>Investe só onde aumenta o ganho, com menos inventário parado.</p></div>
-        <div class="card rv" style="--d:5"><img class="ico float" src="img/setas.webp" alt=""><h3>Flexibilidade</h3><p>Com pouco estoque na linha, mudar o mix ou a ordem dos pedidos fica mais fácil.</p></div>
-        <div class="card rv" style="--d:6"><img class="ico float" src="img/estrela.webp" alt=""><h3>Qualidade</h3><p>Inspecionar antes da restrição: uma peça ruim ali é tempo perdido pela fábrica toda.</p></div>
+      <div class="grid g5 crit">
+        <div class="card rv" style="--d:2"><span class="chip">lead time ↓</span><h3>Rapidez</h3><p>Menos estoque em processo e filas menores: o pedido atravessa a fábrica mais rápido.</p><div class="ind"><b>Indicador</b>tempo entre o pedido e a entrega</div></div>
+        <div class="card rv" style="--d:3"><span class="chip">no prazo ↑</span><h3>Confiabilidade</h3><p>O pulmão protege a restrição de imprevistos, e o prazo prometido é cumprido.</p><div class="ind"><b>Indicador</b>% de pedidos entregues no prazo</div></div>
+        <div class="card rv" style="--d:4"><span class="chip">inventário ↓</span><h3>Custo</h3><p>Investe só onde aumenta o ganho, com menos inventário parado.</p><div class="ind"><b>Indicador</b>custo por unidade e valor em estoque</div></div>
+        <div class="card rv" style="--d:5"><span class="chip">resposta ↓</span><h3>Flexibilidade</h3><p>Com pouco estoque na linha, mudar o mix ou a ordem dos pedidos fica mais fácil.</p><div class="ind"><b>Indicador</b>tempo para mudar o mix de produtos</div></div>
+        <div class="card rv" style="--d:6"><span class="chip">refugo ↓</span><h3>Qualidade</h3><p>Inspecionar antes da restrição: uma peça ruim ali é tempo perdido pela fábrica toda.</p><div class="ind"><b>Indicador</b>% de refugo e retrabalho na restrição</div></div>
       </div>
+      <p class="note rv" style="--d:7">Efeito em cadeia: sem fila parada o fluxo anda, e os critérios melhoram juntos. O que pode cair é a eficiência de máquinas fora da restrição, e isso é proposital: ficar ocupado não é o objetivo.</p>
     </div>
-    <div class="foot"><span class="src">Slack <i>et al.</i>; Antunes &amp; Rodrigues (1993)</span><span class="pg"></span></div>
+    <div class="foot"><span class="src">Slack <i>et al.</i>; Antunes &amp; Rodrigues (1993)</span></div>
   </section>
 
   <!-- diagrama -->
   <section class="slide">
     <div class="wrap">
-      <div class="kicker rv">6 · Diagrama</div>
       <h1 class="rv" style="--d:1">Tambor-Pulmão-Corda num <em>sistema produtivo</em></h1>
       <div class="dbr-tabs rv" style="--d:2">
-        <div class="dbr-tab active" data-part="tambor"><img src="img/tambor.webp" alt="">Tambor</div>
-        <div class="dbr-tab" data-part="pulmao"><img src="img/escudo.webp" alt="">Pulmão</div>
-        <div class="dbr-tab" data-part="corda"><img src="img/corda.webp" alt="">Corda</div>
+        <div class="dbr-tab active" data-part="tambor"><i class="dot d1"></i>Tambor</div>
+        <div class="dbr-tab" data-part="pulmao"><i class="dot d2"></i>Pulmão</div>
+        <div class="dbr-tab" data-part="corda"><i class="dot d3"></i>Corda</div>
       </div>
       <div class="dbr-diagram show-tambor rv" style="--d:3" id="dbrDiagram">
-        <div class="dbr-box"><img src="img/caixa.webp" alt="">Liberação</div><div class="dbr-arrow">→</div>
-        <div class="dbr-box"><img src="img/engrenagem.webp" alt="">Estação 1</div><div class="dbr-arrow">→</div>
-        <div class="dbr-box pulmao"><img src="img/escudo.webp" alt="">Pulmão</div><div class="dbr-arrow">→</div>
-        <div class="dbr-box tambor"><img src="img/tambor.webp" alt="">Restrição</div><div class="dbr-arrow">→</div>
-        <div class="dbr-box"><img src="img/engrenagem.webp" alt="">Estação 4</div><div class="dbr-arrow">→</div>
-        <div class="dbr-box"><img src="img/check.webp" alt="">Expedição</div>
+        <div class="dbr-box"><svg class="ic" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="15"/><path d="M17 13 L28 20 L17 27 Z" fill="currentColor"/></svg>Liberação</div><div class="dbr-arrow">→</div>
+        <div class="dbr-box"><svg class="ic" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="9" width="26" height="22" rx="5"/><circle cx="20" cy="20" r="4" fill="currentColor"/></svg>Estação 1</div><div class="dbr-arrow">→</div>
+        <div class="dbr-box pulmao"><svg class="ic" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="9" width="24" height="6" rx="3" fill="currentColor"/><rect x="8" y="17" width="24" height="6" rx="3" fill="currentColor" opacity=".6"/><rect x="8" y="25" width="24" height="6" rx="3" fill="currentColor" opacity=".3"/></svg>Pulmão</div><div class="dbr-arrow">→</div>
+        <div class="dbr-box tambor"><svg class="ic" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9 H33 L24 22 V32 H16 V22 Z"/></svg>Restrição</div><div class="dbr-arrow">→</div>
+        <div class="dbr-box"><svg class="ic" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="9" width="26" height="22" rx="5"/><circle cx="20" cy="20" r="4" fill="currentColor"/></svg>Estação 4</div><div class="dbr-arrow">→</div>
+        <div class="dbr-box"><svg class="ic" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="15"/><path d="M12 21 L18 27 L29 14"/></svg>Expedição</div>
         <div class="dbr-rope"></div>
         <div class="dbr-flow"><div class="dbr-packet"></div><div class="dbr-packet"></div><div class="dbr-packet"></div></div>
       </div>
       <div class="dbr-desc rv" style="--d:4" id="dbrDesc"></div>
       <div class="hike rv" style="--d:5">
-        <div class="walkers">
-          <figure style="--s:0"><img src="img/andando-2.webp" alt=""></figure>
-          <figure style="--s:1"><img src="img/andando-3.webp" alt=""></figure>
-          <figure style="--s:2"><img src="img/andando-1.webp" alt=""></figure>
-          <figure class="herbie" style="--s:3"><img src="img/andando-4.webp" alt=""><figcaption>Herbie · o tambor</figcaption></figure>
-          <div class="rope"></div>
-        </div>
+        <div class="walkers"><svg class="scouts" viewBox="0 0 330 112" aria-label="Escoteiros ligados por uma corda" fill="none" stroke-width="5" stroke-linecap="round"><path class="cord" d="M48 62 H282" stroke="#8a5a2b" stroke-width="3" stroke-dasharray="9 6"/><g class="fig" style="--k:0"><circle cx="40" cy="26" r="10" fill="#5b2a86"/><path d="M40 37 V70" stroke="#5b2a86"/><path class="arm" d="M40 46 L54 60" stroke="#5b2a86"/><path class="leg l1" d="M40 70 L28 98" stroke="#5b2a86"/><path class="leg l2" d="M40 70 L52 98" stroke="#5b2a86"/></g><g class="fig" style="--k:1"><circle cx="120" cy="26" r="10" fill="#7a4aa8"/><path d="M120 37 V70" stroke="#7a4aa8"/><path class="arm" d="M120 46 L134 60" stroke="#7a4aa8"/><path class="leg l1" d="M120 70 L108 98" stroke="#7a4aa8"/><path class="leg l2" d="M120 70 L132 98" stroke="#7a4aa8"/></g><g class="fig" style="--k:2"><circle cx="200" cy="26" r="10" fill="#9a6cc4"/><path d="M200 37 V70" stroke="#9a6cc4"/><path class="arm" d="M200 46 L214 60" stroke="#9a6cc4"/><path class="leg l1" d="M200 70 L188 98" stroke="#9a6cc4"/><path class="leg l2" d="M200 70 L212 98" stroke="#9a6cc4"/></g><g class="fig" style="--k:3"><circle cx="280" cy="26" r="10" fill="#e8742c"/><path d="M280 37 V70" stroke="#e8742c"/><path class="arm" d="M280 46 L294 60" stroke="#e8742c"/><path class="leg l1" d="M280 70 L268 98" stroke="#e8742c"/><path class="leg l2" d="M280 70 L292 98" stroke="#e8742c"/></g><text x="280" y="8" text-anchor="middle" fill="#fff" stroke="none" font-size="0"></text></svg><span class="herbie-tag">Herbie, o tambor</span></div>
         <div class="trail"></div>
         <p>Na trilha de <i>A Meta</i>, o escoteiro mais lento vai na frente e dita o ritmo. Uma corda amarra o grupo, e a fila para de se espalhar.</p>
       </div>
       <a class="simlink rv" style="--d:6" href="simulador.html" target="_blank" rel="noopener">Abrir o simulador da linha de produção ↗</a>
     </div>
-    <div class="foot"><span class="src">Goldratt &amp; Fox (1986); Schragenheim &amp; Dettmer (2000)</span><span class="pg"></span></div>
+    <div class="foot"><span class="src">Goldratt &amp; Fox (1986); Schragenheim &amp; Dettmer (2000)</span></div>
   </section>
 
-  <!-- aplicação 1 -->
+  <!-- aplicação: Poção em Apuros -->
   <section class="slide">
     <div class="wrap">
-      <div class="kicker rv">Aplicação 1 · Indústria (confecção)</div>
-      <h1 class="rv" style="--d:1">Qual peça merece o minuto da <em>costura</em>?</h1>
-      <p class="lead rv" style="--d:2">A costura é o gargalo. O mix certo vem do <b>ganho por minuto de gargalo</b>, não da margem de cada peça.</p>
-      <table class="mix rv" style="--d:3">
-        <tr><th>Produto</th><th>Preço</th><th>Material</th><th>Ganho (T)</th><th>Min. na costura</th><th>T por minuto de gargalo</th></tr>
-        <tr><td><div class="prod"><img src="img/calca.webp" alt="">Calça</div></td><td>R$ 140</td><td>R$ 50</td><td>R$ 90</td><td>25</td><td><div class="tm"><div class="bar"><i style="--w:62%"></i></div>R$ 3,60</div></td></tr>
-        <tr class="best"><td><div class="prod"><img src="img/vestido.webp" alt="">Vestido <span class="pill">melhor</span></div></td><td>R$ 120</td><td>R$ 50</td><td>R$ 70</td><td>12</td><td><div class="tm"><div class="bar"><i style="--w:100%"></i></div>R$ 5,83</div></td></tr>
-        <tr><td><div class="prod"><img src="img/camisa.webp" alt="">Camisa</div></td><td>R$ 80</td><td>R$ 30</td><td>R$ 50</td><td>10</td><td><div class="tm"><div class="bar"><i style="--w:86%"></i></div>R$ 5,00</div></td></tr>
-      </table>
-      <p class="note rv" style="--d:5">Pela margem, a calça parece a melhor. Pelo gargalo, a ordem é <b>vestido, camisa, calça</b>. <span style="color:var(--muted);font-weight:600">Números ilustrativos.</span></p>
-    </div>
-    <div class="foot"><span class="src">Goldratt (1990); Marques &amp; Cia (1998)</span><span class="pg"></span></div>
-  </section>
-
-  <!-- aplicação 2 -->
-  <section class="slide">
-    <div class="wrap">
-      <div class="kicker rv">Aplicação 2 · Serviço (ambulatório)</div>
-      <h1 class="rv" style="--d:1">Os 5 passos no fluxo de <em>pacientes</em></h1>
-      <div class="flow rv" style="--d:2">
-        <div class="st"><img src="img/recibo.webp" alt="">Recepção</div><div class="arr">→</div>
-        <div class="st"><img src="img/estetoscopio.webp" alt="">Triagem</div><div class="arr">→</div>
-        <div class="st bn"><div class="queue"><i></i><i></i><i></i><i></i></div><img src="img/medica.webp" alt="">Consulta médica</div><div class="arr">→</div>
-        <div class="st"><img src="img/tubo-ensaio.webp" alt="">Exames</div><div class="arr">→</div>
-        <div class="st"><img src="img/casa.webp" alt="">Alta</div>
-      </div>
+      <h1 class="rv" style="--d:1">Aplicação: uma loja de poções <em>que trava</em></h1>
+      <p class="lead rv" style="--d:2">Poção em Apuros é um jogo criado pelo grupo. A loja está atrasada, e cada passo da TOC vira uma decisão que o jogo mede na hora.</p>
       <div class="grid g5 s5">
-        <div class="card rv" style="--d:3"><div class="n">1</div><h3>Identificar</h3><p>A fila cresce na porta do consultório: o médico é o gargalo.</p></div>
-        <div class="card rv" style="--d:4"><div class="n">2</div><h3>Explorar</h3><p>O médico só faz consulta; prontuário e triagem chegam prontos.</p></div>
-        <div class="card rv" style="--d:5"><div class="n">3</div><h3>Subordinar</h3><p>Recepção e triagem chamam no ritmo do consultório, com agendamento escalonado.</p></div>
-        <div class="card rv" style="--d:6"><div class="n">4</div><h3>Elevar</h3><p>Mais um turno ou mais um médico no horário de pico.</p></div>
-        <div class="card rv" style="--d:7"><div class="n">5</div><h3>Repetir</h3><p>A fila passou para os exames? Esse é o novo gargalo.</p></div>
+        <div class="card rv" style="--d:3"><div class="n">1</div><h3>Identificar</h3><p>Olhar as filas e achar a estação que segura a loja.</p></div>
+        <div class="card rv" style="--d:4"><div class="n">2</div><h3>Explorar</h3><p>Tirar mais do gargalo sem gastar: limpar em paralelo ou ajudar nele.</p></div>
+        <div class="card rv" style="--d:5"><div class="n">3</div><h3>Subordinar</h3><p>As outras estações trabalham no ritmo do gargalo, sem encher de fila.</p></div>
+        <div class="card rv" style="--d:6"><div class="n">4</div><h3>Elevar</h3><p>Investir onde a loja trava: o segundo caldeirão.</p></div>
+        <div class="card rv" style="--d:7"><div class="n">5</div><h3>Recomeçar</h3><p>O gargalo mudou para a Destilação: no dia 2 o ciclo recomeça.</p></div>
       </div>
+      <p class="note rv" style="--d:8">Errar também ensina: quem ajuda a estação errada vê que nada mudou. A turma joga no celular, e o resultado de cada pessoa entra no ranking da sala.</p>
     </div>
-    <div class="foot"><span class="src">Goldratt &amp; Cox (1984); Cox &amp; Schleier (2010)</span><span class="pg"></span></div>
+    <div class="foot"><span class="src plain">Jogo criado pelo grupo</span></div>
   </section>
 
-  <!-- aplicação 3 -->
-  <section class="slide">
-    <div class="wrap">
-      <div class="kicker rv">Aplicação 3 · Projetos (Corrente Crítica)</div>
-      <h1 class="rv" style="--d:1">Um pulmão para o projeto, <em>não um para cada tarefa</em></h1>
-      <div class="gantt rv" style="--d:2">
-        <div class="grow-row"><div class="lab">Tradicional</div><div class="bars"><i class="t" style="flex:3;--k:0"></i><i class="m" style="flex:2;--k:1"></i><i class="t" style="flex:4;--k:2"></i><i class="m" style="flex:2;--k:3"></i><i class="t" style="flex:2;--k:4"></i><i class="m" style="flex:2;--k:5"></i></div></div>
-        <div class="grow-row"><div class="lab">Corrente crítica</div><div class="bars"><i class="t" style="flex:3;--k:0"></i><i class="t" style="flex:4;--k:1"></i><i class="t" style="flex:2;--k:2"></i><i class="b" style="flex:3;--k:3">pulmão do projeto</i><span style="flex:3"></span><b class="end" style="left:80%"><span>entrega antes</span></b></div></div>
-      </div>
-      <div class="ticks">
-        <div class="rv" style="--d:4">Cada tarefa é estimada <b>sem margem de segurança</b>, pelo tempo provável.</div>
-        <div class="rv" style="--d:5">As margens viram um <b>pulmão do projeto</b> no fim, menor que a soma delas.</div>
-        <div class="rv" style="--d:6"><b>Pulmões de convergência</b> protegem onde caminhos se juntam à corrente crítica.</div>
-        <div class="rv" style="--d:7">O acompanhamento é pelo <b>consumo do pulmão</b>, contra a síndrome do estudante e a lei de Parkinson.</div>
-      </div>
-    </div>
-    <div class="foot"><span class="src">Goldratt (1997); Newbold (1998)</span><span class="pg"></span></div>
-  </section>
-
-  <!-- aplicação prática em sala: Confraria do Gargalo (QR + telão) -->
+  <!-- aplicação prática em sala: QR + painel da turma -->
   <section class="slide embed">
     <iframe src="pocao/?painel" title="Poção em Apuros — QR Code da sala e painel da turma ao vivo"></iframe>
   </section>
@@ -595,7 +562,6 @@
   <!-- referências -->
   <section class="slide refs-slide">
     <div class="wrap">
-      <div class="kicker rv">Bibliografia</div>
       <h1 class="rv" style="--d:1">Referências</h1>
       <div class="refs-cols rv" style="--d:2">
         <section><h4>Fontes primárias</h4>
@@ -629,7 +595,7 @@
           <p>ALBERTIN, M.; JAGUARIBE PONTES, H. L. <b>Gestão de Processos e Técnicas de Produção Enxuta</b>. Curitiba: InterSaberes.</p></section>
       </div>
     </div>
-    <div class="foot"><span class="src plain">Formatadas conforme ABNT NBR 6023 · ilustrações 3D: Fluent Emoji (Microsoft, licença MIT)</span><span class="pg"></span></div>
+    <div class="foot"><span class="src plain">Formatadas conforme ABNT NBR 6023 · ilustrações 3D: Fluent Emoji (Microsoft, licença MIT)</span></div>
   </section>
 
 </div>
@@ -644,13 +610,28 @@
 // ------------------------------------------------------------------ cenários (silhuetas em SVG + ilustrações 3D)
 (function(){
   const INK = '#120018';
-  const tree = (style) => `<svg viewBox="0 0 300 420" style="${style}" preserveAspectRatio="xMidYMax meet"><g fill="none" stroke="${INK}" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M150 420 C150 330 140 280 150 210 C158 160 150 120 160 70" stroke-width="22"/>
-    <path d="M150 260 C120 230 80 220 30 228" stroke-width="12"/><path d="M80 223 C60 200 55 185 40 160" stroke-width="6"/>
-    <path d="M148 200 C120 160 95 140 60 90" stroke-width="10"/><path d="M90 128 C70 120 50 120 25 108" stroke-width="5"/><path d="M75 108 C72 85 66 70 60 52" stroke-width="4"/>
-    <path d="M156 160 C185 130 220 115 270 112" stroke-width="10"/><path d="M230 116 C245 95 255 80 262 55" stroke-width="5"/><path d="M250 113 C268 125 280 128 296 126" stroke-width="4"/>
-    <path d="M155 240 C190 228 225 236 262 262" stroke-width="9"/><path d="M228 240 C238 222 246 212 256 200" stroke-width="4"/>
-    <path d="M160 70 C150 45 158 25 150 5" stroke-width="6"/><path d="M160 95 C175 75 190 68 205 45" stroke-width="5"/></g></svg>`;
+  // árvore seca desenhada com galhos que se bifurcam e afinam (sempre a mesma, para não mudar entre aberturas)
+  const mulberry = (a) => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const tree = (style, seed) => {
+    const r = mulberry(seed || 11), widths = [30, 19, 12, 8, 5.2, 3.4, 2.2, 1.4, 1], lv = widths.map(() => []);
+    const f = (n) => n.toFixed(1);
+    const branch = (x, y, ang, len, d) => {
+      if (d >= widths.length || len < 5) return;
+      const bend = (r() - 0.5) * 0.45, a2 = ang + bend;
+      const x2 = x + Math.sin(a2) * len, y2 = y - Math.cos(a2) * len;
+      const cx = x + Math.sin(ang) * len * 0.5 + (r() - 0.5) * len * 0.3, cy = y - Math.cos(ang) * len * 0.5;
+      lv[d].push(`M${f(x)} ${f(y)} Q${f(cx)} ${f(cy)} ${f(x2)} ${f(y2)}`);
+      const shrink = 0.68 + r() * 0.12;
+      branch(x2, y2, a2 + (r() - 0.5) * 0.25, len * (shrink + 0.06), d + 1); // continua o galho
+      branch(x2, y2, a2 - 0.35 - r() * 0.55, len * shrink, d + 1);
+      branch(x2, y2, a2 + 0.35 + r() * 0.55, len * shrink, d + 1);
+      if (d >= 2 && d < 6 && r() < 0.4) branch(x + (x2 - x) * 0.55, y + (y2 - y) * 0.55, ang + (r() < 0.5 ? -1 : 1) * (0.7 + r() * 0.5), len * 0.5, d + 2); // galho lateral
+    };
+    branch(150, 418, (r() - 0.5) * 0.12, 112, 0);
+    const paths = lv.map((d, i) => (d.length ? `<path d="${d.join(' ')}" stroke-width="${widths[i]}"/>` : '')).join('');
+    return `<svg viewBox="-150 -110 600 530" style="${style};overflow:visible" preserveAspectRatio="xMidYMax meet"><g fill="none" stroke="${INK}" stroke-linecap="round" stroke-linejoin="round">${paths}</g>
+      <path fill="${INK}" d="M112 420 C128 408 138 392 140 350 L160 350 C163 392 172 408 190 420 Z"/><path fill="${INK}" d="M104 420 Q126 414 140 396 L135 414 Q118 420 104 420 Z M196 420 Q174 414 160 396 L165 414 Q182 420 196 420 Z"/></svg>`;
+  };
   const castle = (style) => `<svg viewBox="0 0 260 380" style="${style}" preserveAspectRatio="xMidYMax meet"><g fill="${INK}">
     <rect x="85" y="140" width="95" height="240"/><polygon points="72,142 132,30 192,142"/>
     <rect x="30" y="200" width="56" height="180"/><polygon points="22,202 58,120 94,202"/>
@@ -673,9 +654,9 @@
   const scenes = {
     cover: () => `<div style="inset:0" class="sky-cover"></div>` + stars(70, 40) +
       moon('left:calc(50% - min(37vh,29vw));top:4vh;width:min(74vh,58vw);height:min(74vh,58vw)') +
-      `<img class="witch" src="img/bruxa.webp" alt="" style="left:0;top:0">` + bats(3) +
+      bats(5) +
       fog('66vh', 30, -6) + fog('72vh', 38, -20) +
-      ground('27vh') + tree('left:-3vw;bottom:13vh;width:min(26vw,46vh)') + castle('right:-1vw;bottom:12vh;width:min(20vw,38vh)') +
+      ground('27vh') + tree('left:-8vw;bottom:12vh;width:min(46vw,84vh)', 17) + castle('right:-1vw;bottom:12vh;width:min(20vw,38vh)') +
       graves('left:17vw;bottom:17.5vh;width:min(20vw,36vh)') +
       `<img class="pumpkin" src="img/abobora.webp" alt="" style="left:31vw;bottom:15.5vh;width:min(6vw,72px)">` +
       `<img class="pumpkin" src="img/abobora.webp" alt="" style="right:23vw;bottom:15vh;width:min(4.6vw,56px);animation-delay:-1.2s">`,
