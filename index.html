@@ -260,6 +260,15 @@
   .refs-cols p b{ color:var(--ink); }
   .refs-cols section{ break-inside:avoid-column; margin-bottom:14px; }
 
+  /* ---------------------------------------------------------------- detalhes discretos do fundo */
+  .deco{ position:absolute !important; inset:0; z-index:0 !important; pointer-events:none; overflow:hidden; }
+  .deco > *{ position:absolute; }
+  .deco .moonline{ width:clamp(220px,26vw,420px); opacity:.07; }
+  .deco .twig{ opacity:.075; }
+  .deco .sp{ height:auto; animation:twinkle 5s ease-in-out infinite; }
+  .deco .bubs{ inset:0; }
+  .deco .bub{ position:absolute; bottom:-40px; border:1.5px solid rgba(91,42,134,.28); border-radius:50%; background:radial-gradient(circle at 30% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 45%); opacity:0; animation:bubble linear infinite; }
+  @keyframes bubble{ 0%{ transform:translateY(0) translateX(0); opacity:0; } 12%{ opacity:.5; } 60%{ transform:translateY(-58vh) translateX(10px); opacity:.35; } 100%{ transform:translateY(-110vh) translateX(-8px); opacity:0; } }
   /* ---------------------------------------------------------------- canto decorado dos slides claros */
   .web{ position:absolute !important; top:-26px; right:-26px; width:clamp(120px,12vw,190px); opacity:.5; transform:rotate(12deg); z-index:1 !important; pointer-events:none; }
   .slidebat{ position:absolute !important; top:9vh; left:0; z-index:1 !important; pointer-events:none; opacity:0; }
@@ -672,8 +681,28 @@
     const d = document.createElement('div'); d.className = 'scene'; d.innerHTML = scenes[sl.dataset.scene](); sl.prepend(d);
   });
   // slides claros: teia no canto e um morcego que cruza a tela de vez em quando
-  document.querySelectorAll('.slide:not([data-scene]):not(.embed)').forEach((sl) => {
-    sl.insertAdjacentHTML('afterbegin', `<img class="web" src="img/teia.webp" alt=""><div class="slidebat">${batSvg(38)}</div>`);
+  // detalhes discretos no fundo (cada slide com a sua combinação, sempre a mesma): galho, estrelinhas, lua em
+  // contorno, bolhas de poção subindo e a teia do canto. Ficam atrás do conteúdo e bem apagados.
+  const sparkle = (x, y, k, o) => `<svg class="sp" viewBox="-10 -10 20 20" style="left:${x}%;top:${y}%;width:${k}px;opacity:${o};animation-delay:${(-(x + y) % 7).toFixed(1)}s"><path d="M0 -9 Q1 -1 9 0 Q1 1 0 9 Q-1 1 -9 0 Q-1 -1 0 -9 Z" fill="#5b2a86"/></svg>`;
+  document.querySelectorAll('.slide:not([data-scene]):not(.embed)').forEach((sl, i) => {
+    const r = mulberry(100 + i * 13);
+    const flip = i % 2 === 1;
+    const sparks = Array.from({ length: 12 }, () => {
+      // só nas margens (esquerda, direita e parte de baixo), para não passar por trás do texto
+      const side = r();
+      const x = side < 0.4 ? 1 + r() * 4 : side < 0.8 ? 94 + r() * 4 : 8 + r() * 80;
+      const y = side < 0.8 ? 6 + r() * 78 : 86 + r() * 6;
+      return sparkle(x.toFixed(1), y.toFixed(1), 8 + Math.round(r() * 10), (0.1 + r() * 0.16).toFixed(2));
+    }).join('');
+    const bubbles = Array.from({ length: 7 }, (_, k) => `<i class="bub" style="left:${(flip ? 2 + r() * 8 : 90 + r() * 8).toFixed(1)}%;width:${10 + Math.round(r() * 22)}px;height:${10 + Math.round(r() * 22)}px;animation-duration:${(14 + r() * 12).toFixed(1)}s;animation-delay:${(-r() * 20).toFixed(1)}s"></i>`).join('');
+    sl.insertAdjacentHTML('afterbegin',
+      `<div class="deco" aria-hidden="true">
+        <svg class="moonline" viewBox="0 0 200 200" style="${flip ? 'left:-70px' : 'right:-70px'};bottom:-80px"><circle cx="100" cy="100" r="92" fill="none" stroke="#5b2a86" stroke-width="2"/><circle cx="100" cy="100" r="80" fill="none" stroke="#5b2a86" stroke-width="1" stroke-dasharray="3 7"/><circle cx="72" cy="78" r="12" fill="none" stroke="#5b2a86" stroke-width="1.5"/><circle cx="128" cy="124" r="8" fill="none" stroke="#5b2a86" stroke-width="1.5"/><circle cx="116" cy="68" r="5" fill="none" stroke="#5b2a86" stroke-width="1.5"/></svg>
+        ${tree(`${flip ? 'right' : 'left'}:-3vw;top:-2vh;width:min(20vw,34vh);${flip ? 'transform:scaleX(-1) rotate(-8deg)' : 'transform:rotate(-8deg)'}`, 40 + i).replace('<svg ', '<svg class="twig" ')}
+        ${sparks}
+        <div class="bubs">${bubbles}</div>
+      </div>
+      <img class="web" src="img/teia.webp" alt=""><div class="slidebat">${batSvg(38)}</div>`);
   });
 })();
 
