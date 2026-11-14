@@ -702,21 +702,13 @@
   const sparkle = (x, y, k, o) => `<svg class="sp" viewBox="-10 -10 20 20" style="left:${x}%;top:${y}%;width:${k}px;opacity:${o};animation-delay:${(-(x + y) % 7).toFixed(1)}s"><path d="M0 -9 Q1 -1 9 0 Q1 1 0 9 Q-1 1 -9 0 Q-1 -1 0 -9 Z" fill="#5b2a86"/></svg>`;
   // pequenos desenhos de contorno, bem apagados, que mudam de um slide para o outro
   const MOTIFS = [
-    () => `<svg class="mo" viewBox="0 0 60 80"><rect x="22" y="38" width="16" height="34" rx="2"/><path d="M30 38 V32"/><path class="flame" d="M30 8 Q39 20 30 31 Q21 20 30 8 Z"/><path d="M16 72 H44"/></svg>`,
     () => `<svg class="mo" viewBox="0 0 60 80"><path d="M10 40 H50 Q52 66 30 68 Q8 66 10 40 Z"/><path d="M8 40 H52"/><path d="M18 68 L14 76 M42 68 L46 76"/><path class="steam" d="M22 34 Q18 26 24 20 Q30 14 26 6"/><path class="steam s2" d="M36 34 Q32 26 38 20 Q44 14 40 6"/></svg>`,
-    () => `<svg class="mo" viewBox="0 0 60 80"><path d="M24 6 H36 M26 6 V28 L10 62 Q8 72 18 72 H42 Q52 72 50 62 L34 28 V6"/><path d="M15 54 Q30 48 45 54"/><circle class="bubl" cx="28" cy="62" r="2.5"/><circle class="bubl b2" cx="35" cy="58" r="2"/></svg>`,
-    () => `<svg class="mo" viewBox="0 0 60 80"><g class="hang"><path d="M30 0 V34"/><ellipse cx="30" cy="42" rx="8" ry="9"/><circle cx="30" cy="30" r="5"/><path d="M23 38 L10 32 M23 42 L8 44 M23 46 L12 58 M37 38 L50 32 M37 42 L52 44 M37 46 L48 58"/></g></svg>`,
-    () => `<svg class="mo" viewBox="0 0 60 80"><circle cx="30" cy="34" r="22"/><path d="M18 24 Q22 16 30 14"/><path d="M18 56 H42 L46 66 H14 Z"/><path d="M26 34 L30 28 L34 34 L30 40 Z" class="solidmo"/></svg>`,
-    () => `<svg class="mo" viewBox="0 0 60 80"><path d="M30 10 L44 52 H16 Z"/><path d="M6 56 Q30 46 54 56 Q30 64 6 56 Z"/><path d="M22 36 H38"/></svg>`,
-    () => `<svg class="mo" viewBox="0 0 60 80"><g class="leaf"><path d="M30 8 Q50 24 44 50 Q30 62 16 50 Q10 24 30 8 Z"/><path d="M30 14 V58 M30 30 L20 24 M30 40 L40 32"/></g></svg>`,
-    () => `<svg class="mo" viewBox="0 0 60 80"><path d="M38 12 A22 22 0 1 0 38 60 A17 17 0 1 1 38 12 Z"/><path class="tw" d="M48 14 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z"/><path class="tw t2" d="M14 8 l1.5 3.5 3.5 1.5 -3.5 1.5 -1.5 3.5 -1.5 -3.5 -3.5 -1.5 3.5 -1.5 Z"/></svg>`,
-    () => `<svg class="mo" viewBox="0 0 60 80"><path d="M12 12 H44 Q50 12 50 18 V62 Q50 68 44 68 H12 Z"/><path d="M12 12 Q6 12 6 18 V62 Q6 68 12 68"/><path d="M20 26 H40 M20 36 H40 M20 46 H34"/></svg>`,
   ];
   const motifHtml = (i, r) => {
-    const a = MOTIFS[(i * 3 + 1) % MOTIFS.length], b = MOTIFS[(i * 3 + 5) % MOTIFS.length];
+    // um caldeirão discreto por slide, que muda de lado e de altura
     const lr = i % 2 === 0;
-    const top1 = 24 + Math.round(r() * 20), top2 = 46 + Math.round(r() * 16);
-    return `<div class="mowrap" style="${lr ? 'left' : 'right'}:1.1vw;top:${top1}vh">${a()}</div><div class="mowrap" style="${lr ? 'right' : 'left'}:1.1vw;top:${top2}vh">${b()}</div>`;
+    const top = 26 + Math.round(r() * 38);
+    return `<div class="mowrap" style="${lr ? 'left' : 'right'}:1.1vw;top:${top}vh">${MOTIFS[0]()}</div>`;
   };
   document.querySelectorAll('.slide:not([data-scene]):not(.embed)').forEach((sl, i) => {
     const r = mulberry(100 + i * 13);
