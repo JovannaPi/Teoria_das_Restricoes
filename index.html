@@ -264,7 +264,6 @@
   .deco{ position:absolute !important; inset:0; z-index:0 !important; pointer-events:none; overflow:hidden; }
   .deco > *{ position:absolute; }
   .deco .moonline{ width:clamp(220px,26vw,420px); opacity:.07; }
-  .deco .twig{ opacity:.075; }
   .deco .sp{ height:auto; animation:twinkle 5s ease-in-out infinite; }
   .deco .bubs{ inset:0; }
   .deco .bub{ position:absolute; bottom:-40px; border:1.5px solid rgba(91,42,134,.28); border-radius:50%; background:radial-gradient(circle at 30% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 45%); opacity:0; animation:bubble linear infinite; }
@@ -698,7 +697,6 @@
     sl.insertAdjacentHTML('afterbegin',
       `<div class="deco" aria-hidden="true">
         <svg class="moonline" viewBox="0 0 200 200" style="${flip ? 'left:-70px' : 'right:-70px'};bottom:-80px"><circle cx="100" cy="100" r="92" fill="none" stroke="#5b2a86" stroke-width="2"/><circle cx="100" cy="100" r="80" fill="none" stroke="#5b2a86" stroke-width="1" stroke-dasharray="3 7"/><circle cx="72" cy="78" r="12" fill="none" stroke="#5b2a86" stroke-width="1.5"/><circle cx="128" cy="124" r="8" fill="none" stroke="#5b2a86" stroke-width="1.5"/><circle cx="116" cy="68" r="5" fill="none" stroke="#5b2a86" stroke-width="1.5"/></svg>
-        ${tree(`${flip ? 'right' : 'left'}:-3vw;top:-2vh;width:min(20vw,34vh);${flip ? 'transform:scaleX(-1) rotate(-8deg)' : 'transform:rotate(-8deg)'}`, 40 + i).replace('<svg ', '<svg class="twig" ')}
         ${sparks}
         <div class="bubs">${bubbles}</div>
       </div>
