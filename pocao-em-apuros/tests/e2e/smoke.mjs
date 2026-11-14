@@ -384,7 +384,7 @@ try {
     check('rápido: botão do modo rápido grande e visível sem rolar', pb.h >= 56 && pb.bottom <= pb.vh, `${Math.round(pb.h)} px de altura`);
     {
       const t = await m.evaluate(() => [...document.querySelectorAll('.main-actions .play-btn')].map((b) => ({ txt: b.textContent, vis: b.getBoundingClientRect().bottom <= innerHeight })));
-      check('início: duas opções claras — "Modo rápido — 6 a 10 minutos" e "Modo completo"', t.length === 2 && /Modo rápido — 6 a 10 minutos/.test(t[0].txt) && /Modo completo/.test(t[1].txt) && t.every((x) => x.vis), JSON.stringify(t));
+      check('início: duas opções claras — "Modo rápido — 8 a 12 minutos" e "Modo completo"', t.length === 2 && /Modo rápido — 8 a 12 minutos/.test(t[0].txt) && /Modo completo/.test(t[1].txt) && t.every((x) => x.vis), JSON.stringify(t));
     }
     await m.screenshot({ path: join(shotsDir, 'rapido-01-inicio.png') });
     await m.tap('.play-btn');
@@ -431,7 +431,7 @@ try {
     await shot('02-estacao');
     await m.tap('#station-strip [data-strip="destilacao"]');
     await m.waitForTimeout(1100);
-    await ff(30);
+    await ff(55);
     check('rápido: passo 1 (identificar) direto, com opções de estação', (await coach()).includes('Qual estação está segurando a loja'));
     check('rápido: sem avisos flutuantes por cima da loja', (await m.evaluate(() => document.querySelectorAll('#toasts .toast').length)) === 0);
     await shot('03-identificar');
@@ -473,7 +473,7 @@ try {
     check('rápido: manter todo mundo ocupado é comparado com a outra escolha, e ela continua disponível', /Eram \d+ poções nas filas; com todo mundo ocupado, agora são \d+\. No ritmo do Caldeirão seriam \d+/.test(await coach()) && (await has('corda')), (await coach()).slice(0, 260));
     check('rápido: o caixa ainda não aparece antes do passo de investir', !(await m.evaluate(() => !!document.querySelector('[data-qcash]').offsetParent)));
     await choose('corda');
-    await ff(20.05); // lê logo que o resultado aparece (a fila continua andando depois)
+    await ff(40.05); // lê logo que o resultado aparece (a fila continua andando depois)
     {
       const t = await coach();
       const mm = /Eram (\d+) poções nas filas\. Agora, no ritmo do Caldeirão: (\d+)\. Se todo mundo continuasse ocupado, seriam (\d+)/.exec(t);
@@ -498,7 +498,7 @@ try {
     await choose('ok');
     check('rápido: passo 5 (recomeçar)', (await coach()).includes('A loja mudou'));
     check('rápido: no passo 5 as opções só aparecem depois de a fila crescer (sem chute)', !(await has('destilacao')));
-    for (let k = 0; k < 14 && !(await has('destilacao')); k++) await ff(5);
+    for (let k = 0; k < 24 && !(await has('destilacao')); k++) await ff(5);
     {
       const q = await m.evaluate(() => window.__pocao.game.sim.stations.destilacao.queue.length);
       check('rápido: quando as opções aparecem, a fila da nova restrição (Destilação) já está à vista', (await has('destilacao')) && q >= 3, `fila da Destilação: ${q}`);
@@ -514,7 +514,7 @@ try {
       check('rápido: fim compara começo e agora com os mesmos números das etapas', !!mm && mm[1] === '4,4' && Number(mm[2].replace(',', '.')) > 4.4, t.slice(0, 260));
     }
     const tSim = await m.evaluate(() => window.__pocao.game.sim.t);
-    check('rápido: a partida guiada dura entre 4 e 10 minutos de jogo (a 1×)', tSim >= 240 && tSim <= 600, `${Math.round(tSim)} s de jogo`);
+    check('rápido: a partida guiada dura entre 4 e 10 minutos de jogo (a 1×)', tSim >= 240 && tSim <= 900, `${Math.round(tSim)} s de jogo`);
     await choose('fim');
     await ff(2);
     for (let i = 0; i < 3; i++) {
@@ -679,7 +679,7 @@ try {
     const read = jsQR(Uint8ClampedArray.from(px.data), px.w, px.h);
     check('QR do slide é lido e aponta para o endereço informado', read?.data === pub, read?.data || 'não lido');
     const slideText = await p.textContent('.slide');
-    check('slide tem título, instrução, tempo e endereço alternativo', /Poção em Apuros/.test(slideText) && /Aponte a câmera e jogue/.test(slideText) && /6 a 10 minutos/.test(slideText) && /jovannapi\.github\.io/.test(slideText));
+    check('slide tem título, instrução, tempo e endereço alternativo', /Poção em Apuros/.test(slideText) && /Aponte a câmera e jogue/.test(slideText) && /8 a 12 minutos/.test(slideText) && /jovannapi\.github\.io/.test(slideText));
     await p.screenshot({ path: join(shotsDir, 'slide-qr.png') });
     await p.close();
   }

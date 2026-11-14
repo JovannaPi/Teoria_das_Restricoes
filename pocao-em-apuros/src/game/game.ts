@@ -122,6 +122,7 @@ export class Game {
   setSpeed(v: number): void {
     if (!this.phase) return;
     if (!this.phase.speedOptions.includes(v)) return;
+    if (document.body.classList.contains('room-mode') && v !== 1) return; // na sala todos jogam na mesma velocidade
     this.speed = v;
     this.paused = false;
     this.emit('speed', v);

@@ -20,7 +20,7 @@
 | 5 | Diferenciou explorar de elevar? | não tentou comprar nada no passo 2 | comentário |
 | 6 | Entendeu subordinar? | ao trocar "todo mundo ocupado" pela corda, notou menos poções espalhadas | frase dita |
 | 7 | Viu a restrição mudar? | escolheu a Destilação no passo 5 | tentativas |
-| 8 | Duração | 6 a 10 minutos | tempo total |
+| 8 | Duração | 8 a 12 minutos | tempo total |
 
 ## Depois da partida (2 minutos, sem consultar o jogo)
 

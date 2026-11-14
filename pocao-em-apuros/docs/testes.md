@@ -41,7 +41,7 @@ Chromium real; o jogo é jogado pela interface (cliques e toques), com o tempo a
 - Layouts 1440×900, 1024×768, 390×844 e 844×390 sem rolagem horizontal e com a loja visível.
 - **Celular em pé (toque)**: barra de abas e faixa de estações; alvos de toque ≥ 32 px; aceitar pedido; Lina ajudar; tocar na loja seleciona a estação; Análise; menu "Mais" sem botões mortos.
 - **Celular deitado (toque)**: a loja ocupa mais de 70% da altura; o painel desliza ao tocar na aba; decisão aplicada por toque; tocar de novo fecha.
-- **Tela inicial**: duas opções claras, "Modo rápido — 6 a 10 minutos" e "Modo completo", visíveis sem rolar.
+- **Tela inicial**: duas opções claras, "Modo rápido — 8 a 12 minutos" e "Modo completo", visíveis sem rolar.
 - **Modo rápido num celular de 375×667, só por toque**: começa sem tela de configuração nem janela de abertura; primeiro cartão com até 30 palavras; sem abas, caixa e velocidades (só Menu); tocar numa estação não abre painel; sem avisos flutuantes; caixa só no passo de investir; avaliação curta, sem tabela financeira; reflexão sem porcentagens; loja com 4 estações e 1 poção; sem lucro e reputação; sem abas Estoque e Fluxo; erro de acúmulo explicado e convite a conversar; erro de identificação explicado e "!" na mentora; ajudar o Preparo medido sem ganho e a etapa não avança; limpar em paralelo com efeito medido; "todo mundo ocupado" medido e explicado; corda reduz as poções espalhadas; bancada extra medida sem ganho e o 2º caldeirão continua disponível e eleva a restrição; nova restrição (Destilação); fim com começo × agora; partida guiada entre 4 e 10 minutos de jogo; resultado com os 5 passos; reflexão contextualizada; jogar de novo; "Recomeçar"; pular e reabrir as dicas (Fluxo volta).
 - **Andar e conversar (celular 390×844, toque)**: arrastar a bruxa a leva pela loja, não seleciona nada e ela nunca entra num móvel; arrastar por cima do caldeirão não a coloca dentro dele; tocar no chão do outro lado do caldeirão leva a bruxa até lá contornando-o; tocar na Vó Morgana longe leva a bruxa até ela e abre a conversa; caixa com menos de 75% da loja e botões ≥ 44 px; o jogo continua rodando; "Me explica melhor" aprofunda (sinais) e o terceiro nível dá os números; fechar volta ao jogo; a Brasa fala do Caldeirão; tocar na bruxa lembra o objetivo; tocar no caldeirão ainda seleciona a estação.
 - **Computador**: setas movem a bruxa; E conversa com quem está perto; Esc fecha.
@@ -78,6 +78,6 @@ Os testes acima rodam no Chromium, emulando tela e toque de celular. **Nenhum ap
 - [ ] Abrir num **Android (Chrome)** e num **iPhone (Safari)** reais, pela **rede móvel**.
 - [ ] Ler o QR Code **projetado na sala** com os dois celulares.
 - [ ] Colar as regras do Firebase e confirmar que um resultado aparece no placar de outro aparelho.
-- [ ] Jogar o modo rápido inteiro com pessoas que nunca jogaram, sem explicação prévia, seguindo [validacao-com-alunos.md](validacao-com-alunos.md) (meta: 6 a 10 minutos).
+- [ ] Jogar o modo rápido inteiro com pessoas que nunca jogaram, sem explicação prévia, seguindo [validacao-com-alunos.md](validacao-com-alunos.md) (meta: 8 a 12 minutos).
 - [ ] Arrastar a bruxa e conversar num celular real (Android e iPhone): conferir que o gesto é confortável e não atrapalha a rolagem nem os botões.
 - [ ] Trocar de app no meio da partida e voltar (a partida deve estar pausada e salva).

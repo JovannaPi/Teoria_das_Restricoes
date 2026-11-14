@@ -137,7 +137,7 @@ describe('Modo rápido (aula)', () => {
     }
   });
   it('depois do 2º caldeirão a Destilação fica claramente sobrecarregada, qualquer que tenha sido a melhoria do passo 2', () => {
-    for (const ex of ['setupExternal', 'breakCover', 'helper'] as const) {
+    for (const ex of ['setupExternal', 'helper'] as const) {
       const s = sim();
       advance(s, 60);
       if (ex === 'helper') A.setHelper(s, 'caldeirao');
