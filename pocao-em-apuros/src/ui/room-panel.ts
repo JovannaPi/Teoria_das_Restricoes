@@ -53,6 +53,11 @@ function liveHtml(): string {
       : status === 'offline' || status === 'erro'
         ? '<p class="warnbox">Sem conexão com o servidor agora. O painel volta sozinho quando a rede voltar.</p>'
         : '';
+  if (s.terminaram === 0) {
+    const n = s.total;
+    const quem = n === 0 ? 'Ninguém entrou ainda.' : n === 1 ? '1 pessoa na sala.' : `${n} pessoas na sala.`;
+    return `${msg}<p class="rp-wait">${quem} O resumo da turma (onde cada um está, o que a turma fez, o ranking e as perguntas para o debate) aparece quando a primeira pessoa terminar.</p>`;
+  }
   return `${msg}
     <div class="rp-count"><b>${s.total}</b> ${s.total === 1 ? 'pessoa entrou' : 'pessoas entraram'} · <b>${s.terminaram}</b> terminaram</div>
     <h2>Onde a turma está</h2><ul class="rp-steps">${steps}</ul>

@@ -769,6 +769,7 @@ try {
     await st.waitForSelector('.turma-coach', { timeout: 8000 });
     check('sala: depois da contagem o modo rápido começa e a sala de espera some', (await st.$('.room-wait')) == null);
     // menu da partida e fim da partida na sala: só o que importa
+    check('sala: sem botão de pausa e o espaço não pausa', !(await st.isVisible('.pausebtn')) && (await st.evaluate(() => { const g = window.__pocao.game; g.togglePause(); return g.paused; })) === false);
     await st.tap('.hud-more[data-action="open-menu"]');
     await st.waitForSelector('.modal .menu-list');
     const menuTxt = (await st.textContent('.modal .menu-list')).replace(/\s+/g, ' ');
@@ -812,6 +813,7 @@ try {
     const code = await pr.textContent('[data-room-code]');
     // em localhost o painel avisa que o endereço é local (no site público, mostra o QR)
     check('painel: abre uma sala com código curto e o link da sala (aviso de endereço local no lugar do QR)', /^[A-Z0-9]{4}$/.test(code) && t.includes(`?sala=${code}`) && /só funciona neste computador/.test(t), code);
+    check('painel: com alguém que já terminou, mostra o resumo da turma (sem a mensagem de espera)', (await pr.$('.rp-wait')) == null);
     check('painel: mostra a sala liberada, sem contar o controle como aluno', /Sala liberada · 3 bruxas na sala/.test(t), t.slice(0, 200));
     check('painel: mostra quantos entraram e terminaram', /3 pessoas entraram · 1 terminaram/.test(t), t.slice(0, 160));
     check('painel: mostra quantos acharam o gargalo de primeira e as armadilhas', /1 de 2\s*acharam o gargalo de primeira/.test(t) && /1\s*ajudaram o Preparo/.test(t) && /1\s*deixaram todo mundo ocupado/.test(t), t.slice(160, 520));

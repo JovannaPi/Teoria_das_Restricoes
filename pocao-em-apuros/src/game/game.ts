@@ -16,6 +16,7 @@ import { renderOverlay } from '../ui/overlay';
 import { renderSide, SideView } from '../ui/side';
 import { toast } from '../ui/toast';
 import { heroCreator, reportResult } from '../ui/online';
+import { currentRoom } from '../online/room';
 import { applyHero, DEFAULT_HERO, randomHero, randomWitchName } from './hero';
 import { netProfit } from '../sim/engine';
 import { computeScore, evaluateAll, immediateDefeat } from './objectives';
@@ -80,6 +81,11 @@ export class Game {
     window.addEventListener('orientationchange', () => setTimeout(() => this.layoutStage(), 200));
     document.addEventListener('fullscreenchange', () => setTimeout(() => this.layoutStage(), 100));
     document.addEventListener('visibilitychange', () => {
+      // na sala de aula não existe botão de pausa: ao voltar para o jogo, ele continua sozinho
+      if (!document.hidden && this.sim && !this.ended && document.body.classList.contains('room-mode')) {
+        this.paused = false;
+        this.refreshUi(true);
+      }
       if (document.hidden && this.sim && !this.ended) {
         // ao trocar de app ou bloquear o celular, a partida pausa e é salva
         this.paused = true;
@@ -123,6 +129,7 @@ export class Game {
   }
 
   togglePause(): void {
+    if (document.body.classList.contains('room-mode')) return;
     this.paused = !this.paused;
     this.refreshUi(true);
   }
@@ -144,6 +151,8 @@ export class Game {
     const phase = getPhase(id);
     this.phase = phase;
     document.body.classList.toggle('quick', phase.mode === 'turma');
+    // modo sala de aula: sem pausa manual (todos jogam o mesmo tempo e a tela não fica confusa)
+    document.body.classList.toggle('room-mode', phase.mode === 'turma' && !!currentRoom());
     document.body.classList.remove('guide-free');
     this.ended = false;
     this.selected = phase.revealConstraint;

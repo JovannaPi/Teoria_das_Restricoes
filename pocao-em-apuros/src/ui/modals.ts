@@ -445,7 +445,7 @@ export function howToHtml(quick = false): string {
     <li><b>Ande pela loja</b>: arraste a sua bruxa com o dedo (ou toque no chão para ela ir até lá). No computador, use as setas.</li>
     <li><b>Converse</b>: toque na Vó Morgana ou em quem trabalha numa estação. Cada um dá dicas sobre o que vê; peça "Me explica melhor" se precisar. A conversa não pausa o jogo.</li>
     <li><b>Fluxo</b> e <b>Melhorias</b> abrem quando fizer sentido usar.</li>
-    <li><b>Pausa</b> a qualquer momento no botão de pausa. Abrir uma janela também pausa.</li>
+    ${currentRoom() ? '' : '<li><b>Pausa</b> a qualquer momento no botão de pausa. Abrir uma janela também pausa.</li>'}
   </ol>`;
 }
 
