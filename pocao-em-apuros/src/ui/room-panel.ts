@@ -53,7 +53,7 @@ function liveHtml(): string {
       : status === 'offline' || status === 'erro'
         ? '<p class="warnbox">Sem conexão com o servidor agora. O painel volta sozinho quando a rede voltar.</p>'
         : '';
-  return `${msg}${gateHtml()}
+  return `${msg}
     <div class="rp-count"><b>${s.total}</b> ${s.total === 1 ? 'pessoa entrou' : 'pessoas entraram'} · <b>${s.terminaram}</b> terminaram</div>
     <h2>Onde a turma está</h2><ul class="rp-steps">${steps}</ul>
     <h2>O que a turma fez</h2><div class="rp-facts">${facts}</div>
@@ -71,6 +71,7 @@ function render(root: HTMLElement): void {
       <div><h1>Sala <b data-room-code>${esc(code)}</b></h1><p>Poção em Apuros · Modo rápido</p></div>
       <div class="rp-tools"><button data-action="room-new">Nova sala</button><button class="primary" data-action="room-close">Fechar</button></div>
     </header>
+    <div class="rp-gatebar" data-gatebar>${gateHtml()}</div>
     <div class="rp-grid">
       <section class="rp-join">
         ${local ? `<p class="warnbox">Este endereço só funciona neste computador. Abra o jogo pelo link público (https) para a turma conseguir entrar.</p>` : '<canvas aria-label="QR Code da sala"></canvas>'}
@@ -86,6 +87,8 @@ function render(root: HTMLElement): void {
 function refreshLive(): void {
   const live = document.querySelector('.room-panel .rp-live');
   if (live) live.innerHTML = liveHtml();
+  const bar = document.querySelector('.room-panel [data-gatebar]');
+  if (bar) bar.innerHTML = gateHtml();
 }
 
 function startWatching(): void {

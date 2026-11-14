@@ -14,6 +14,7 @@ import type { ActiveEvent, Hypothesis, IngredientId, StationId } from '../sim/ty
 import { barChart, lineChart } from './charts';
 import { contextualReflection, fiveSteps } from '../game/fivesteps';
 import { wrongExplanation } from '../game/turma';
+import { currentRoom } from '../online/room';
 import { clock, esc, money, n1, pct, shopMinutes, STATION_COLORS } from './dom';
 
 interface ModalEntry {
@@ -485,6 +486,14 @@ export function moreMenu(g: Game): void {
 /** Menu do modo rápido: poucas opções, sem painéis de análise. */
 export function quickMenu(g: Game): void {
   const free = document.body.classList.contains('guide-free');
+  if (currentRoom()) {
+    open(g, {
+      title: 'Menu',
+      body: `<div class="menu-list"><button data-action="modal-close" class="primary">Continuar jogando</button><button data-action="open-howto">Como jogar</button></div>`,
+      cls: 'small',
+    });
+    return;
+  }
   open(g, {
     title: 'Menu',
     body: `<div class="menu-list">
@@ -612,7 +621,10 @@ export async function debrief(
     <div class="quiz" data-correct="${q.correct}"><p><b>${esc(q.question)}</b></p>
       ${q.options.map((o, i) => `<button class="row-btn" data-action="quiz" data-v="${i}">${esc(o)}</button>`).join('')}
       <div class="quiz-exp" hidden><p>${esc(explanation)}</p></div></div>`;
-  const footer = `<button data-action="board-open">Placar</button><button data-action="exit">Menu</button><button data-action="retry">Jogar de novo</button>${won && next && phase.mode !== 'turma' ? '<button class="primary" data-action="next-phase">Próxima fase</button>' : ''}`;
+  const inRoom = phase.mode === 'turma' && !!currentRoom();
+  const footer = inRoom
+    ? '<button class="primary" data-action="room-rank">Ver o ranking da sala</button>'
+    : `<button data-action="board-open">Placar</button><button data-action="exit">Menu</button><button data-action="retry">Jogar de novo</button>${won && next && phase.mode !== 'turma' ? '<button class="primary" data-action="next-phase">Próxima fase</button>' : ''}`;
   const { el: dEl, promise } = open(g, { title: `Avaliação — ${esc(phase.title)}`, body, footer, cls: 'wide debrief', closable: false });
   // abre sempre pelo começo (o foco no primeiro botão rolava a janela para o meio)
   requestAnimationFrame(() => dEl.querySelectorAll('.modal-body, .body, section').forEach((x) => ((x as HTMLElement).scrollTop = 0)));
@@ -620,6 +632,7 @@ export async function debrief(
     const box = dEl.querySelector('[data-online-status]');
     if (!box) return;
     if (st === 'ignorado') box.remove();
+    else if (inRoom) box.innerHTML = '<b class="pos">Sua pontuação foi para o ranking da sala.</b> Toque em "Ver o ranking da sala" para ver sua posição.';
     else if (st === 'enviado') box.innerHTML = won ? '<b class="pos">Resultado enviado ao placar da turma.</b> Toque em Placar para ver sua posição.' : 'Resultado registrado. Só fases <b>vencidas</b> somam pontos no placar.';
     else if (st === 'negado') box.innerHTML = '<b class="neg">O placar ainda não foi liberado no Firebase.</b> O resultado ficou guardado e será enviado depois que as regras forem configuradas.';
     else box.innerHTML = 'O resultado ficou guardado no celular e vai para o placar assim que houver internet.';

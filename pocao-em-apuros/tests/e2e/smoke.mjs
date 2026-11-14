@@ -768,6 +768,12 @@ try {
     check('sala: quando o telão libera, aparece a contagem', true);
     await st.waitForSelector('.turma-coach', { timeout: 8000 });
     check('sala: depois da contagem o modo rápido começa e a sala de espera some', (await st.$('.room-wait')) == null);
+    // menu da partida e fim da partida na sala: só o que importa
+    await st.tap('.hud-more[data-action="open-menu"]');
+    await st.waitForSelector('.modal .menu-list');
+    const menuTxt = (await st.textContent('.modal .menu-list')).replace(/\s+/g, ' ');
+    check('sala: o menu da partida só tem "Continuar jogando" e "Como jogar" (sem recomeçar, sem modo livre, sem sair)', /Continuar jogando/.test(menuTxt) && /Como jogar/.test(menuTxt) && !/Recomeçar|modo livre|Sair/.test(menuTxt), menuTxt);
+    await st.tap('.modal [data-action="modal-close"]');
     const ff = (secs) => st.evaluate((x) => { const g = window.__pocao.game; for (let i = 0; i < Math.ceil(x / (0.1 * g.speed)); i++) g.tick(0.1); }, secs);
     await st.tap('#station-strip [data-strip="caldeirao"]');
     await st.tap('#station-strip [data-strip="preparo"]');
@@ -782,6 +788,14 @@ try {
     const last = puts[puts.length - 1] || {};
     check('sala: o aluno envia o progresso para a sala (passo, erro de primeira, armadilha do Preparo)', last.sala === 'TEST' && last.passo === 2 && last.erros === 1 && last.preparo === true && last.pontos === -1 && last.id === `TEST_${last.jogadorId}`, JSON.stringify(last));
     check('sala: o que vai para a sala não tem dado pessoal (só nome da bruxa e números)', Object.keys(last).sort().join(',') === 'bruxa,capFim,erros,fora,id,jogadorId,ocupado,passo,pontos,preparo,sala', Object.keys(last).join(','));
+    await st.evaluate(() => window.__pocao.game.exitToMenu());
+    await st.waitForSelector('[data-action="room-lobby"]');
+    const titleTxt = (await st.textContent('#title-menu')).replace(/\s+/g, ' ');
+    check('sala: dentro da sala o início só mostra "Modo sala de aula", o ranking e sair da sala', /Modo sala de aula/.test(titleTxt) && /Ranking da sala/.test(titleTxt) && !/Modo completo|Como jogar|O que é a TOC|Modo rápido/.test(titleTxt), titleTxt.slice(0, 200));
+    await st.tap('[data-action="room-rank"]');
+    await st.waitForSelector('.room-rank');
+    const rk = (await st.textContent('.room-rank')).replace(/\s+/g, ' ');
+    check('sala: o ranking da sala lista quem terminou, por pontos', /Jade/.test(rk) && /82/.test(rk), rk);
     await c1.close();
 
     // professor abre o painel no projetor

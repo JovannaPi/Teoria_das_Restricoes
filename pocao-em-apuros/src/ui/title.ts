@@ -13,6 +13,8 @@ import { glossaryHtml, howToHtml, tocHtml } from './modals';
 import { showPresenter } from './presenter';
 import { currentRoom, leaveRoom } from '../online/room';
 import { heroCreator } from './online';
+import { roomLobby } from './room-lobby';
+import { showRoomRanking } from './room-rank';
 
 // convite de instalação do navegador (Android/Chrome); no iPhone o caminho é "Compartilhar → Tela de Início"
 let installPrompt: (Event & { prompt: () => Promise<void> }) | null = null;
@@ -76,8 +78,12 @@ export function renderTitle(g: Game): void {
     </div>
     <div class="logo"><img src="${portraitUrl(LOOKS.lina, 'cast')}" alt="" class="logo-lina"><div><h1>Poção em Apuros</h1>
       <p>Sua loja de poções está atrasada. Descubra o que trava a produção e salve o dia.</p>${s.hero ? `<p class="hero-tag">${esc(s.hero.name)}</p>` : ''}</div></div>
-    ${room ? `<p class="room-tag">Você está na <b>sala ${esc(room)}</b>: seu progresso aparece no telão da turma (só o nome da bruxa). <button class="mini" data-action="room-leave">Sair da sala</button></p>` : ''}
+    ${room ? `<p class="room-tag">Você está na <b>sala ${esc(room)}</b>: seu progresso aparece no telão da turma (só o nome da bruxa).</p>
     <div class="menu-list main-actions">
+      <button class="primary play-btn" data-action="room-lobby">${iconImg('play')} Modo sala de aula <small>Guiado, 6 a 10 minutos. Sua pontuação entra no ranking da sala.</small></button>
+      <button data-action="room-rank">${iconImg('star')} Ranking da sala</button>
+      <button class="mini" data-action="room-leave">Sair da sala</button>
+    </div>` : `<div class="menu-list main-actions">
       ${runPhase ? `<button class="primary" data-action="title-continue">${iconImg('play')} Continuar: ${esc(runPhase.title)}</button>` : ''}
       <button class="${runPhase ? '' : 'primary'} play-btn" data-action="title-start" data-v="turma">${iconImg('play')} Modo rápido — 6 a 10 minutos <small>Guiado, ideal para a aula: os cinco passos da TOC na prática</small></button>
       <button class="play-btn full-btn" data-action="title-more">${iconImg('book')} Modo completo <small>A experiência original: tutorial, 5 fases e a Bruxa Mestra</small></button>
@@ -86,7 +92,7 @@ export function renderTitle(g: Game): void {
         <button data-action="title-toc">${iconImg('eye')} O que é a TOC?</button>
       </div>
       <button data-action="board-open">${iconImg('star')} Placar da turma</button>
-    </div>`;
+    </div>`}`;
   $('#title-panel').innerHTML = '';
   $('#title-panel').hidden = true;
 }
@@ -200,6 +206,8 @@ export function registerTitleActions(g: Game): void {
     renderTitle(g);
   };
   a['title-fullscreen'] = () => toggleFullscreen();
+  a['room-lobby'] = () => void roomLobby(g);
+  a['room-rank'] = () => showRoomRanking(g);
   a['room-leave'] = () => {
     leaveRoom();
     renderTitle(g);
