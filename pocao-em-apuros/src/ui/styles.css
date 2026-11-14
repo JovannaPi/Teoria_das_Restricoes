@@ -3483,3 +3483,72 @@ body.quick:not(.guide-free) #station-strip .st {
     transform: translateY(-6px);
   }
 }
+
+/* ---- ranking da sala ---- */
+.room-rank {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.room-rank li {
+  display: grid;
+  grid-template-columns: 2em 1fr auto;
+  gap: 2px 10px;
+  align-items: baseline;
+  padding: 8px 12px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+}
+.room-rank li.me {
+  border-color: var(--amber);
+  background: rgba(240, 180, 60, 0.1);
+}
+.room-rank .rk {
+  color: var(--amber);
+  font-weight: 700;
+}
+.room-rank b {
+  color: var(--amber);
+}
+.room-rank small {
+  grid-column: 2 / 4;
+  color: var(--muted);
+}
+
+/* a porta da sala fica fixa no topo do painel: liberar a turma nunca fica fora da tela */
+.rp-gatebar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 10px 0 0;
+  background: #140d14;
+}
+.rp-gatebar .rp-gate {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 20px;
+  font-size: 1.1em;
+}
+.rp-gatebar .rp-gate.closed > small,
+.rp-gatebar .rp-gate.closed > .rp-waiting {
+  grid-column: 1 / -1;
+}
+.rp-gatebar .rp-gate .big {
+  font-size: 1.6em;
+  padding: 0.5em 1.6em;
+  grid-row: 1;
+  grid-column: 2;
+}
+.rp-gatebar .rp-gate.closed {
+  box-shadow: 0 0 0 4px rgba(240, 180, 60, 0.18);
+}
+@media (max-width: 700px) {
+  .rp-gatebar .rp-gate {
+    grid-template-columns: 1fr;
+  }
+  .rp-gatebar .rp-gate .big {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
