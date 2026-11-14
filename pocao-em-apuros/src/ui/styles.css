@@ -3564,3 +3564,125 @@ body.room-mode .pausebtn {
   font-size: 1.15em;
   line-height: 1.5;
 }
+
+/* painel da sala: tudo numa tela de projetor, sem rolar (o tamanho do texto acompanha a altura da tela) */
+@media (min-width: 801px) {
+  .room-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    padding: 1.6vh 2vw;
+    font-size: clamp(11px, 2.3vh, 30px);
+  }
+  .rp-head {
+    flex: none;
+    flex-wrap: nowrap;
+  }
+  .rp-head h1 {
+    font-size: 2.6em;
+    line-height: 1;
+  }
+  .rp-head p {
+    font-size: 0.9em;
+  }
+  .rp-gatebar {
+    flex: none;
+    position: static;
+    margin: 1vh 0 0;
+  }
+  .rp-gatebar .rp-gate {
+    margin: 0;
+    padding: 0.6em 1em;
+    font-size: 1em;
+    gap: 0.2em 1.2em;
+  }
+  .rp-gatebar .rp-gate .big {
+    font-size: 1.5em;
+    padding: 0.35em 1.2em;
+  }
+  .rp-waiting {
+    max-height: 3.6em;
+    overflow: hidden;
+  }
+  .rp-grid {
+    flex: 1;
+    min-height: 0;
+    margin-top: 1vh;
+    grid-template-columns: minmax(0, 26%) minmax(0, 1fr);
+    gap: 2vw;
+  }
+  .rp-join {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .rp-join canvas {
+    width: auto;
+    max-width: 100%;
+    max-height: 42vh;
+    aspect-ratio: 1;
+  }
+  .rp-big {
+    font-size: 1.15em;
+    margin: 0.4em 0 0.2em;
+  }
+  .rp-url {
+    font-size: 0.8em;
+  }
+  .rp-live {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .rp-live h2 {
+    margin: 0.5em 0 0.25em;
+    font-size: 1.05em;
+  }
+  .rp-count {
+    font-size: 1.15em;
+  }
+  .rp-steps {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 2vw;
+    gap: 2px 2vw;
+  }
+  .rp-steps li {
+    grid-template-columns: 7em 1fr 2em;
+    gap: 0.5em;
+  }
+  .rp-steps .bar {
+    height: 0.7em;
+  }
+  .rp-facts {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.5em;
+  }
+  .rp-fact {
+    padding: 0.4em 0.6em;
+  }
+  .rp-fact b {
+    font-size: 1.4em;
+    line-height: 1.1;
+  }
+  .rp-fact small {
+    font-size: 0.8em;
+  }
+  .rp-bottom {
+    gap: 2vw;
+    min-height: 0;
+  }
+  .rp-rank li span {
+    min-width: 12em;
+  }
+  .rp-debate li {
+    margin-bottom: 0.25em;
+  }
+  .rp-wait {
+    margin: 1em 0;
+  }
+}

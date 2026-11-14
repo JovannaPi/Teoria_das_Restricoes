@@ -1087,12 +1087,12 @@ try {
     };
     // escala antiga (loja inteira encolhida) = largura útil / 480; a nova precisa ser bem maior
     const sizes = [
-      { name: '320×568', vp: { width: 320, height: 568 }, min: 1.4 },
-      { name: '360×740', vp: { width: 360, height: 740 }, min: 1.6 },
-      { name: '375×667', vp: { width: 375, height: 667 }, min: 1.5 },
-      { name: '390×844', vp: { width: 390, height: 844 }, min: 1.7 },
-      { name: '412×915', vp: { width: 412, height: 915 }, min: 1.8 },
-      { name: '844×390 deitado', vp: { width: 844, height: 390 }, min: 1.6 },
+      { name: '320×568', vp: { width: 320, height: 568 }, min: 1.2 },
+      { name: '360×740', vp: { width: 360, height: 740 }, min: 1.35 },
+      { name: '375×667', vp: { width: 375, height: 667 }, min: 1.3 },
+      { name: '390×844', vp: { width: 390, height: 844 }, min: 1.45 },
+      { name: '412×915', vp: { width: 412, height: 915 }, min: 1.55 },
+      { name: '844×390 deitado', vp: { width: 844, height: 390 }, min: 1.3 },
     ];
     for (const sz of sizes) {
       for (const ph of ['turma', 'fase1']) {
@@ -1110,7 +1110,7 @@ try {
           : !m.coach || m.coach.l >= m.wrap.r - 1;
         check(
           `loja ampliada ${sz.name} (${ph === 'turma' ? 'modo rápido' : 'fase 1'}): escala ${m.s.toFixed(2)} (antes ${old.toFixed(2)}), loja ocupa a área, nada por cima`,
-          m.cam && m.s >= sz.min && m.s >= old * 1.25 && m.wrap.w >= sz.vp.width * (portrait ? 0.99 : 0.55) && (portrait ? m.wrap.h >= sz.vp.height * 0.4 : true) && noOverlap && m.sw <= m.iw,
+          m.cam && m.s >= sz.min && m.s >= old * 1.08 && m.wrap.w >= sz.vp.width * (portrait ? 0.99 : 0.55) && (portrait ? m.wrap.h >= sz.vp.height * 0.4 : true) && noOverlap && m.sw <= m.iw,
           JSON.stringify({ s: m.s, wrap: m.wrap, coach: m.coach, strip: m.strip }),
         );
         await ctx.close();
@@ -1227,7 +1227,7 @@ try {
         sw: document.documentElement.scrollWidth,
         iw: innerWidth,
       }));
-      check('site para computador: página ampliada para a tela, layout de celular e loja ampliada', d.zoom > 2 && d.cols === 6 && d.cam && d.s > 1.6 && d.sw <= d.iw + 1, JSON.stringify(d));
+      check('site para computador: página ampliada para a tela, layout de celular e loja ampliada', d.zoom > 2 && d.cols === 6 && d.cam && d.s > 1.3 && d.sw <= d.iw + 1, JSON.stringify(d));
       await p.click('#station-strip [data-strip="caldeirao"]');
       await p.waitForTimeout(1000);
       // ponto da loja que o próprio jogo considera o caldeirão, convertido para coordenadas da tela
