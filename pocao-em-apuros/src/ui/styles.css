@@ -3352,3 +3352,134 @@ body.quick:not(.guide-free) #station-strip .st {
     font-size: 1.2em;
   }
 }
+
+/* ---- sala da turma: porta no telão e sala de espera no celular ---- */
+.rp-gate {
+  margin: 4px 0 12px;
+  padding: 12px 16px;
+  border: 2px solid var(--amber);
+  background: rgba(240, 180, 60, 0.08);
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+.rp-gate.open {
+  border-color: #58b868;
+  background: rgba(88, 184, 104, 0.1);
+  display: block;
+}
+.rp-gate.open .mini {
+  margin-left: 10px;
+}
+.rp-gate b {
+  color: var(--amber);
+  font-size: 1.2em;
+}
+.rp-gate.open b {
+  color: #7fd88f;
+}
+.rp-gate small {
+  color: var(--muted);
+}
+.rp-gate .big {
+  font-size: 1.25em;
+  padding: 0.5em 1.2em;
+}
+.rp-waiting {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.rp-waiting span {
+  padding: 2px 10px;
+  border: 1px solid var(--amber);
+  font-size: 0.85em;
+}
+.room-wait {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 13, 20, 0.94);
+  color: var(--ink);
+  overflow-y: auto;
+}
+.rw-card {
+  width: min(420px, 100%);
+  text-align: center;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+.rw-card .hero-portrait {
+  width: 160px;
+  height: 160px;
+  image-rendering: pixelated;
+  animation: rw-bob 2.4s ease-in-out infinite;
+}
+.rw-card h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.7rem;
+}
+.rw-room {
+  margin: 0;
+  color: var(--muted);
+}
+.rw-room b {
+  color: var(--amber);
+  letter-spacing: 0.12em;
+}
+.rw-msg {
+  margin: 8px 0 0;
+  font-size: 1.1rem;
+  line-height: 1.45;
+}
+.rw-dots i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin: 0 4px;
+  background: var(--amber);
+  animation: rw-dot 1.2s ease-in-out infinite;
+}
+.rw-dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.rw-dots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.rw-count {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 6rem;
+  line-height: 1;
+  color: var(--amber);
+}
+.rw-tools {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
+}
+.rw-tools[hidden] {
+  display: none;
+}
+@keyframes rw-bob {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes rw-dot {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-6px);
+  }
+}

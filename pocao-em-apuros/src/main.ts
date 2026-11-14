@@ -8,6 +8,7 @@ import { flushPending, registerOnlineActions } from './ui/online';
 import { registerPresenterActions } from './ui/presenter';
 import { registerRoomActions, showRoomPanel } from './ui/room-panel';
 import { currentRoom } from './online/room';
+import { roomLobby } from './ui/room-lobby';
 import { initFit } from './ui/fit';
 import { free } from './render/walk';
 
@@ -33,6 +34,9 @@ function boot(): void {
   document.body.classList.toggle('reduce-motion', game.save.settings.reduceMotion);
   document.body.dataset.screen = 'title';
   showTitle(game);
+  // link da sala (QR do telão): criar a bruxa e esperar a liberação
+  const q = new URLSearchParams(location.search);
+  if (q.has('sala') && currentRoom() && !q.has('painel') && !q.has('apresentar')) void roomLobby(game);
   window.addEventListener('pocao:menu', () => {
     resetOverlay();
     showTitle(game);

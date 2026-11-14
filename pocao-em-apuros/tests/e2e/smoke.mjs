@@ -733,12 +733,16 @@ try {
         },
         watch: (code, onRows, onStatus) => {
           onStatus('ok');
-          const send = () =>
+          // a sala começa liberada, a não ser que o endereço tenha &fechada (aí o teste libera com __roomEmit)
+          const gate = (aberta) => ({ sala: code, jogadorId: 'ctrl', bruxa: '__ctrl__', passo: aberta ? 1 : 0, erros: 0, preparo: false, ocupado: false, fora: false, capFim: 0, pontos: -1 });
+          const send = (aberta = !/fechada/.test(location.search)) =>
             onRows([
+              gate(aberta),
               { sala: code, jogadorId: 'a', bruxa: 'Jade', passo: 7, erros: 1, preparo: true, ocupado: false, fora: true, capFim: 98, pontos: 82 },
               { sala: code, jogadorId: 'b', bruxa: 'Runa', passo: 3, erros: 0, preparo: false, ocupado: true, fora: false, capFim: 0, pontos: -1 },
               { sala: code, jogadorId: 'c', bruxa: 'Íris', passo: 1, erros: 0, preparo: false, ocupado: false, fora: false, capFim: 0, pontos: -1 },
             ]);
+          window.__roomEmit = send;
           const t = setTimeout(send, 50);
           return () => clearTimeout(t);
         },
@@ -749,11 +753,21 @@ try {
     const st = await c1.newPage();
     st.on('pageerror', (e) => errors.push('[sala aluno] ' + String(e)));
     await st.addInitScript(fake);
-    await st.goto(URL + '?sala=TEST');
-    await st.waitForSelector('.play-btn');
-    check('sala: o celular mostra que está na sala TEST', /sala TEST/.test(await st.textContent('.room-tag')));
-    await st.tap('.play-btn');
-    await st.waitForSelector('.turma-coach');
+    await st.goto(URL + '?sala=TEST&fechada');
+    await st.waitForSelector('[data-action="hero-save"]');
+    check('sala: o link da sala abre a criação da bruxa, com o botão "Entrar na sala"', /Entrar na sala/.test(await st.textContent('[data-action="hero-save"]')));
+    await st.tap('[data-action="hero-save"]');
+    await st.waitForSelector('.room-wait');
+    await st.waitForTimeout(700);
+    const waitTxt = (await st.textContent('.room-wait')).replace(/\s+/g, ' ');
+    check('sala: com a sala fechada, o celular fica na sala de espera (sem começar o jogo)', /Sala TEST/.test(waitTxt) && /quando a professora liberar/.test(waitTxt) && (await st.$('.turma-coach')) == null, waitTxt.slice(0, 120));
+    const first = (await st.evaluate(() => window.__roomPuts))[0] || {};
+    check('sala: ao entrar, a bruxa já aparece para o telão (passo 0)', first.sala === 'TEST' && first.passo === 0 && first.pontos === -1, JSON.stringify(first));
+    await st.evaluate(() => window.__roomEmit(true));
+    await st.waitForSelector('.rw-count');
+    check('sala: quando o telão libera, aparece a contagem', true);
+    await st.waitForSelector('.turma-coach', { timeout: 8000 });
+    check('sala: depois da contagem o modo rápido começa e a sala de espera some', (await st.$('.room-wait')) == null);
     const ff = (secs) => st.evaluate((x) => { const g = window.__pocao.game; for (let i = 0; i < Math.ceil(x / (0.1 * g.speed)); i++) g.tick(0.1); }, secs);
     await st.tap('#station-strip [data-strip="caldeirao"]');
     await st.tap('#station-strip [data-strip="preparo"]');
@@ -784,10 +798,19 @@ try {
     const code = await pr.textContent('[data-room-code]');
     // em localhost o painel avisa que o endereço é local (no site público, mostra o QR)
     check('painel: abre uma sala com código curto e o link da sala (aviso de endereço local no lugar do QR)', /^[A-Z0-9]{4}$/.test(code) && t.includes(`?sala=${code}`) && /só funciona neste computador/.test(t), code);
+    check('painel: mostra a sala liberada, sem contar o controle como aluno', /Sala liberada · 3 bruxas na sala/.test(t), t.slice(0, 200));
     check('painel: mostra quantos entraram e terminaram', /3 pessoas entraram · 1 terminaram/.test(t), t.slice(0, 160));
     check('painel: mostra quantos acharam o gargalo de primeira e as armadilhas', /1 de 2\s*acharam o gargalo de primeira/.test(t) && /1\s*ajudaram o Preparo/.test(t) && /1\s*deixaram todo mundo ocupado/.test(t), t.slice(160, 520));
     check('painel: ranking da sala e perguntas para o debate tiradas do que a turma fez', /Jade\s*82/.test(t) && /1 pessoa ajudou o Preparo e nada mudou/.test(t) && !/Runa/.test(t.split('Para o debate')[1] || ''), t.slice(-400));
     await pr.screenshot({ path: join(shotsDir, 'sala-painel.png') });
+    await pr.click('[data-action="room-gate"]');
+    await pr.waitForTimeout(200);
+    const gatePut = (await pr.evaluate(() => window.__roomPuts)).pop() || {};
+    check('painel: "Fechar a sala" grava o controle da sala e mostra o botão de liberar', gatePut.id === `${code}_ctrl` && gatePut.passo === 0 && /Liberar a turma/.test(await pr.textContent('.rp-gate')), JSON.stringify(gatePut));
+    await pr.click('[data-action="room-gate"]');
+    await pr.waitForTimeout(200);
+    const gatePut2 = (await pr.evaluate(() => window.__roomPuts)).pop() || {};
+    check('painel: "Liberar a turma" grava a sala como liberada', gatePut2.passo === 1 && /Sala liberada/.test(await pr.textContent('.rp-gate')), JSON.stringify(gatePut2));
     const code1 = code;
     await pr.click('[data-action="room-new"]');
     await pr.waitForTimeout(200);

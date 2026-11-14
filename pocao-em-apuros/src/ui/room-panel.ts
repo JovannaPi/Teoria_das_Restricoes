@@ -2,13 +2,28 @@
 // Só contagens (ninguém é exposto por ter errado); o ranking usa o nome da bruxa.
 import type { Game } from '../game/game';
 import { drawQr, isLocalUrl } from '../online/qr';
-import { debatePrompts, hostedRoom, newRoomCode, rememberHostedRoom, roomUrl, STEP_NAMES, summarize, watchRoom, type RoomEntry } from '../online/room';
+import { debatePrompts, hostedRoom, newRoomCode, rememberHostedRoom, roomOpen, roomPlayers, roomUrl, setRoomOpen, STEP_NAMES, summarize, watchRoom, type RoomEntry } from '../online/room';
 import { esc } from './dom';
 
 let stop: (() => void) | null = null;
 let code = '';
 let rows: RoomEntry[] = [];
 let status: 'carregando' | 'ok' | 'offline' | 'negado' | 'erro' = 'carregando';
+let open = false; // a sala já foi liberada?
+
+/** Porta da sala: fechada (todos esperando) ou liberada (quem chega entra direto). */
+function gateHtml(): string {
+  const n = rows.length;
+  const quem = n === 1 ? '1 bruxa na sala' : `${n} bruxas na sala`;
+  if (open)
+    return `<div class="rp-gate open"><b>Sala liberada</b> · ${quem}. Quem escanear agora cria a bruxa e entra direto.
+      <button class="mini" data-action="room-gate">Fechar a sala</button></div>`;
+  const names = rows.map((r) => `<span>${esc(r.bruxa)}</span>`).join('');
+  return `<div class="rp-gate closed"><div><b>Sala fechada</b> · ${quem} esperando</div>
+      <button class="primary big" data-action="room-gate">Liberar a turma</button>
+      <small>Quando todo mundo aparecer aqui, libere: todos começam ao mesmo tempo.</small>
+      ${names ? `<div class="rp-waiting">${names}</div>` : ''}</div>`;
+}
 
 const fmt = (x: number) => x.toFixed(1).replace('.', ',');
 const pretty = (u: string) => u.replace(/^https?:\/\//, '');
@@ -38,7 +53,7 @@ function liveHtml(): string {
       : status === 'offline' || status === 'erro'
         ? '<p class="warnbox">Sem conexão com o servidor agora. O painel volta sozinho quando a rede voltar.</p>'
         : '';
-  return `${msg}
+  return `${msg}${gateHtml()}
     <div class="rp-count"><b>${s.total}</b> ${s.total === 1 ? 'pessoa entrou' : 'pessoas entraram'} · <b>${s.terminaram}</b> terminaram</div>
     <h2>Onde a turma está</h2><ul class="rp-steps">${steps}</ul>
     <h2>O que a turma fez</h2><div class="rp-facts">${facts}</div>
@@ -59,7 +74,7 @@ function render(root: HTMLElement): void {
     <div class="rp-grid">
       <section class="rp-join">
         ${local ? `<p class="warnbox">Este endereço só funciona neste computador. Abra o jogo pelo link público (https) para a turma conseguir entrar.</p>` : '<canvas aria-label="QR Code da sala"></canvas>'}
-        <p class="rp-big">Aponte a câmera e toque em <b>Modo rápido</b></p>
+        <p class="rp-big">Aponte a câmera, <b>crie sua bruxa</b> e espere a liberação</p>
         <p class="rp-url">${esc(pretty(url))}</p>
       </section>
       <section class="rp-live" aria-live="polite">${liveHtml()}</section>
@@ -76,11 +91,13 @@ function refreshLive(): void {
 function startWatching(): void {
   stop?.();
   rows = [];
+  open = false;
   status = 'carregando';
   stop = watchRoom(
     code,
     (r) => {
-      rows = r;
+      rows = roomPlayers(r);
+      open = roomOpen(r);
       refreshLive();
     },
     (st) => {
@@ -111,6 +128,11 @@ export function showRoomPanel(g: Game, fresh = false): void {
     document.querySelector('.room-panel')?.remove();
   };
   a['room-new'] = () => showRoomPanel(g, true);
+  a['room-gate'] = () => {
+    open = !open; // já mostra o novo estado; o servidor confirma em seguida
+    refreshLive();
+    void setRoomOpen(code, open);
+  };
 }
 
 export function registerRoomActions(g: Game): void {

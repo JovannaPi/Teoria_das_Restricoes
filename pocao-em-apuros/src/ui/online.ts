@@ -80,7 +80,7 @@ function bindFields(): void {
 }
 
 /** Abre a criação da bruxa. Resolve true quando salva. */
-export function heroCreator(g: Game, firstTime = false): Promise<boolean> {
+export function heroCreator(g: Game, firstTime = false, saveLabel?: string): Promise<boolean> {
   draft = { ...DEFAULT_HERO, ...(g.save.hero || {}) };
   if (!g.save.hero) draft = { ...randomHero(draft), name: randomWitchName() };
   const { promise } = openModal(g, {
@@ -88,7 +88,7 @@ export function heroCreator(g: Game, firstTime = false): Promise<boolean> {
     body: creatorBody(),
     cls: 'wide creator-modal',
     closable: !firstTime,
-    footer: `${firstTime ? '' : '<button data-action="modal-close">Cancelar</button>'}<button class="primary big" data-action="hero-save">${firstTime ? 'Jogar' : 'Salvar bruxa'}</button>`,
+    footer: `${firstTime ? '' : '<button data-action="modal-close">Cancelar</button>'}<button class="primary big" data-action="hero-save">${saveLabel ?? (firstTime ? 'Jogar' : 'Salvar bruxa')}</button>`,
   });
   bindFields();
   return new Promise((resolve) => {

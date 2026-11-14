@@ -152,6 +152,27 @@ export function watchRoom(code: string, onRows: (rows: RoomEntry[]) => void, onS
   return backend().watch(code, onRows, onStatus);
 }
 
+// ---------------------------------------------------------------- porta da sala (liberação pelo telão)
+// A sala começa fechada: quem entra fica esperando. O telão libera gravando um documento de controle
+// na própria coleção da sala (mesmo formato dos alunos, para valer com as regras que já existem):
+// jogadorId "ctrl", passo 1 = liberada, passo 0 = fechada.
+const GATE_ID = 'ctrl';
+
+export function isGate(r: RoomEntry): boolean {
+  return r.jogadorId === GATE_ID;
+}
+/** A sala já foi liberada? */
+export function roomOpen(rows: RoomEntry[]): boolean {
+  return rows.some((r) => isGate(r) && r.passo >= 1);
+}
+/** Só os alunos (sem o documento de controle). */
+export function roomPlayers(rows: RoomEntry[]): RoomEntry[] {
+  return rows.filter((r) => !isGate(r));
+}
+export function setRoomOpen(code: string, open: boolean): Promise<boolean> {
+  return backend().put(`${code}_${GATE_ID}`, { sala: code, jogadorId: GATE_ID, bruxa: '__ctrl__', passo: open ? 1 : 0, erros: 0, preparo: false, ocupado: false, fora: false, capFim: 0, pontos: -1 });
+}
+
 // ---------------------------------------------------------------- o que o telão mostra
 
 export interface RoomSummary {
