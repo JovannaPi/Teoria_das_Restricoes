@@ -3552,3 +3552,15 @@ body.quick:not(.guide-free) #station-strip .st {
     grid-row: auto;
   }
 }
+
+/* modo sala de aula: sem botão de pausa */
+body.room-mode .pausebtn {
+  display: none;
+}
+
+.rp-wait {
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 1.15em;
+  line-height: 1.5;
+}
