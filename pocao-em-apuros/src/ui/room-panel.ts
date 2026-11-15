@@ -118,7 +118,7 @@ export function showRoomPanel(g: Game, fresh = false): void {
   let el = document.querySelector('.room-panel') as HTMLElement | null;
   if (!el) {
     el = document.createElement('div');
-    el.className = 'room-panel';
+    el.className = 'room-panel' + (new URLSearchParams(location.search).has('slide') ? ' deck' : '');
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-label', 'Sala da turma');
     document.body.appendChild(el);
