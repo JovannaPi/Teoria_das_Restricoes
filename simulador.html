@@ -529,6 +529,26 @@
     .hud{ flex-direction:column; }
     .hud-title{ order:-1; }
   }
+
+  /* pop-ups (só quando aberto dentro da apresentação: ?slide) */
+  .pop{ position:fixed; inset:0; background:rgba(10,5,20,.84); display:none; align-items:center; justify-content:center; z-index:80; padding:20px; }
+  .pop.open{ display:flex; }
+  .pcard{ background:var(--panel); border:4px solid var(--line); box-shadow:8px 8px 0 #000; max-width:860px; width:100%; padding:26px 30px; }
+  .pcard .kick{ font-size:9px; color:var(--pink); }
+  .pcard h3{ font-size:19px; font-weight:normal; color:var(--yellow); margin:12px 0 16px; text-shadow:3px 3px 0 #000; line-height:1.5; }
+  .pcard p, .pcard li{ font-size:11px; line-height:2; margin:8px 0; }
+  .pcard ol{ margin:10px 0 0; padding-left:22px; } .pcard li b{ color:var(--green); font-weight:normal; }
+  .pcard .facts{ display:flex; gap:12px; flex-wrap:wrap; margin:14px 0; }
+  .pcard .facts span{ background:var(--panel-2); border:3px solid var(--line); padding:8px 12px; font-size:9px; color:var(--muted); box-shadow:4px 4px 0 #000; }
+  .pcard .facts b{ display:block; font-weight:normal; font-size:15px; color:var(--yellow); margin-bottom:2px; }
+  .pcard .ans{ display:none; margin-top:14px; padding:12px 14px; border:3px solid var(--green); background:#10321f; font-size:11px; line-height:2; }
+  .pcard .ans.open{ display:block; }
+  .pcard .btns{ display:flex; gap:14px; flex-wrap:wrap; margin-top:20px; }
+  .pcard .btns button{ font:inherit; font-size:10px; color:var(--line); background:var(--panel-2); border:3px solid var(--line); padding:10px 14px; cursor:pointer; box-shadow:4px 4px 0 #000; }
+  .pcard .btns button.go{ background:var(--green); color:#04241a; }
+  .helpbtn{ display:none; position:fixed; top:16px; right:18px; z-index:70; font:inherit; font-size:14px; width:42px; height:42px; color:var(--yellow); background:var(--panel); border:3px solid var(--yellow); cursor:pointer; box-shadow:4px 4px 0 #000; }
+  body.in-slide .helpbtn{ display:block; }
+  body.in-slide{ padding-bottom:84px; }
 </style>
 </head>
 <body>
@@ -571,6 +591,9 @@
   </div>
 
 </div>
+
+<div class="pop" id="pop"><div class="pcard" id="pcard"></div></div>
+<button class="helpbtn" id="helpBtn" title="Os 5 passos neste caso">?</button>
 
 <div class="win-overlay" id="winOverlay">
   <div class="win-card">
@@ -634,6 +657,56 @@
   const winRecordEl = document.getElementById('winRecord');
   const winPlayAgain = document.getElementById('winPlayAgain');
   const confettiEl = document.getElementById('confetti');
+
+  // --- pop-ups da apresentação (só com ?slide) ---
+  const POP = new URLSearchParams(location.search).has('slide');
+  const popEl = document.getElementById('pop'), pcardEl = document.getElementById('pcard');
+  const seen = {};
+  let resumeAfter = false;
+  if(POP){
+    document.body.classList.add('in-slide');
+    const fit = () => { const z = Math.max(0.8, Math.min(innerWidth/1300, innerHeight/660)); document.documentElement.style.zoom = z; document.body.style.minHeight = (innerHeight / z) + 'px'; document.body.style.height = (innerHeight / z) + 'px'; document.documentElement.style.overflow = 'hidden'; };
+    fit(); addEventListener('resize', fit);
+    document.addEventListener('keydown', (e) => {
+      if(parent === window || (e.target && e.target.type === 'range')) return;
+      if(e.key === 'ArrowRight' || e.key === 'PageDown') parent.postMessage('deck-next', '*');
+      if(e.key === 'ArrowLeft' || e.key === 'PageUp') parent.postMessage('deck-prev', '*');
+    });
+  }
+  function popup(html){
+    if(!POP) return;
+    resumeAfter = running; if(running) pause();
+    pcardEl.innerHTML = html; popEl.classList.add('open');
+    const g = pcardEl.querySelector('button.go'); if(g) g.focus();
+  }
+  function closePop(){
+    popEl.classList.remove('open');
+    if(resumeAfter && !won) start();
+    resumeAfter = false;
+  }
+  function stepsPopup(){
+    popup('<div class="kick">OS 5 PASSOS NA FÁBRICA</div><h3>DO GARGALO AO PRÓXIMO</h3><ol><li><b>IDENTIFICAR:</b> a fila cresce antes da FERVURA (3 un/min).</li><li><b>EXPLORAR:</b> a FERVURA nunca pode ficar parada esperando material.</li><li><b>SUBORDINAR:</b> as outras estações andam no ritmo dela.</li><li><b>ELEVAR:</b> aumente o ritmo da FERVURA.</li><li><b>REPETIR:</b> procure o novo gargalo.</li></ol><div class="btns"><button class="go" data-act="close">FECHAR</button></div>');
+  }
+  popEl.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-act]'); if(!t) return;
+    const a = t.dataset.act;
+    if(a === 'close') closePop();
+    else if(a === 'answer'){ pcardEl.querySelector('.ans').classList.add('open'); t.remove(); }
+    else if(a === 'steps') stepsPopup();
+  });
+  document.getElementById('helpBtn').addEventListener('click', stepsPopup);
+  let lastPace = Math.min(...DEFAULT_RATES), lastB = DEFAULT_RATES.indexOf(lastPace), lastRates = DEFAULT_RATES.slice();
+  function onRateChange(i){
+    const newPace = Math.min(...rates);
+    if(i === lastB && newPace > lastPace && !seen.elevou){
+      seen.elevou = true;
+      popup('<div class="kick">PASSO 4 · ELEVAR</div><h3>VOCÊ ELEVOU O GARGALO</h3><div class="facts"><span><b>' + lastPace + ' → ' + newPace + '</b>un/min da fábrica</span></div><p>Ao aumentar o ritmo de quem limita a fábrica, a <b style="color:var(--green);font-weight:normal">produção inteira sobe</b>. Mas olhe: o gargalo pode ter mudado de lugar. É o passo 5, repetir.</p><div class="btns"><button class="go" data-act="close">CONTINUAR</button></div>');
+    } else if(i !== lastB && rates[i] > lastRates[i] && !seen.fora){
+      seen.fora = true;
+      popup('<div class="kick">PERGUNTA PARA A TURMA</div><h3>VOCÊ ACELEROU A ESTAÇÃO ' + STATION_LABELS[i] + '. A FÁBRICA PRODUZ MAIS?</h3><div class="ans"><b style="color:var(--green);font-weight:normal">NÃO.</b> O ritmo continua em ' + newPace + ' un/min, porque quem manda é a estação ' + STATION_LABELS[lastB] + '. Ritmo extra fora do gargalo só enche a fila.</div><div class="btns"><button class="go" data-act="answer">VER RESPOSTA</button><button data-act="close">FECHAR</button></div>');
+    }
+    lastPace = newPace; lastB = bottleneckIndex(); lastRates = rates.slice();
+  }
 
   document.getElementById('goalVal').textContent = GOAL;
 
@@ -772,6 +845,7 @@
         refreshBottleneckStyling();
         sfxClick();
       });
+      document.getElementById('rate-slider-' + i).addEventListener('change', () => onRateChange(i));
     }
     refreshBottleneckStyling();
   }
@@ -800,6 +874,7 @@
       if(isOverload && !wasOverload[i]){
         screenShake();
         sfxOverload();
+        if(!seen.fila){ seen.fila = true; const lab = STATION_LABELS[i]; setTimeout(() => popup('<div class="kick">PASSO 1 · IDENTIFICAR</div><h3>A FILA CRESCE ANTES DA ESTAÇÃO ' + lab + '</h3><p>A estação ' + lab + ' faz só <b style="color:var(--yellow);font-weight:normal">' + rates[i] + ' un/min</b>, e as outras estações fazem mais. Quem limita o ritmo da fábrica inteira é o <b style="color:var(--yellow);font-weight:normal">gargalo</b>.</p><div class="btns"><button class="go" data-act="close">CONTINUAR</button></div>'), 0); }
       }
       wasOverload[i] = isOverload;
       el.classList.toggle('overload', isOverload);
@@ -864,6 +939,7 @@
       winRecordEl.innerHTML = 'RECORDE: <b>' + fmtTime(bestSeconds) + '</b>';
     }
     winOverlay.classList.add('show');
+    setTimeout(() => popup('<div class="kick">META CUMPRIDA</div><h3>60 POÇÕES EM ' + fmtTime(simSeconds) + '</h3><p><b style="color:var(--yellow);font-weight:normal">PERGUNTA:</b> e agora, qual é o próximo passo da TOC?</p><div class="ans"><b style="color:var(--green);font-weight:normal">REPETIR.</b> Volte ao passo 1 e procure o novo gargalo. Quando uma restrição é tratada, outra aparece.</div><div class="btns"><button class="go" data-act="answer">VER RESPOSTA</button><button data-act="steps">OS 5 PASSOS</button><button data-act="close">FECHAR</button></div>'), 1400);
   }
 
   function tick(){
@@ -960,6 +1036,7 @@
     won = false;
     wasOverload = new Array(NUM_STATIONS).fill(false);
     winOverlay.classList.remove('show');
+    lastPace = Math.min(...DEFAULT_RATES); lastB = DEFAULT_RATES.indexOf(lastPace); lastRates = DEFAULT_RATES.slice();
     buildLine();
     renderBuffers();
     renderBars();
@@ -982,6 +1059,7 @@
   buildLine();
   renderBuffers();
   renderBars();
+  if(POP) setTimeout(() => popup('<div class="kick">O CASO</div><h3>A FÁBRICA DE POÇÕES</h3><p>Cinco estações em linha: corte, mistura, fervura, frasco e selo. A fábrica anda no ritmo da estação mais lenta.</p><div class="facts"><span><b>3 UN/MIN</b>FERVURA (GARGALO)</span><span><b>8 UN/MIN</b>AS OUTRAS</span><span><b>60</b>POÇÕES DE META</span></div><p>Mexa nos controles e veja o que acontece.</p><div class="btns"><button class="go" data-act="close">COMEÇAR</button></div>'), 500);
 })();
 </script>
 </body>

@@ -608,69 +608,20 @@
       <div class="grid g3 cases">
         <div class="card rv" style="--d:3"><span class="tag">Prática · simulador</span><h3>Fábrica de Poções</h3><p>Cinco estações em linha, e a Fervura (3 un/min) segura todas as outras. Os 5 passos mudam o ritmo ao vivo, e a turma vê o gargalo andar de lugar.</p><div class="who">Caso de Jovanna · <a href="simulador.html" target="_blank" rel="noopener" style="color:inherit">abrir o simulador ↗</a></div></div>
         <div class="card rv" style="--d:4"><span class="tag">Serviço</span><h3>Ambulatório</h3><p>A fila cresce na porta do consultório. Os 5 passos organizam o fluxo de pacientes ao redor do médico.</p><div class="who">Caso de [integrante 2]</div></div>
-        <div class="card rv" style="--d:5"><span class="tag">Indústria · móveis</span><h3>Cadeiras no Paraná</h3><p>O gargalo não era uma máquina: faltava espuma na estofaria. O caso é detalhado no próximo slide.</p><div class="who">Caso de [integrante 3]</div></div>
+        <div class="card rv" style="--d:5"><span class="tag">Indústria · móveis</span><h3>Cadeiras no Paraná</h3><p>O gargalo não era uma máquina: faltava espuma na estofaria. Veja o jogo mais adiante.</p><div class="who">Caso de [integrante 3]</div></div>
       </div>
     </div>
     <div class="foot"><span class="src plain">Casos em definição pelo grupo</span></div>
   </section>
 
-  <!-- estudo de caso: indústria moveleira -->
-  <section class="slide">
-    <div class="wrap">
-      <h1 class="rv" style="--d:1">Caso: <em>cadeiras</em> no Paraná</h1>
-      <div class="flow rv" style="--d:2">
-        <div class="st">Usinagem</div><div class="arr">→</div>
-        <div class="st">Supermercado</div><div class="arr">→</div>
-        <div class="st">Montagem</div><div class="arr">→</div>
-        <div class="st">Lixamento</div><div class="arr">→</div>
-        <div class="st">Pintura</div><div class="arr">→</div>
-        <div class="st bn"><div class="queue"><i></i><i></i><i></i><i></i></div>Estofaria</div><div class="arr">→</div>
-        <div class="st">Expedição</div>
-      </div>
-      <div class="grid g5 s5">
-        <div class="card rv" style="--d:3"><div class="n">1</div><h3>Identificar</h3><p>Lotes parados na estofaria desde agosto, setembro e outubro de 2015.</p></div>
-        <div class="card rv" style="--d:4"><div class="n">2</div><h3>Explorar</h3><p>Causa: o consumo de espuma era maior que a compra. Faltava material, não máquina.</p></div>
-        <div class="card rv" style="--d:5"><div class="n">3</div><h3>Subordinar</h3><p>O produto chega à estofaria em 11 dias, e a espuma leva 15 para repor.</p></div>
-        <div class="card rv" style="--d:6"><div class="n">4</div><h3>Elevar</h3><p>Estoque mínimo e ponto de pedido por espessura de espuma, com curvas dente de serra.</p></div>
-        <div class="card rv" style="--d:7"><div class="n">5</div><h3>Repetir</h3><p>O lixamento apareceu como possível novo gargalo.</p></div>
-      </div>
-      <p class="note rv" style="--d:8">O pulmão foi um estoque de segurança de espuma, e não houve compra de máquina nova. O estudo não traz percentual de melhoria.</p>
-    </div>
-    <div class="foot"><span class="src">Orciuolo (2015)</span></div>
+  <!-- simulador (caso da Jovanna): tela cheia, textos em pop-up -->
+  <section class="slide embed">
+    <iframe src="simulador.html?slide" title="Simulador da Fábrica de Poções" loading="lazy"></iframe>
   </section>
 
   <!-- jogo da estofaria: caso da colega (tela cheia, textos em pop-up) -->
   <section class="slide embed">
-    <iframe src="estofaria.html" title="Jogo Estofaria em Apuros" loading="lazy"></iframe>
-  </section>
-
-  <!-- simulador ao vivo: caso da Jovanna -->
-  <section class="slide simslide">
-    <div class="wrap">
-      <h1 class="rv" style="--d:1">A Fábrica de Poções, <em>ao vivo</em></h1>
-      <div class="simgrid">
-        <div class="simbox rv" style="--d:2" id="simBox"><iframe id="simFrame" src="simulador.html" title="Simulador da Fábrica de Poções" loading="lazy"></iframe></div>
-        <div class="simside">
-          <div class="card rv" style="--d:3">
-            <span class="tag">Demonstração</span>
-            <ol class="try">
-              <li><b>START:</b> a fila cresce antes da <b>Fervura</b>.</li>
-              <li>Acelero o <b>Corte</b> para 12: o ritmo da fábrica não muda.</li>
-              <li><b>Elevo a Fervura</b> de 3 para 8: a produção sobe.</li>
-              <li>O gargalo mudou de lugar: hora de <b>repetir</b> o ciclo.</li>
-            </ol>
-          </div>
-          <div class="card quiz rv" style="--d:4" id="simQuiz">
-            <span class="tag">Pergunta para a turma</span>
-            <p class="q">Se a Mistura passar de 8 para 12 un/min, quanto a fábrica produz?</p>
-            <button type="button" class="reveal" id="simReveal">Ver resposta</button>
-            <p class="ans"><b>Continua em 3 un/min.</b> Quem manda é a Fervura: ritmo extra fora do gargalo só enche a fila.</p>
-          </div>
-        </div>
-      </div>
-      <div class="simchips rv" style="--d:5"><span>Gargalo inicial: <b>Fervura, 3 un/min</b></span><span>Meta: <b>60 poções</b></span><span>Use o <b>4X</b> para acelerar o tempo</span></div>
-    </div>
-    <div class="foot"><span class="src plain">Simulador criado pelo grupo · <a href="simulador.html" target="_blank" rel="noopener" style="color:inherit">abrir em tela cheia ↗</a></span></div>
+    <iframe src="estofaria.html" title="Jogo da Estofaria" loading="lazy"></iframe>
   </section>
 
   <!-- aplicação prática em sala: QR + painel da turma -->
