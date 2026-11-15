@@ -368,6 +368,9 @@
   .cyc .gl{ fill:none; stroke:var(--violet); stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; }
   .cyc .gl .solid{ fill:var(--violet); stroke:none; }
   .types .card{ padding:14px 18px; }
+  .cases .card{ display:flex; flex-direction:column; gap:2px; }
+  .cases .card .tag{ align-self:flex-start; }
+  .cases .who{ margin-top:auto; padding-top:14px; font-size:clamp(12px,.95vw,15px); font-weight:700; color:var(--pumpkin); border-top:1px dashed var(--line); }
   .crit .card{ display:flex; flex-direction:column; gap:2px; }
   .crit .card h3{ margin:8px 0 6px; }
   .chip{ align-self:flex-start; font-size:12px; font-weight:800; letter-spacing:.04em; color:var(--violet); background:rgba(91,42,134,.1); border-radius:999px; padding:3px 10px; }
@@ -562,10 +565,24 @@
     <div class="foot"><span class="src">Goldratt &amp; Fox (1986); Schragenheim &amp; Dettmer (2000)</span></div>
   </section>
 
-  <!-- aplicação: Poção em Apuros -->
+  <!-- casos de aplicação: um por integrante -->
   <section class="slide">
     <div class="wrap">
-      <h1 class="rv" style="--d:1">Aplicação: uma loja de poções <em>que trava</em></h1>
+      <h1 class="rv" style="--d:1">Casos de <em>aplicação</em></h1>
+      <p class="lead rv" style="--d:2">A TOC funciona em qualquer sistema com uma restrição: fábrica, serviço ou projeto. Cada integrante do grupo traz um caso.</p>
+      <div class="grid g3 cases">
+        <div class="card rv" style="--d:3"><span class="tag">Indústria</span><h3>Confecção</h3><p>A costura segura a fábrica. O mix de produtos sai do ganho por minuto de gargalo, não da margem de cada peça.</p><div class="who">Caso de [integrante 1]</div></div>
+        <div class="card rv" style="--d:4"><span class="tag">Serviço</span><h3>Ambulatório</h3><p>A fila cresce na porta do consultório. Os 5 passos organizam o fluxo de pacientes ao redor do médico.</p><div class="who">Caso de [integrante 2]</div></div>
+        <div class="card rv" style="--d:5"><span class="tag">Projetos</span><h3>Corrente crítica</h3><p>Um pulmão para o projeto inteiro, em vez de uma margem de segurança escondida em cada tarefa.</p><div class="who">Caso de [integrante 3]</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="src plain">Casos em definição pelo grupo</span></div>
+  </section>
+
+  <!-- aplicação prática em sala: Poção em Apuros -->
+  <section class="slide">
+    <div class="wrap">
+      <h1 class="rv" style="--d:1">Na sala de aula: uma loja de poções <em>que trava</em></h1>
       <p class="lead rv" style="--d:2">Poção em Apuros é um jogo criado pelo grupo. A loja está atrasada, e cada passo da TOC vira uma decisão que o jogo mede na hora.</p>
       <div class="grid g5 s5">
         <div class="card rv" style="--d:3"><div class="n">1</div><h3>Identificar</h3><p>Olhar as filas e achar a estação que segura a loja.</p></div>
