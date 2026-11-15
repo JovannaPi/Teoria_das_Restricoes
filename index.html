@@ -639,32 +639,9 @@
     <div class="foot"><span class="src">Orciuolo (2015)</span></div>
   </section>
 
-  <!-- jogo da estofaria: caso da colega -->
-  <section class="slide simslide">
-    <div class="wrap">
-      <h1 class="rv" style="--d:1">A estofaria, <em>ao vivo</em></h1>
-      <div class="simgrid">
-        <div class="simbox rv" style="--d:2"><iframe src="estofaria.html" title="Jogo Estofaria em Apuros" loading="lazy"></iframe></div>
-        <div class="simside">
-          <div class="card rv" style="--d:3">
-            <span class="tag">Demonstração</span>
-            <ol class="try">
-              <li><b>COMO ERA:</b> pede espuma só quando acaba. A estofaria para 7 dias.</li>
-              <li><b>COM TOC:</b> pede com 240 mantas, o bastante para os 8 dias de entrega. Não para nenhum dia.</li>
-              <li>A linha azul em dente de serra é o <b>pulmão</b> de espuma.</li>
-            </ol>
-          </div>
-          <div class="card quiz rv" style="--d:4">
-            <span class="tag">Pergunta para a turma</span>
-            <p class="q">Por que não pedir muito mais espuma, só para garantir?</p>
-            <button type="button" class="reveal">Ver resposta</button>
-            <p class="ans"><b>Pulmão grande demais custa caro.</b> Ele infla o estoque e o lead time. O tamanho certo cobre a entrega e a variação do fornecedor, e nada além.</p>
-          </div>
-        </div>
-      </div>
-      <div class="simchips rv" style="--d:5"><span>Consumo: <b>20 mantas por dia</b></span><span>Entrega: <b>8 dias úteis</b></span><span>O fornecedor <b>atrasa até 4 dias</b></span></div>
-    </div>
-    <div class="foot"><span class="src">Orciuolo (2015), caso adaptado para a simulação · <a href="estofaria.html" target="_blank" rel="noopener" style="color:inherit">abrir em tela cheia ↗</a></span></div>
+  <!-- jogo da estofaria: caso da colega (tela cheia, textos em pop-up) -->
+  <section class="slide embed">
+    <iframe src="estofaria.html" title="Jogo Estofaria em Apuros" loading="lazy"></iframe>
   </section>
 
   <!-- simulador ao vivo: caso da Jovanna -->
@@ -872,6 +849,8 @@
     if (e.key === 'End') go(slides.length - 1);
     if (e.key === 'f' || e.key === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
   });
+  // jogos em tela cheia pedem para trocar de slide pelas setas do teclado
+  window.addEventListener('message', (e) => { if (e.data === 'deck-next') go(idx + 1); else if (e.data === 'deck-prev') go(idx - 1); });
   document.getElementById('deck').addEventListener('click', (e) => {
     if (e.target.closest('.nav, iframe, .dbr-tab, a, table, .reveal, .simbox')) return;
     go(idx + 1);
