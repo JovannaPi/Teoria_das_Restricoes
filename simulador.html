@@ -547,7 +547,7 @@
   .pcard .btns button{ font:inherit; font-size:10px; color:var(--line); background:var(--panel-2); border:3px solid var(--line); padding:10px 14px; cursor:pointer; box-shadow:4px 4px 0 #000; }
   .pcard .btns button.go{ background:var(--green); color:#04241a; }
   .helpbtn{ display:none; position:fixed; top:16px; right:18px; z-index:70; font:inherit; font-size:14px; width:42px; height:42px; color:var(--yellow); background:var(--panel); border:3px solid var(--yellow); cursor:pointer; box-shadow:4px 4px 0 #000; }
-  body.in-slide .helpbtn{ display:block; }
+  body.in-slide.has-popups .helpbtn{ display:block; }
   body.in-slide{ padding-bottom:84px; }
 </style>
 </head>
@@ -661,11 +661,13 @@
 
   // --- pop-ups da apresentação (só com ?slide) ---
   const POP = new URLSearchParams(location.search).has('slide');
+  const POPUPS = new URLSearchParams(location.search).has('popups'); // pop-ups só com ?popups
   const popEl = document.getElementById('pop'), pcardEl = document.getElementById('pcard');
   const seen = {};
   let resumeAfter = false;
   if(POP){
     document.body.classList.add('in-slide');
+    if(POPUPS) document.body.classList.add('has-popups');
     speedMult = 4; [...speedGroup.children].forEach(b => b.classList.toggle('active', b.dataset.speed === '4'));
     const fit = () => { const z = Math.max(0.8, Math.min(innerWidth/1300, innerHeight/660)); document.documentElement.style.zoom = z; document.body.style.minHeight = (innerHeight / z) + 'px'; document.body.style.height = (innerHeight / z) + 'px'; document.documentElement.style.overflow = 'hidden'; };
     fit(); addEventListener('resize', fit);
@@ -676,7 +678,7 @@
     });
   }
   function popup(html){
-    if(!POP) return;
+    if(!POP || !POPUPS) return;
     resumeAfter = running; if(running) pause();
     pcardEl.innerHTML = html; popEl.classList.add('open');
     const g = pcardEl.querySelector('button.go'); if(g) g.focus();
