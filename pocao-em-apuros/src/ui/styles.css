@@ -3686,3 +3686,43 @@ body.room-mode .pausebtn {
     margin: 1em 0;
   }
 }
+
+/* painel dentro dos slides (?painel&slide): mesmo visual do restante da apresentação */
+.room-panel.deck {
+  --deck-ink: #1e022b;
+  --deck-muted: #6b5878;
+  --deck-orange: #e8742c;
+  --deck-violet: #5b2a86;
+  --deck-card: #fbf6e8;
+  --deck-line: rgba(30, 2, 43, 0.12);
+  color: var(--deck-ink);
+  font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  background-color: #f3ead3;
+  background-image: radial-gradient(ellipse at 12% 8%, rgba(255, 255, 255, 0.55), transparent 50%), radial-gradient(ellipse at 100% 100%, rgba(120, 80, 30, 0.12), transparent 55%);
+  padding: 6vh 7vw 9vh;
+}
+.room-panel.deck .rp-tools { display: none; }
+.room-panel.deck .rp-head h1 { font-family: 'Fraunces', Georgia, serif; font-weight: 800; color: var(--deck-ink); letter-spacing: -0.01em; }
+.room-panel.deck .rp-head h1 b { color: var(--deck-orange); font-style: italic; letter-spacing: 0.06em; }
+.room-panel.deck .rp-head p, .room-panel.deck .rp-fact small, .room-panel.deck .rp-wait, .room-panel.deck .muted { color: var(--deck-muted); }
+.room-panel.deck .rp-gatebar { background: transparent; }
+.room-panel.deck .rp-gate { border: 1px solid var(--deck-line); background: var(--deck-card); border-radius: 18px; box-shadow: 0 14px 34px -18px rgba(30, 2, 43, 0.35); }
+.room-panel.deck .rp-gate b { color: var(--deck-violet); }
+.room-panel.deck .rp-gate.open { border-color: #7fb83a; }
+.room-panel.deck .rp-gate.open b { color: #4d7f1c; }
+.room-panel.deck .rp-gate small { color: var(--deck-muted); }
+.room-panel.deck .rp-gatebar .rp-gate.closed { box-shadow: 0 14px 34px -18px rgba(30, 2, 43, 0.35); }
+.room-panel.deck .rp-gate .big { background: var(--deck-orange); color: #fff; border: 0; border-radius: 999px; font-family: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 10px 22px -10px rgba(232, 116, 44, 0.8); }
+.room-panel.deck .rp-gate .mini { background: transparent; color: var(--deck-violet); border: 1px solid var(--deck-line); border-radius: 999px; font-family: inherit; font-weight: 700; cursor: pointer; }
+.room-panel.deck .rp-waiting span { border: 0; border-radius: 999px; background: rgba(91, 42, 134, 0.1); color: var(--deck-violet); font-weight: 700; }
+.room-panel.deck .rp-join canvas { background: #fff; border-radius: 18px; border: 1px solid var(--deck-line); box-shadow: 0 14px 34px -18px rgba(30, 2, 43, 0.35); }
+.room-panel.deck .rp-big { font-weight: 700; }
+.room-panel.deck .rp-big b { color: var(--deck-orange); }
+.room-panel.deck .rp-url { color: var(--deck-violet); font-weight: 800; }
+.room-panel.deck .rp-live h2 { font-family: 'Fraunces', Georgia, serif; font-weight: 800; color: var(--deck-ink); }
+.room-panel.deck .rp-count b, .room-panel.deck .rp-fact b { color: var(--deck-orange); font-family: 'Fraunces', Georgia, serif; font-style: italic; }
+.room-panel.deck .rp-fact { background: var(--deck-card); border: 1px solid var(--deck-line); border-radius: 16px; box-shadow: 0 10px 26px -18px rgba(30, 2, 43, 0.35); }
+.room-panel.deck .rp-rank li, .room-panel.deck .rp-debate li { color: var(--deck-ink); }
+.room-panel.deck .rp-rank li::marker, .room-panel.deck .rp-debate li::marker { color: var(--deck-orange); font-weight: 800; }
+.room-panel.deck .warnbox { background: rgba(232, 116, 44, 0.12); color: var(--deck-ink); border: 1px solid var(--deck-orange); border-radius: 12px; }
