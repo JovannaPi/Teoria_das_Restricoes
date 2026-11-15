@@ -62,7 +62,7 @@
 
   /* ---------------------------------------------------------------- cartões e ícones 3D */
   .grid{ display:grid; gap:18px; width:100%; }
-  .g3{ grid-template-columns:repeat(3,1fr); } .g5{ grid-template-columns:repeat(5,1fr); } .g6{ grid-template-columns:repeat(6,1fr); }
+  .g2{ grid-template-columns:repeat(2,1fr); } .g3{ grid-template-columns:repeat(3,1fr); } .g5{ grid-template-columns:repeat(5,1fr); } .g6{ grid-template-columns:repeat(6,1fr); }
   .card{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:22px 22px 20px; box-shadow:0 1px 0 rgba(255,255,255,.7) inset, 0 14px 34px -18px rgba(30,2,43,.35); transition:transform .35s var(--ease), box-shadow .35s var(--ease); }
   .card:hover{ transform:translateY(-4px); box-shadow:0 22px 40px -20px rgba(30,2,43,.45); }
   .card h3{ font-family:var(--serif); font-weight:700; font-size:clamp(23.76px,1.91vw,30.36px); margin:10px 0 6px; line-height:1.15; }
@@ -182,7 +182,7 @@
   .vs .side img{ width:58px; }
   .chips{ display:flex; gap:10px; flex-wrap:wrap; margin-top:2.4vh; align-items:center; }
   .chips span{ background:var(--card); border:1px solid var(--line); border-radius:999px; padding:8px 16px; font-weight:800; font-size:25.71px; }
-  .chips em{ font-style:normal; font-weight:700; color:var(--muted); margin-right:6px; }
+  .chips em{ font-style:normal; font-weight:700; color:var(--muted); margin-right:6px; font-size:clamp(17px,1.35vw,23px); }
 
   /* ---------------------------------------------------------------- diagrama DBR */
   .dbr-tabs{ display:flex; gap:10px; margin-bottom:2.4vh; }
@@ -541,15 +541,15 @@
   <!-- STP -->
   <section class="slide">
     <div class="wrap">
-      <h1 class="rv" style="--d:1">Duas abordagens que <em>se completam</em></h1>
+      <h1 class="rv" style="--d:1">TOC e <em>Sistema Toyota</em></h1>
       <div class="vs">
         <div class="side stp rv" style="--d:2"><h3>Sistema Toyota</h3>
           <ul><li>Ataca os <b>7 desperdícios</b> em toda a fábrica.</li><li>Busca <b>fluxo contínuo</b> e produção puxada.</li><li>Melhoria contínua em todos os postos.</li></ul></div>
         <div class="plus rv" style="--d:3">&amp;</div>
         <div class="side toc rv" style="--d:4"><h3>Teoria das Restrições</h3>
-          <ul><li>Ataca <b>primeiro a restrição</b>: foco cirúrgico.</li><li>Melhorar fora dela não melhora o sistema.</li><li>Diz <b>onde</b> aplicar a melhoria.</li></ul></div>
+          <ul><li>Começa pela <b>restrição</b>, onde a melhoria rende mais.</li><li>Melhorar fora dela não melhora o sistema.</li><li>Mostra <b>onde</b> vale a pena melhorar.</li></ul></div>
       </div>
-      <div class="chips rv" style="--d:6"><em>Juntas: achar o gargalo com a TOC e aplicar nele</em><span>Kaizen</span><span>Poka-Yoke</span><span>Troca Rápida de Ferramenta</span><span>Kanban e corda</span></div>
+      <div class="chips rv" style="--d:6"><em>Juntas: a TOC acha o gargalo e o STP atua nele</em><span>Kaizen</span><span>Poka-Yoke</span><span>Troca Rápida de Ferramenta</span><span>Kanban e corda</span></div>
     </div>
     <div class="foot"><span class="src">Ohno (1997); Liker (2005); Antunes <i>et al.</i> (2008)</span></div>
   </section>
@@ -565,7 +565,7 @@
         <div class="card rv" style="--d:5"><span class="chip">resposta ↓</span><h3>Flexibilidade</h3><p>Pouco estoque na linha, e o mix é escolhido pelo ganho por minuto do gargalo, não pela margem.</p><div class="ind"><b>Indicador</b>tempo para mudar o mix de produtos</div></div>
         <div class="card rv" style="--d:6"><span class="chip">refugo ↓</span><h3>Qualidade</h3><p>Inspeção 100% antes do gargalo e zero refugo depois: o que passa pela restrição vira ganho.</p><div class="ind"><b>Indicador</b>% de refugo e retrabalho na restrição</div></div>
       </div>
-      <p class="note rv" style="--d:7">Efeito em cadeia: sem fila parada o fluxo anda, e os critérios melhoram juntos. O que pode cair é a eficiência de máquinas fora da restrição, e isso é proposital: ficar ocupado não é o objetivo.</p>
+      <p class="note rv" style="--d:7">Com menos fila parada, os critérios melhoram juntos. A eficiência das máquinas fora do gargalo pode cair, e tudo bem: ficar ocupado não é o objetivo.</p>
     </div>
     <div class="foot"><span class="src">Slack <i>et al.</i>; Antunes &amp; Rodrigues (1993)</span></div>
   </section>
@@ -599,18 +599,17 @@
     <div class="foot"><span class="src">Goldratt &amp; Fox (1986); Schragenheim &amp; Dettmer (2000)</span></div>
   </section>
 
-  <!-- casos de aplicação: um por integrante -->
+  <!-- casos de aplicação -->
   <section class="slide">
     <div class="wrap">
       <h1 class="rv" style="--d:1">Casos de <em>aplicação</em></h1>
-      <p class="lead rv" style="--d:2">A TOC funciona em qualquer sistema com uma restrição: fábrica, serviço ou projeto. Cada integrante do grupo traz um caso.</p>
-      <div class="grid g3 cases">
-        <div class="card rv" style="--d:3"><span class="tag">Prática · simulador</span><h3>Linha de Produção</h3><p>Cinco estações em linha, e a Fervura (3 un/min) segura todas as outras. Os 5 passos mudam o ritmo ao vivo, e a turma vê o gargalo andar de lugar.</p><div class="who">Caso de Jovanna</div></div>
-        <div class="card rv" style="--d:4"><span class="tag">Serviço</span><h3>Ambulatório</h3><p>A fila cresce na porta do consultório. Os 5 passos organizam o fluxo de pacientes ao redor do médico.</p><div class="who">Caso de [integrante 2]</div></div>
-        <div class="card rv" style="--d:5"><span class="tag">Indústria · móveis</span><h3>Cadeiras no Paraná</h3><p>O gargalo não era uma máquina: faltava espuma na estofaria. Os 5 passos aparecem no jogo, no slide seguinte.</p><div class="who">Caso de [integrante 3]</div></div>
+      <p class="lead rv" style="--d:2">Dois casos do grupo: uma simulação de linha de produção e um estudo real de uma fábrica de cadeiras.</p>
+      <div class="grid g2 cases">
+        <div class="card rv" style="--d:3"><span class="tag">Simulação</span><h3>Linha de Produção</h3><p>Cinco estações em linha: a Fervura (3 un/min) segura todas as outras. Aplicamos os 5 passos ao vivo e o gargalo muda de lugar.</p></div>
+        <div class="card rv" style="--d:4"><span class="tag">Estudo real · móveis</span><h3>Cadeiras no Paraná</h3><p>O gargalo não era uma máquina: faltava espuma na estofaria. O jogo mostra o ponto de pedido e os 5 passos do estudo.</p></div>
       </div>
     </div>
-    <div class="foot"><span class="src plain">Casos em definição pelo grupo</span></div>
+    <div class="foot"><span class="src">Orciuolo (2015)</span></div>
   </section>
 
   <!-- simulador (caso da Jovanna): tela cheia, textos em pop-up -->
