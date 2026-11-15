@@ -3,186 +3,306 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Estofaria em Apuros 8-Bit</title>
+<title>Estofaria em Apuros</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
   :root{
-    --bg:#120a1f; --panel:#1e1233; --panel-2:#2c1c4a; --line:#f4e9ff; --muted:#a892d6;
-    --yellow:#ffd23f; --red:#ff4d6d; --green:#39e6a4; --blue:#4ec9ff; --purple:#b48bff; --pink:#ff6fc7; --orange:#ff9f45;
+    --bg:#0f2e33; --bg2:#14434a; --card:#fdf6e3; --ink:#2b2118; --muted:#7a6a58;
+    --foam:#f4c542; --foam2:#e9a824; --alert:#e4572e; --ok:#3aa675; --wood:#a8704a; --wood2:#7d4f30; --sky:#8fd3dc;
   }
   *{ box-sizing:border-box; }
-  html,body{ height:100%; }
+  html,body{ height:100%; margin:0; }
   body{
-    margin:0; min-height:100vh; color:var(--line);
-    font-family:"Press Start 2P","Courier New",monospace; font-size:11px; line-height:1.6; padding:22px 24px 40px;
-    background-color:var(--bg);
-    background-image:linear-gradient(rgba(0,0,0,0) 50%,rgba(0,0,0,.35) 50%),
-      radial-gradient(600px 380px at 10% 0%,rgba(255,111,199,.20),transparent 60%),
-      radial-gradient(700px 420px at 95% 10%,rgba(78,201,255,.18),transparent 60%);
-    background-size:100% 4px,auto,auto; background-attachment:fixed;
+    font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif; color:var(--card);
+    background:radial-gradient(1200px 700px at 15% -10%, #1d5b63, transparent 60%), radial-gradient(900px 600px at 100% 110%, #1a4a40, transparent 60%), var(--bg);
+    display:grid; grid-template-rows:auto 1fr auto; gap:1.6vh; padding:2.4vh 2.2vw 7vh; overflow:hidden;
   }
-  .wrap{ max-width:1400px; margin:auto; }
-  .hud{ display:flex; gap:14px; flex-wrap:wrap; align-items:stretch; margin-bottom:14px; }
-  .title{ display:flex; align-items:center; gap:10px; font-size:15px; color:var(--pink); text-shadow:3px 3px 0 #000; padding-right:8px; }
-  .chip{ background:var(--panel); border:3px solid var(--line); padding:8px 12px; min-width:120px; box-shadow:4px 4px 0 #000; }
-  .chip .lab{ font-size:8px; color:var(--muted); }
-  .chip .val{ font-size:16px; margin-top:4px; }
-  .chip.bad .val{ color:var(--red); } .chip.good .val{ color:var(--green); }
-  .chart{ background:var(--panel); border:3px solid var(--line); box-shadow:4px 4px 0 #000; padding:10px; position:relative; }
-  canvas{ width:100%; height:250px; display:block; image-rendering:pixelated; }
-  .legend{ display:flex; gap:16px; flex-wrap:wrap; font-size:8px; color:var(--muted); margin-top:8px; }
-  .legend i{ display:inline-block; width:10px; height:10px; margin-right:6px; vertical-align:-1px; }
-  .msg{ margin-top:10px; min-height:44px; background:var(--panel-2); border:3px solid var(--line); padding:10px 12px; font-size:10px; line-height:1.7; box-shadow:4px 4px 0 #000; }
-  .controls{ display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-top:12px; }
-  .ctl{ background:var(--panel); border:3px solid var(--line); padding:8px 12px; box-shadow:4px 4px 0 #000; min-width:230px; }
-  .ctl .lab{ font-size:8px; color:var(--muted); display:flex; justify-content:space-between; }
-  .ctl .lab b{ color:var(--yellow); font-weight:normal; font-size:11px; }
-  input[type=range]{ width:100%; accent-color:var(--pink); margin:6px 0 0; }
-  button{ font:inherit; font-size:10px; color:var(--line); background:var(--panel); border:3px solid var(--line); padding:10px 14px; cursor:pointer; box-shadow:4px 4px 0 #000; }
-  button.primary{ background:var(--green); color:#04241a; }
-  button.warn{ background:var(--red); color:#fff; }
-  button:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 #000; }
+  /* topo */
+  .top{ display:flex; align-items:center; gap:1.2vw; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:.8vw; margin-right:auto; }
+  .brand h1{ margin:0; font-size:clamp(20px,2.6vw,46px); font-weight:700; letter-spacing:.01em; line-height:1; }
+  .brand h1 em{ font-style:normal; color:var(--foam); }
+  .brand small{ display:block; font-size:clamp(11px,1vw,17px); font-weight:500; color:var(--sky); margin-top:.3em; }
+  .logo{ width:clamp(34px,3.6vw,60px); height:auto; }
+  .chip{ background:rgba(255,255,255,.08); border:2px solid rgba(253,246,227,.25); border-radius:16px; padding:.7vh 1.1vw; min-width:clamp(90px,9vw,160px); }
+  .chip .lab{ font-size:clamp(9px,.8vw,13px); letter-spacing:.12em; text-transform:uppercase; color:var(--sky); font-weight:600; }
+  .chip .val{ font-size:clamp(18px,2vw,34px); font-weight:700; line-height:1.15; }
+  .chip.bad{ border-color:var(--alert); background:rgba(228,87,46,.18); } .chip.bad .val{ color:#ffb199; }
+  .chip.good .val{ color:#8fe3b8; }
+  .help{ font:inherit; font-weight:700; width:clamp(32px,2.8vw,48px); height:clamp(32px,2.8vw,48px); border-radius:50%; border:2px solid var(--foam); background:transparent; color:var(--foam); cursor:pointer; font-size:clamp(16px,1.5vw,24px); }
+  /* meio */
+  .main{ display:grid; grid-template-columns:1.12fr 1fr; gap:1.6vw; min-height:0; }
+  .panel{ background:var(--card); color:var(--ink); border-radius:22px; padding:1.2vh 1.1vw; box-shadow:0 14px 30px -14px rgba(0,0,0,.6); display:flex; flex-direction:column; min-height:0; }
+  .panel h2{ margin:0 0 .6vh; font-size:clamp(12px,1.05vw,18px); letter-spacing:.1em; text-transform:uppercase; color:var(--wood2); font-weight:700; display:flex; justify-content:space-between; align-items:center; }
+  .panel h2 span{ font-weight:500; letter-spacing:0; text-transform:none; color:var(--muted); }
+  #scene{ width:100%; flex:1; min-height:0; }
+  #chartWrap{ flex:1; min-height:0; position:relative; }
+  canvas{ position:absolute; inset:0; width:100%; height:100%; }
+  .legend{ display:flex; gap:1.1vw; flex-wrap:wrap; font-size:clamp(10px,.85vw,14px); color:var(--muted); font-weight:500; margin-top:.6vh; }
+  .legend i{ display:inline-block; width:.9em; height:.9em; border-radius:3px; margin-right:.4em; vertical-align:-.1em; }
+  /* base */
+  .bottom{ display:flex; flex-direction:column; gap:1.2vh; }
+  .msg{ background:rgba(0,0,0,.28); border-left:6px solid var(--foam); border-radius:12px; padding:1vh 1.2vw; font-size:clamp(13px,1.35vw,23px); line-height:1.35; min-height:2.7em; }
+  .controls{ display:flex; gap:1vw; flex-wrap:wrap; align-items:center; }
+  .ctl{ background:rgba(255,255,255,.08); border:2px solid rgba(253,246,227,.25); border-radius:16px; padding:.8vh 1vw; min-width:clamp(180px,17vw,300px); }
+  .ctl .lab{ font-size:clamp(10px,.9vw,15px); color:var(--sky); font-weight:600; display:flex; justify-content:space-between; }
+  .ctl .lab b{ color:var(--foam); font-size:1.25em; }
+  input[type=range]{ width:100%; accent-color:var(--foam); margin:.4vh 0 0; }
+  button.btn{ font:inherit; font-weight:600; font-size:clamp(13px,1.3vw,22px); color:var(--card); background:rgba(255,255,255,.1); border:2px solid rgba(253,246,227,.35); border-radius:999px; padding:.8vh 1.5vw; cursor:pointer; }
+  button.btn.go{ background:var(--foam); border-color:var(--foam); color:#3a2a05; font-weight:700; }
+  button.btn.toc{ background:var(--ok); border-color:var(--ok); color:#fff; }
   .spacer{ flex:1; }
+  /* cena */
+  .sway{ animation:sway 1.1s ease-in-out infinite alternate; transform-box:fill-box; transform-origin:50% 100%; }
+  @keyframes sway{ from{ transform:rotate(-2deg);} to{ transform:rotate(2deg);} }
+  .staple{ animation:staple .5s ease-in-out infinite alternate; transform-box:fill-box; transform-origin:0% 50%; }
+  @keyframes staple{ from{ transform:rotate(-10deg);} to{ transform:rotate(14deg);} }
+  .drip{ animation:drip 1.4s ease-in infinite; }
+  @keyframes drip{ 0%{ transform:translateY(0); opacity:1;} 100%{ transform:translateY(16px); opacity:0;} }
+  .pulse{ animation:pulse .9s ease-in-out infinite alternate; transform-box:fill-box; transform-origin:center; }
+  @keyframes pulse{ from{ transform:scale(1);} to{ transform:scale(1.12);} }
+  /* pop-up */
+  .pop{ position:fixed; inset:0; background:rgba(8,24,27,.72); display:none; align-items:center; justify-content:center; z-index:50; padding:3vw; }
+  .pop.open{ display:flex; }
+  .pcard{ background:var(--card); color:var(--ink); border-radius:28px; width:min(860px,92vw); padding:3.2vh 2.6vw; box-shadow:0 30px 70px -20px rgba(0,0,0,.8); animation:rise .35s cubic-bezier(.2,.8,.2,1); border-top:10px solid var(--foam); }
+  @keyframes rise{ from{ transform:translateY(24px) scale(.97); opacity:0;} to{ transform:none; opacity:1;} }
+  .pcard .kick{ font-size:clamp(11px,1vw,16px); letter-spacing:.14em; text-transform:uppercase; color:var(--wood2); font-weight:700; }
+  .pcard h3{ margin:.5vh 0 1.2vh; font-size:clamp(24px,2.8vw,46px); line-height:1.1; font-weight:700; }
+  .pcard p{ margin:.6vh 0; font-size:clamp(15px,1.5vw,25px); line-height:1.45; color:#4a3b2c; }
+  .pcard ol{ margin:1vh 0 0; padding-left:1.3em; font-size:clamp(15px,1.45vw,24px); line-height:1.4; color:#4a3b2c; }
+  .pcard li{ margin-bottom:.7vh; } .pcard li b{ color:var(--alert); }
+  .facts{ display:flex; gap:1vw; flex-wrap:wrap; margin:1.4vh 0; }
+  .facts span{ background:#fff; border:2px solid #eadfc5; border-radius:14px; padding:.8vh 1vw; font-size:clamp(13px,1.25vw,21px); color:var(--muted); font-weight:500; }
+  .facts b{ display:block; font-size:1.6em; color:var(--alert); line-height:1.1; }
+  .ans{ display:none; margin-top:1.2vh; padding:1vh 1.2vw; border-left:6px solid var(--ok); background:#eaf6ee; border-radius:12px; font-size:clamp(15px,1.5vw,25px); line-height:1.4; color:#2b4a39; }
+  .ans.open{ display:block; }
+  .pbtns{ display:flex; gap:1vw; margin-top:2vh; flex-wrap:wrap; }
+  .pbtns .btn{ color:#3a2a05; border-color:#cdbb92; background:#fff; }
+  .pbtns .btn.go{ background:var(--foam); border-color:var(--foam); }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="hud">
-    <div class="title">🛋️ ESTOFARIA EM APUROS</div>
-    <div class="chip" id="chipDia"><div class="lab">DIA</div><div class="val" id="vDia">0/22</div></div>
-    <div class="chip" id="chipStock"><div class="lab">ESPUMA (MANTAS)</div><div class="val" id="vStock">300</div></div>
-    <div class="chip" id="chipStop"><div class="lab">DIAS PARADOS</div><div class="val" id="vStop">0</div></div>
-    <div class="chip"><div class="lab">ESTOQUE MÉDIO</div><div class="val" id="vAvg">0</div></div>
-  </div>
-
-  <div class="chart">
-    <canvas id="cv" width="1300" height="250"></canvas>
-    <div class="legend">
-      <span><i style="background:var(--blue)"></i>ESTOQUE DE ESPUMA</span>
-      <span><i style="background:var(--yellow)"></i>PONTO DE PEDIDO</span>
-      <span><i style="background:var(--pink)"></i>PEDIDO FEITO</span>
-      <span><i style="background:var(--green)"></i>CHEGADA DA ESPUMA</span>
-      <span><i style="background:var(--red)"></i>ESTOFARIA PARADA</span>
+  <header class="top">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="26" width="48" height="14" rx="7" fill="#f4c542"/><rect x="12" y="14" width="40" height="16" rx="8" fill="#e4572e"/><path d="M14 40 V54 M50 40 V54" stroke="#a8704a" stroke-width="5" stroke-linecap="round"/></svg>
+      <div><h1>Estofaria <em>em Apuros</em></h1><small>Indústria de cadeiras, oeste do Paraná</small></div>
     </div>
-  </div>
+    <div class="chip" id="chipDia"><div class="lab">Dia</div><div class="val" id="vDia">0/22</div></div>
+    <div class="chip" id="chipStock"><div class="lab">Espuma (mantas)</div><div class="val" id="vStock">300</div></div>
+    <div class="chip" id="chipStop"><div class="lab">Dias parados</div><div class="val" id="vStop">0</div></div>
+    <div class="chip"><div class="lab">Estoque médio</div><div class="val" id="vAvg">300</div></div>
+    <button class="help" id="helpBtn" title="Os 5 passos neste caso">?</button>
+  </header>
 
-  <div class="msg" id="msg">A estofaria gasta 20 mantas por dia. A espuma leva 8 dias úteis para chegar, e o fornecedor às vezes atrasa. Escolha quando pedir.</div>
+  <section class="main">
+    <div class="panel">
+      <h2>Oficina <span id="sceneNote"></span></h2>
+      <svg id="scene" viewBox="0 -110 640 440" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="panel">
+      <h2>Estoque de espuma <span>dente de serra</span></h2>
+      <div id="chartWrap"><canvas id="cv"></canvas></div>
+      <div class="legend">
+        <span><i style="background:#14434a"></i>Estoque</span>
+        <span><i style="background:#e9a824"></i>Ponto de pedido</span>
+        <span><i style="background:#e4572e"></i>Pedido feito</span>
+        <span><i style="background:#3aa675"></i>Chegada</span>
+        <span><i style="background:rgba(228,87,46,.35)"></i>Parada</span>
+      </div>
+    </div>
+  </section>
 
-  <div class="controls">
-    <button class="primary" id="playBtn">▶ START</button>
-    <button id="resetBtn">↺ RESET</button>
-    <div class="ctl"><div class="lab"><span>PONTO DE PEDIDO</span><b id="lPonto">0</b></div><input type="range" id="ponto" min="0" max="400" step="20" value="0"></div>
-    <div class="ctl"><div class="lab"><span>QUANTIDADE POR PEDIDO</span><b id="lQtd">300</b></div><input type="range" id="qtd" min="100" max="600" step="50" value="300"></div>
-    <div class="spacer"></div>
-    <button id="preAntes">COMO ERA</button>
-    <button id="preToc" class="warn">COM TOC</button>
-  </div>
-</div>
+  <footer class="bottom">
+    <div class="msg" id="msg"></div>
+    <div class="controls">
+      <button class="btn go" id="playBtn">Começar</button>
+      <button class="btn" id="resetBtn">Reiniciar</button>
+      <div class="ctl"><div class="lab"><span>Ponto de pedido</span><b id="lPonto">0</b></div><input type="range" id="ponto" min="0" max="400" step="20" value="0"></div>
+      <div class="ctl"><div class="lab"><span>Quantidade por pedido</span><b id="lQtd">300</b></div><input type="range" id="qtd" min="100" max="600" step="50" value="300"></div>
+      <span class="spacer"></span>
+      <button class="btn" id="preAntes">Como era</button>
+      <button class="btn toc" id="preToc">Com TOC</button>
+    </div>
+  </footer>
+
+  <div class="pop" id="pop"><div class="pcard" id="pcard"></div></div>
 
 <script>
 (function(){
   const DIAS = 22, CONSUMO = 20, LEAD = 8, INICIAL = 300;
-  // atrasos do fornecedor, sempre os mesmos para a comparação ser justa (em dias úteis)
-  const ATRASOS = [3, 0, 2, 4, 1, 0, 3];
+  const ATRASOS = [3, 0, 2, 4, 1, 0, 3]; // atrasos do fornecedor, sempre os mesmos
   const $ = (id) => document.getElementById(id);
   const cv = $('cv'), ctx = cv.getContext('2d');
-  const C = { blue:'#4ec9ff', yellow:'#ffd23f', pink:'#ff6fc7', green:'#39e6a4', red:'#ff4d6d', grid:'rgba(244,233,255,.12)', txt:'#a892d6' };
+  let st, timer = null, resumeAfter = false, seen = {};
 
-  let st, timer = null;
   const params = () => ({ ponto: +$('ponto').value, qtd: +$('qtd').value });
+  const say = (t) => { $('msg').textContent = t; };
 
-  function reset(){
-    clearInterval(timer); timer = null;
-    st = { dia: 0, stock: INICIAL, hist: [INICIAL], paradas: [], pedidos: [], chegadas: [], pend: null, nPed: 0, stops: 0, soma: INICIAL, fim: false };
-    $('playBtn').textContent = '▶ START';
-    say('A estofaria gasta 20 mantas por dia. A espuma leva 8 dias úteis para chegar, e o fornecedor às vezes atrasa. Escolha quando pedir.');
-    draw(); hud();
+  /* ---------- pop-ups ---------- */
+  function popup(html, onClose){
+    resumeAfter = !!timer; if (timer) { clearInterval(timer); timer = null; }
+    $('pcard').innerHTML = html; $('pop').classList.add('open');
+    popup.cb = onClose || null;
+    const first = $('pcard').querySelector('.btn.go'); if (first) first.focus();
   }
+  function closePop(){
+    $('pop').classList.remove('open');
+    const cb = popup.cb; popup.cb = null;
+    if (cb) cb();
+    else if (resumeAfter && st && !st.fim) startTimer();
+    resumeAfter = false;
+  }
+  $('pop').addEventListener('click', (e) => {
+    const t = e.target.closest('[data-act]');
+    if (!t) return;
+    const a = t.dataset.act;
+    if (a === 'close') closePop();
+    else if (a === 'answer') { document.querySelector('.ans').classList.add('open'); t.remove(); }
+    else if (a === 'toc') { $('pop').classList.remove('open'); popup.cb = null; setPreset(240, 300); startTimer(); }
+    else if (a === 'steps') showSteps();
+    else if (a === 'again') { $('pop').classList.remove('open'); popup.cb = null; reset(); }
+  });
+
+  const introHtml = '<div class="kick">O caso</div><h3>A estofaria que fica sem espuma</h3><p>Uma fábrica de cadeiras vive atrasando entregas. As máquinas dão conta, mas a <b>estofaria</b> para toda hora esperando espuma.</p><div class="facts"><span><b>20 mantas</b>de espuma por dia</span><span><b>8 dias úteis</b>para a espuma chegar</span><span><b>até 4 dias</b>de atraso do fornecedor</span></div><p>Você decide <b>quando pedir</b> e <b>quanto pedir</b>.</p><div class="pbtns"><button class="btn go" data-act="close">Começar</button></div>';
+  const stopHtml = '<div class="kick">Atenção</div><h3>A estofaria parou!</h3><p>A espuma acabou, e a nova entrega ainda está a caminho. Sem espuma, <b>os lotes ficam presos aqui</b>, mesmo que as outras etapas estejam prontas.</p><p>É isso que faz a estofaria ser o <b>tambor</b>: o ritmo de toda a fábrica depende dela.</p><div class="pbtns"><button class="btn go" data-act="close">Continuar</button></div>';
+  function showSteps(){
+    popup('<div class="kick">Os 5 passos neste caso</div><h3>Do gargalo ao próximo gargalo</h3><ol><li><b>Identificar:</b> lotes parados na estofaria desde agosto, setembro e outubro de 2015.</li><li><b>Explorar:</b> o consumo de espuma era maior que a compra. Faltava material, não máquina.</li><li><b>Subordinar:</b> o produto chega em 11 dias, e a espuma leva 15 para repor.</li><li><b>Elevar:</b> estoque mínimo e ponto de pedido, com curvas dente de serra.</li><li><b>Repetir:</b> o lixamento apareceu como possível novo gargalo.</li></ol><div class="pbtns"><button class="btn go" data-act="close">Fechar</button></div>');
+  }
+
+  /* ---------- simulação ---------- */
+  function reset(){
+    if (timer) clearInterval(timer); timer = null;
+    st = { dia: 0, stock: INICIAL, hist: [INICIAL], paradas: [], pedidos: [], chegadas: [], pend: null, nPed: 0, stops: 0, soma: INICIAL, fim: false, pronto: 0 };
+    $('playBtn').textContent = 'Começar';
+    say('Escolha o ponto de pedido e aperte Começar. Ou use os atalhos "Como era" e "Com TOC".');
+    render();
+  }
+  function startTimer(){ if (!timer) timer = setInterval(step, 600); $('playBtn').textContent = 'Pausar'; }
 
   function step(){
     if (st.fim) return;
     const { ponto, qtd } = params();
     st.dia++;
-    // chegada de pedido
     if (st.pend && st.dia >= st.pend.chega) { st.stock += st.pend.qtd; st.chegadas.push(st.dia); st.pend = null; }
-    // produção do dia
-    if (st.stock >= CONSUMO) { st.stock -= CONSUMO; }
-    else { st.stock = 0; st.stops++; st.paradas.push(st.dia); }
-    // novo pedido
+    let parou = false;
+    if (st.stock >= CONSUMO) { st.stock -= CONSUMO; st.pronto++; }
+    else { st.stock = 0; st.stops++; st.paradas.push(st.dia); parou = true; }
     if (!st.pend && st.stock <= ponto) {
       const atraso = ATRASOS[st.nPed % ATRASOS.length];
-      st.pend = { chega: st.dia + LEAD + atraso, qtd };
+      st.pend = { inicio: st.dia, chega: st.dia + LEAD + atraso, qtd };
       st.pedidos.push(st.dia); st.nPed++;
     }
     st.hist.push(st.stock); st.soma += st.stock;
-    if (st.dia >= DIAS) finish();
-    draw(); hud();
+    render();
+    if (st.dia >= DIAS) { finish(); return; }
+    if (parou && !seen.stop) { seen.stop = true; popup(stopHtml); }
   }
 
   function finish(){
-    st.fim = true; clearInterval(timer); timer = null; $('playBtn').textContent = '▶ DE NOVO';
-    const avg = Math.round(st.soma / (st.hist.length));
-    if (st.stops === 0 && avg <= 260) say('STAGE CLEAR! A estofaria não parou nenhum dia e o estoque ficou enxuto. É o pulmão no tamanho certo.');
-    else if (st.stops === 0) say('Não parou, mas o estoque ficou grande demais: pulmão inchado custa dinheiro e espaço. Tente pedir um pouco mais tarde.');
-    else say('A estofaria parou ' + st.stops + ' dia(s) esperando espuma, e todos os lotes ficaram presos. Peça mais cedo: o ponto de pedido precisa cobrir os 8 dias da entrega.');
+    st.fim = true; if (timer) clearInterval(timer); timer = null; $('playBtn').textContent = 'De novo';
+    const avg = Math.round(st.soma / st.hist.length), noop = () => {};
+    if (st.stops === 0 && avg <= 260) {
+      say('Fase concluída: nenhum dia parado e estoque enxuto.');
+      popup('<div class="kick">Fase concluída</div><h3>Nenhum dia parado!</h3><div class="facts"><span><b>0</b>dias parados</span><span><b>' + avg + '</b>estoque médio</span><span><b>' + st.nPed + '</b>pedidos no mês</span></div><p><b>Pergunta:</b> por que não pedir muito mais espuma, só para garantir?</p><div class="ans"><b>Pulmão grande demais custa caro.</b> Ele infla o estoque e o lead time. O tamanho certo cobre a entrega e a variação do fornecedor, e nada além.</div><div class="pbtns"><button class="btn go" data-act="answer">Ver resposta</button><button class="btn" data-act="steps">Os 5 passos</button><button class="btn" data-act="close">Fechar</button></div>', noop);
+    } else if (st.stops === 0) {
+      say('Não parou, mas o estoque ficou grande demais. Tente pedir um pouco mais tarde.');
+      popup('<div class="kick">Quase</div><h3>Pulmão inchado</h3><p>A estofaria não parou, mas o <b>estoque médio foi de ' + avg + '</b>. Espuma parada ocupa espaço e custa dinheiro. Tente um ponto de pedido menor.</p><div class="pbtns"><button class="btn go" data-act="again">Tentar de novo</button><button class="btn" data-act="close">Fechar</button></div>', noop);
+    } else {
+      say('A estofaria parou ' + st.stops + ' dia(s) esperando espuma.');
+      popup('<div class="kick">Fim do mês</div><h3>Parou ' + st.stops + ' dias</h3><p>As compras só saíam quando a espuma acabava, <b>sem contar os 8 dias de entrega</b>. O ponto de pedido precisa cobrir esse prazo, mais uma folga para os atrasos do fornecedor.</p><div class="pbtns"><button class="btn go" data-act="toc">Ver como a TOC resolve</button><button class="btn" data-act="again">Tentar de novo</button><button class="btn" data-act="close">Fechar</button></div>', noop);
+    }
   }
 
-  function say(t){ $('msg').textContent = t; }
-
+  /* ---------- desenho ---------- */
   function hud(){
     $('vDia').textContent = st.dia + '/' + DIAS;
     $('vStock').textContent = st.stock;
     $('vStop').textContent = st.stops;
     $('vAvg').textContent = Math.round(st.soma / st.hist.length);
     $('chipStop').className = 'chip ' + (st.stops ? 'bad' : (st.dia ? 'good' : ''));
+    $('lPonto').textContent = $('ponto').value; $('lQtd').textContent = $('qtd').value;
   }
 
-  function draw(){
-    const w = cv.width, h = cv.height, L = 46, R = 12, T = 12, B = 26;
-    ctx.clearRect(0, 0, w, h);
-    const maxY = 700;
-    const x = (d) => L + (w - L - R) * d / DIAS;
-    const y = (v) => T + (h - T - B) * (1 - Math.min(v, maxY) / maxY);
-    ctx.font = '10px "Press Start 2P", monospace'; ctx.textBaseline = 'middle';
-    ctx.strokeStyle = C.grid; ctx.fillStyle = C.txt; ctx.lineWidth = 1;
-    [0, 200, 400, 600].forEach((v) => { ctx.beginPath(); ctx.moveTo(L, y(v)); ctx.lineTo(w - R, y(v)); ctx.stroke(); ctx.fillText(v, 4, y(v)); });
-    [0, 5, 10, 15, 20].forEach((d) => ctx.fillText(d, x(d) - 6, h - 8));
-    // ponto de pedido
-    ctx.strokeStyle = C.yellow; ctx.setLineDash([8, 6]); ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(L, y(params().ponto)); ctx.lineTo(w - R, y(params().ponto)); ctx.stroke(); ctx.setLineDash([]);
-    // paradas
-    ctx.fillStyle = 'rgba(255,77,109,.35)';
-    st.paradas.forEach((d) => ctx.fillRect(x(d - 1), T, x(d) - x(d - 1), h - T - B));
-    // estoque (dente de serra)
-    ctx.strokeStyle = C.blue; ctx.lineWidth = 4; ctx.lineJoin = 'miter'; ctx.beginPath();
-    st.hist.forEach((v, d) => { if (d === 0) ctx.moveTo(x(d), y(v)); else ctx.lineTo(x(d), y(v)); });
-    ctx.stroke();
-    // posição atual
-    ctx.fillStyle = C.blue; const lv = st.hist[st.hist.length - 1]; ctx.fillRect(x(st.hist.length - 1) - 6, y(lv) - 6, 12, 12);
-    // marcadores
-    st.pedidos.forEach((d) => { ctx.fillStyle = C.pink; ctx.fillRect(x(d) - 5, T, 10, 14); });
-    st.chegadas.forEach((d) => { ctx.fillStyle = C.green; ctx.fillRect(x(d) - 5, h - B - 14, 10, 14); });
+  function chair(x, y, s, fill){
+    return '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')"><rect x="0" y="-26" width="4" height="26" fill="#7d4f30"/><rect x="0" y="-30" width="20" height="10" rx="3" fill="' + fill + '"/><rect x="-2" y="-6" width="24" height="8" rx="3" fill="' + fill + '"/><rect x="0" y="2" width="4" height="12" fill="#7d4f30"/><rect x="16" y="2" width="4" height="12" fill="#7d4f30"/></g>';
   }
 
-  function play(){
-    if (st.fim) reset();
-    if (timer) { clearInterval(timer); timer = null; $('playBtn').textContent = '▶ CONTINUAR'; return; }
-    $('playBtn').textContent = '⏸ PAUSAR';
-    timer = setInterval(step, 520);
+  function scene(){
+    const stopped = st.paradas[st.paradas.length - 1] === st.dia && st.dia > 0;
+    const slabs = Math.min(12, Math.round(st.stock / 50));
+    let g = '<rect x="0" y="-110" width="640" height="372" fill="#f6ead0"/><rect x="236" y="-76" width="120" height="86" rx="10" fill="#bfe3ea" stroke="#a8704a" stroke-width="6"/><path d="M296 -76 V10 M236 -33 H356" stroke="#a8704a" stroke-width="4"/><rect x="430" y="-86" width="180" height="46" rx="10" fill="#a8704a"/><text x="520" y="-55" text-anchor="middle" font-size="20" font-weight="700" fill="#fdf6e3">ESTOFARIA</text><rect x="0" y="262" width="640" height="68" fill="#e8d9b8"/><rect x="0" y="258" width="640" height="6" fill="#cdbb92"/>';
+    g += '<rect x="14" y="48" width="8" height="214" fill="#7d4f30"/><rect x="134" y="48" width="8" height="214" fill="#7d4f30"/>';
+    for (let i = 0; i < 12; i++) g += '<rect x="22" y="' + (60 + i * 17) + '" width="112" height="2" fill="#a8704a" opacity=".5"/>';
+    for (let i = 0; i < slabs; i++) g += '<rect x="26" y="' + (246 - i * 17) + '" width="104" height="14" rx="3" fill="#f4c542"/><g fill="#e9a824"><circle cx="40" cy="' + (253 - i * 17) + '" r="2"/><circle cx="70" cy="' + (253 - i * 17) + '" r="2"/><circle cx="100" cy="' + (253 - i * 17) + '" r="2"/></g>';
+    g += '<text x="78" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="#7d4f30">ESTOQUE DE ESPUMA</text>';
+    if (st.pend) {
+      const p = Math.min(1, (st.dia - st.pend.inicio) / (st.pend.chega - st.pend.inicio));
+      const tx = 560 - p * 420;
+      g += '<g transform="translate(' + tx + ' 300)"><rect x="0" y="-34" width="52" height="30" rx="4" fill="#3aa675"/><rect x="52" y="-26" width="22" height="22" rx="4" fill="#2c8660"/><rect x="58" y="-22" width="10" height="8" fill="#bfeadb"/><rect x="8" y="-40" width="36" height="8" rx="3" fill="#f4c542"/><circle cx="14" cy="-2" r="7" fill="#2b2118"/><circle cx="60" cy="-2" r="7" fill="#2b2118"/></g>';
+      g += '<text x="' + (tx + 30) + '" y="238" text-anchor="middle" font-size="13" fill="#2c8660" font-weight="700">chega no dia ' + st.pend.chega + '</text>';
+    }
+    g += '<g transform="translate(250 262)"><ellipse cx="0" cy="2" rx="34" ry="6" fill="rgba(0,0,0,.12)"/>' +
+      '<g class="' + (stopped ? '' : 'sway') + '"><rect x="-17" y="-92" width="34" height="62" rx="14" fill="#2f6f7a"/><circle cx="0" cy="-112" r="19" fill="#f2c9a0"/>' +
+      '<path d="M-20 -114 q20 -24 40 0 q-10 -6 -20 -6 q-10 0 -20 6z" fill="#e4572e"/><circle cx="-6" cy="-111" r="2" fill="#2b2118"/><circle cx="6" cy="-111" r="2" fill="#2b2118"/>' +
+      (stopped ? '<path d="M-7 -102 q7 -5 14 0" stroke="#2b2118" stroke-width="2.4" fill="none" stroke-linecap="round"/><g class="drip"><path d="M22 -120 q4 7 0 10 q-4 -3 0 -10z" fill="#8fd3dc"/></g>' : '<path d="M-6 -104 q6 5 12 0" stroke="#2b2118" stroke-width="2.4" fill="none" stroke-linecap="round"/>') +
+      '<g class="' + (stopped ? '' : 'staple') + '"><rect x="14" y="-80" width="46" height="9" rx="4.5" fill="#2f6f7a"/><rect x="54" y="-86" width="22" height="14" rx="3" fill="#7a6a58"/></g>' +
+      '<rect x="-12" y="-32" width="10" height="32" fill="#244f58"/><rect x="2" y="-32" width="10" height="32" fill="#244f58"/></g>' +
+      (stopped ? '<g class="pulse"><circle cx="-34" cy="-146" r="16" fill="#fff"/><text x="-34" y="-140" text-anchor="middle" font-size="20" font-weight="700" fill="#e4572e">?</text></g>' : '') + '</g>';
+    g += chair(322, 262, 1.6, stopped ? '#cdbb92' : '#e4572e');
+    g += '<text x="540" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="#7d4f30">CADEIRAS PRONTAS</text>';
+    for (let i = 0; i < st.pronto; i++) g += chair(446 + (i % 11) * 17, 90 + Math.floor(i / 11) * 28, .42, '#3aa675');
+    g += '<text x="540" y="150" text-anchor="middle" font-size="15" font-weight="700" fill="#e4572e">LOTES PRESOS: ' + st.stops + '</text>';
+    for (let i = 0; i < st.stops; i++) g += '<rect x="' + (446 + (i % 11) * 17) + '" y="' + (160 + Math.floor(i / 11) * 18) + '" width="13" height="13" rx="3" fill="#e4572e"/>';
+    $('scene').innerHTML = g;
+    $('sceneNote').textContent = st.pend ? 'pedido a caminho' : (st.dia ? 'sem pedido em aberto' : '');
   }
 
-  function setPreset(ponto, qtd, txt){
-    $('ponto').value = ponto; $('qtd').value = qtd; sync(); reset(); say(txt);
+  function chart(){
+    const dpr = window.devicePixelRatio || 1, r = cv.getBoundingClientRect();
+    cv.width = Math.max(10, r.width * dpr); cv.height = Math.max(10, r.height * dpr);
+    const w = cv.width, h = cv.height, c = ctx; c.setTransform(1, 0, 0, 1, 0, 0);
+    const L = 50 * dpr, R = 14 * dpr, T = 14 * dpr, B = 30 * dpr, maxY = 700;
+    const x = (d) => L + (w - L - R) * d / DIAS, y = (v) => T + (h - T - B) * (1 - Math.min(v, maxY) / maxY);
+    c.clearRect(0, 0, w, h);
+    c.font = (12 * dpr) + 'px Fredoka, sans-serif'; c.textBaseline = 'middle'; c.fillStyle = '#7a6a58'; c.strokeStyle = 'rgba(122,106,88,.2)'; c.lineWidth = dpr;
+    [0, 200, 400, 600].forEach((v) => { c.beginPath(); c.moveTo(L, y(v)); c.lineTo(w - R, y(v)); c.stroke(); c.fillText(v, 4 * dpr, y(v)); });
+    [0, 5, 10, 15, 20].forEach((d) => c.fillText(d, x(d) - 4 * dpr, h - 10 * dpr));
+    c.fillStyle = 'rgba(228,87,46,.3)'; st.paradas.forEach((d) => c.fillRect(x(d - 1), T, x(d) - x(d - 1), h - T - B));
+    c.strokeStyle = '#e9a824'; c.setLineDash([8 * dpr, 6 * dpr]); c.lineWidth = 2.5 * dpr; const py = y(params().ponto);
+    c.beginPath(); c.moveTo(L, py); c.lineTo(w - R, py); c.stroke(); c.setLineDash([]);
+    c.strokeStyle = '#14434a'; c.lineWidth = 4 * dpr; c.lineJoin = 'round'; c.beginPath();
+    st.hist.forEach((v, d) => { d === 0 ? c.moveTo(x(d), y(v)) : c.lineTo(x(d), y(v)); }); c.stroke();
+    c.fillStyle = '#14434a'; const n = st.hist.length - 1; c.beginPath(); c.arc(x(n), y(st.hist[n]), 7 * dpr, 0, 7); c.fill();
+    st.pedidos.forEach((d) => { c.fillStyle = '#e4572e'; c.fillRect(x(d) - 6 * dpr, T, 12 * dpr, 16 * dpr); });
+    st.chegadas.forEach((d) => { c.fillStyle = '#3aa675'; c.fillRect(x(d) - 6 * dpr, h - B - 16 * dpr, 12 * dpr, 16 * dpr); });
   }
-  function sync(){ $('lPonto').textContent = $('ponto').value; $('lQtd').textContent = $('qtd').value; if (st) draw(); }
 
-  $('playBtn').addEventListener('click', play);
+  function render(){ hud(); scene(); chart(); }
+  function setPreset(ponto, qtd){ $('ponto').value = ponto; $('qtd').value = qtd; reset(); }
+
+  /* ---------- controles ---------- */
+  $('playBtn').addEventListener('click', () => {
+    if (st.fim) { reset(); startTimer(); return; }
+    if (timer) { clearInterval(timer); timer = null; $('playBtn').textContent = 'Continuar'; }
+    else startTimer();
+  });
   $('resetBtn').addEventListener('click', reset);
-  $('ponto').addEventListener('input', sync);
-  $('qtd').addEventListener('input', sync);
-  $('preAntes').addEventListener('click', () => setPreset(0, 300, 'COMO ERA: só compra quando a espuma acaba, sem contar os 8 dias de entrega. Aperte START e veja a estofaria parar.'));
-  $('preToc').addEventListener('click', () => setPreset(240, 300, 'COM TOC: pede quando restam 240 mantas, o bastante para os 8 dias de entrega mais uma folga. Aperte START.'));
-  sync(); reset();
+  $('ponto').addEventListener('input', () => { hud(); chart(); });
+  $('qtd').addEventListener('input', hud);
+  $('preAntes').addEventListener('click', () => { setPreset(0, 300); say('Como era: só pede quando a espuma acaba, sem contar os 8 dias de entrega.'); });
+  $('preToc').addEventListener('click', () => { setPreset(240, 300); say('Com TOC: pede com 240 mantas, o bastante para os 8 dias de entrega e uma folga.'); });
+  $('helpBtn').addEventListener('click', showSteps);
+  addEventListener('resize', chart);
+
+  // setas passam o slide (quando o jogo está dentro da apresentação)
+  document.addEventListener('keydown', (e) => {
+    if (parent === window || (e.target && e.target.type === 'range')) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') parent.postMessage('deck-next', '*');
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') parent.postMessage('deck-prev', '*');
+  });
+
+  reset();
+  setTimeout(() => popup(introHtml, () => {}), 400);
 })();
 </script>
 </body>
