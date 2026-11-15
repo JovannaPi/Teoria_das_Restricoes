@@ -56,7 +56,7 @@
   .sway{ animation:sway 1.1s ease-in-out infinite alternate; transform-box:fill-box; transform-origin:50% 100%; }
   @keyframes sway{ from{ transform:rotate(-2deg);} to{ transform:rotate(2deg);} }
   .staple{ animation:staple .5s ease-in-out infinite alternate; transform-box:fill-box; transform-origin:0% 50%; }
-  @keyframes staple{ from{ transform:rotate(-10deg);} to{ transform:rotate(14deg);} }
+  @keyframes staple{ from{ transform:rotate(-4deg);} to{ transform:rotate(7deg);} }
   .drip{ animation:drip 1.4s ease-in infinite; }
   @keyframes drip{ 0%{ transform:translateY(0); opacity:1;} 100%{ transform:translateY(16px); opacity:0;} }
   .pulse{ animation:pulse .9s ease-in-out infinite alternate; transform-box:fill-box; transform-origin:center; }
@@ -256,7 +256,7 @@
       '<path d="M-18 -120 q18 -16 36 0 v6 q-18 -12 -36 0z" fill="#e4572e"/><circle cx="-6" cy="-113" r="2" fill="#2b2118"/><circle cx="6" cy="-113" r="2" fill="#2b2118"/>' +
       (stopped ? '<path d="M-6 -104 q6 -5 12 0" stroke="#2b2118" stroke-width="2.4" fill="none" stroke-linecap="round"/><g class="drip"><path d="M22 -122 q4 7 0 10 q-4 -3 0 -10z" fill="#8fd3dc"/></g>' : '<path d="M-6 -106 q6 5 12 0" stroke="#2b2118" stroke-width="2.4" fill="none" stroke-linecap="round"/>') +
       // braço da frente com grampeador
-      '<g class="' + (stopped ? '' : 'staple') + '"><path d="M14 -86 Q40 -90 58 -54" stroke="' + TEAL + '" stroke-width="11" stroke-linecap="round" fill="none"/><circle cx="58" cy="-52" r="6.5" fill="' + SK + '"/><rect x="54" y="-62" width="22" height="9" rx="3" fill="#7a6a58"/><rect x="70" y="-58" width="9" height="4" rx="2" fill="#4a3b2c"/></g>' +
+      '<g class="' + (stopped ? '' : 'staple') + '"><path d="M15 -84 L33 -66 L54 -58" stroke="' + TEAL + '" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="33" cy="-66" r="5" fill="#25606a"/><circle cx="56" cy="-57" r="6" fill="' + SK + '"/><rect x="58" y="-65" width="20" height="8" rx="3" fill="#7a6a58"/><rect x="74" y="-61" width="8" height="4" rx="2" fill="#4a3b2c"/></g>' +
       '</g>' +
       (stopped ? '<g class="pulse"><circle cx="-36" cy="-150" r="16" fill="#fff"/><text x="-36" y="-144" text-anchor="middle" font-size="20" font-weight="700" fill="#e4572e">?</text></g>' : '') + '</g>';
     g += chair(322, 262, 1.6, stopped ? '#cdbb92' : '#e4572e');
