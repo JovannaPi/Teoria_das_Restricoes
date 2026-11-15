@@ -134,12 +134,15 @@
   const $ = (id) => document.getElementById(id);
   const cv = $('cv'), ctx = cv.getContext('2d');
   let st, timer = null, resumeAfter = false, seen = {};
+  const POPUPS = new URLSearchParams(location.search).has('popups'); // pop-ups só com ?popups
+  if (!POPUPS) { $('helpBtn').style.display = 'none'; }
 
   const params = () => ({ ponto: +$('ponto').value, qtd: +$('qtd').value });
   const say = (t) => { $('msg').textContent = t; };
 
   /* ---------- pop-ups ---------- */
   function popup(html, onClose){
+    if (!POPUPS) return;
     resumeAfter = !!timer; if (timer) { clearInterval(timer); timer = null; }
     $('pcard').innerHTML = html; $('pop').classList.add('open');
     popup.cb = onClose || null;
@@ -174,7 +177,7 @@
     if (timer) clearInterval(timer); timer = null;
     st = { dia: 0, stock: INICIAL, hist: [INICIAL], paradas: [], pedidos: [], chegadas: [], pend: null, nPed: 0, stops: 0, soma: INICIAL, fim: false, pronto: 0 };
     $('playBtn').textContent = 'Começar';
-    say('Escolha o ponto de pedido e aperte Começar. Ou use os atalhos "Como era" e "Com TOC".');
+    say('Consumo de 20 mantas por dia, entrega em 8 dias úteis e fornecedor que atrasa até 4 dias. Escolha o ponto de pedido e aperte Começar.');
     render();
   }
   function startTimer(){ if (!timer) timer = setInterval(step, 1600); $('playBtn').textContent = 'Pausar'; }
@@ -202,13 +205,13 @@
     st.fim = true; if (timer) clearInterval(timer); timer = null; $('playBtn').textContent = 'De novo';
     const avg = Math.round(st.soma / st.hist.length), noop = () => {};
     if (st.stops === 0 && avg <= 260) {
-      say('Fase concluída: nenhum dia parado e estoque enxuto.');
+      say('Nenhum dia parado, com estoque médio de ' + avg + ' e ' + st.nPed + ' pedidos no mês.');
       popup('<div class="kick">Fase concluída</div><h3>Nenhum dia parado!</h3><div class="facts"><span><b>0</b>dias parados</span><span><b>' + avg + '</b>estoque médio</span><span><b>' + st.nPed + '</b>pedidos no mês</span></div><p><b>Pergunta:</b> por que não pedir muito mais espuma, só para garantir?</p><div class="ans"><b>Pulmão grande demais custa caro.</b> Ele infla o estoque e o lead time. O tamanho certo cobre a entrega e a variação do fornecedor, e nada além.</div><div class="pbtns"><button class="btn go" data-act="answer">Ver resposta</button><button class="btn" data-act="steps">Os 5 passos</button><button class="btn" data-act="close">Fechar</button></div>', noop);
     } else if (st.stops === 0) {
-      say('Não parou, mas o estoque ficou grande demais. Tente pedir um pouco mais tarde.');
+      say('Não parou, mas o estoque médio foi de ' + avg + ': grande demais. Tente pedir um pouco mais tarde.');
       popup('<div class="kick">Quase</div><h3>Pulmão inchado</h3><p>A estofaria não parou, mas o <b>estoque médio foi de ' + avg + '</b>. Espuma parada ocupa espaço e custa dinheiro. Tente um ponto de pedido menor.</p><div class="pbtns"><button class="btn go" data-act="again">Tentar de novo</button><button class="btn" data-act="close">Fechar</button></div>', noop);
     } else {
-      say('A estofaria parou ' + st.stops + ' dia(s) esperando espuma.');
+      say('A estofaria parou ' + st.stops + ' dia(s) esperando espuma: o pedido não cobria o prazo de entrega.');
       popup('<div class="kick">Fim do mês</div><h3>Parou ' + st.stops + ' dias</h3><p>No estudo, as compras <b>não consideravam o prazo de reposição</b> do fornecedor. Aqui isso vira pedir só quando a espuma acaba, sem contar os 8 dias de entrega. O ponto de pedido precisa cobrir esse prazo, mais uma folga.</p><div class="pbtns"><button class="btn go" data-act="toc">Ver como a TOC resolve</button><button class="btn" data-act="again">Tentar de novo</button><button class="btn" data-act="close">Fechar</button></div>', noop);
     }
   }
