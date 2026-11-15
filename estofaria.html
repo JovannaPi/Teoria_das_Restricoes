@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Estofaria em Apuros</title>
+<title>Estofaria</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
   :root{
@@ -19,7 +19,7 @@
   }
   /* topo */
   .top{ display:flex; align-items:center; gap:1.2vw; flex-wrap:wrap; }
-  .brand{ display:flex; align-items:center; gap:.8vw; margin-right:auto; }
+  .brand{ margin-right:auto; }
   .brand h1{ margin:0; font-size:clamp(20px,2.6vw,46px); font-weight:700; letter-spacing:.01em; line-height:1; }
   .brand h1 em{ font-style:normal; color:var(--foam); }
   .brand small{ display:block; font-size:clamp(11px,1vw,17px); font-weight:500; color:var(--sky); margin-top:.3em; }
@@ -84,8 +84,8 @@
 <body>
   <header class="top">
     <div class="brand">
-      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="26" width="48" height="14" rx="7" fill="#f4c542"/><rect x="12" y="14" width="40" height="16" rx="8" fill="#e4572e"/><path d="M14 40 V54 M50 40 V54" stroke="#a8704a" stroke-width="5" stroke-linecap="round"/></svg>
-      <div><h1>Estofaria <em>em Apuros</em></h1><small>Indústria de cadeiras, oeste do Paraná</small></div>
+      
+      <div><h1>Estofaria</h1><small>Indústria de cadeiras, oeste do Paraná</small></div>
     </div>
     <div class="chip" id="chipDia"><div class="lab">Dia</div><div class="val" id="vDia">0/22</div></div>
     <div class="chip" id="chipStock"><div class="lab">Espuma (mantas)</div><div class="val" id="vStock">300</div></div>
@@ -163,7 +163,7 @@
     else if (a === 'again') { $('pop').classList.remove('open'); popup.cb = null; reset(); }
   });
 
-  const introHtml = '<div class="kick">O caso</div><h3>A estofaria que fica sem espuma</h3><p>Uma fábrica de cadeiras vive atrasando entregas. As máquinas dão conta, mas a <b>estofaria</b> para toda hora esperando espuma.</p><div class="facts"><span><b>20 mantas</b>de espuma por dia</span><span><b>8 dias úteis</b>para a espuma chegar</span><span><b>até 4 dias</b>de atraso do fornecedor</span></div><p>Você decide <b>quando pedir</b> e <b>quanto pedir</b>.</p><div class="pbtns"><button class="btn go" data-act="close">Começar</button></div>';
+  const introHtml = '<div class="kick">O caso</div><h3>A estofaria que fica sem espuma</h3><p>Uma fábrica de cadeiras vive atrasando entregas. As máquinas dão conta, mas a <b>estofaria</b> para toda hora esperando espuma.</p><div class="facts"><span><b>20 mantas</b>de espuma por dia</span><span><b>8 dias úteis</b>para a espuma chegar</span><span><b>até 4 dias</b>de atraso do fornecedor</span></div><p>Você decide <b>quando pedir</b> e <b>quanto pedir</b>.</p><p style="font-size:.7em;color:#7a6a58">Baseado no estudo de Orciuolo (2015). Os números do jogo são simulados.</p><div class="pbtns"><button class="btn go" data-act="close">Começar</button></div>';
   const stopHtml = '<div class="kick">Atenção</div><h3>A estofaria parou!</h3><p>A espuma acabou, e a nova entrega ainda está a caminho. Sem espuma, <b>os lotes ficam presos aqui</b>, mesmo que as outras etapas estejam prontas.</p><p>É isso que faz a estofaria ser o <b>tambor</b>: o ritmo de toda a fábrica depende dela.</p><div class="pbtns"><button class="btn go" data-act="close">Continuar</button></div>';
   function showSteps(){
     popup('<div class="kick">Os 5 passos neste caso</div><h3>Do gargalo ao próximo gargalo</h3><ol><li><b>Identificar:</b> lotes parados na estofaria desde agosto, setembro e outubro de 2015.</li><li><b>Explorar:</b> o consumo de espuma era maior que a compra. Faltava material, não máquina.</li><li><b>Subordinar:</b> o produto chega em 11 dias, e a espuma leva 15 para repor.</li><li><b>Elevar:</b> estoque mínimo e ponto de pedido, com curvas dente de serra.</li><li><b>Repetir:</b> o lixamento apareceu como possível novo gargalo.</li></ol><div class="pbtns"><button class="btn go" data-act="close">Fechar</button></div>');
@@ -177,7 +177,7 @@
     say('Escolha o ponto de pedido e aperte Começar. Ou use os atalhos "Como era" e "Com TOC".');
     render();
   }
-  function startTimer(){ if (!timer) timer = setInterval(step, 600); $('playBtn').textContent = 'Pausar'; }
+  function startTimer(){ if (!timer) timer = setInterval(step, 1600); $('playBtn').textContent = 'Pausar'; }
 
   function step(){
     if (st.fim) return;
@@ -238,11 +238,11 @@
     if (st.pend) {
       const p = Math.min(1, (st.dia - st.pend.inicio) / (st.pend.chega - st.pend.inicio));
       const tx = 560 - p * 420;
-      g += '<g transform="translate(' + tx + ' 300)"><rect x="0" y="-34" width="52" height="30" rx="4" fill="#3aa675"/><rect x="52" y="-26" width="22" height="22" rx="4" fill="#2c8660"/><rect x="58" y="-22" width="10" height="8" fill="#bfeadb"/><rect x="8" y="-40" width="36" height="8" rx="3" fill="#f4c542"/><circle cx="14" cy="-2" r="7" fill="#2b2118"/><circle cx="60" cy="-2" r="7" fill="#2b2118"/></g>';
+      g += '<g transform="translate(' + (tx + 74) + ' 300) scale(-1 1)"><rect x="0" y="-34" width="52" height="30" rx="4" fill="#3aa675"/><rect x="52" y="-26" width="22" height="22" rx="4" fill="#2c8660"/><rect x="58" y="-22" width="10" height="8" fill="#bfeadb"/><rect x="8" y="-40" width="36" height="8" rx="3" fill="#f4c542"/><circle cx="14" cy="-2" r="7" fill="#2b2118"/><circle cx="60" cy="-2" r="7" fill="#2b2118"/></g>';
       g += '<text x="' + (tx + 30) + '" y="238" text-anchor="middle" font-size="13" fill="#2c8660" font-weight="700">chega no dia ' + st.pend.chega + '</text>';
     }
     g += '<g transform="translate(250 262)"><ellipse cx="0" cy="2" rx="34" ry="6" fill="rgba(0,0,0,.12)"/>' +
-      '<g class="' + (stopped ? '' : 'sway') + '"><rect x="-17" y="-92" width="34" height="62" rx="14" fill="#2f6f7a"/><circle cx="0" cy="-112" r="19" fill="#f2c9a0"/>' +
+      '<g class="' + (stopped ? '' : 'sway') + '"><rect x="-17" y="-92" width="34" height="62" rx="14" fill="#2f6f7a"/><ellipse cx="0" cy="-119" rx="22" ry="24" fill="#5a3a22"/><circle cx="-17" cy="-134" r="9" fill="#5a3a22"/><circle cx="0" cy="-112" r="19" fill="#f2c9a0"/>' +
       '<path d="M-20 -114 q20 -24 40 0 q-10 -6 -20 -6 q-10 0 -20 6z" fill="#e4572e"/><circle cx="-6" cy="-111" r="2" fill="#2b2118"/><circle cx="6" cy="-111" r="2" fill="#2b2118"/>' +
       (stopped ? '<path d="M-7 -102 q7 -5 14 0" stroke="#2b2118" stroke-width="2.4" fill="none" stroke-linecap="round"/><g class="drip"><path d="M22 -120 q4 7 0 10 q-4 -3 0 -10z" fill="#8fd3dc"/></g>' : '<path d="M-6 -104 q6 5 12 0" stroke="#2b2118" stroke-width="2.4" fill="none" stroke-linecap="round"/>') +
       '<g class="' + (stopped ? '' : 'staple') + '"><rect x="14" y="-80" width="46" height="9" rx="4.5" fill="#2f6f7a"/><rect x="54" y="-86" width="22" height="14" rx="3" fill="#7a6a58"/></g>' +
