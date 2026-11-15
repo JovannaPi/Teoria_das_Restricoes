@@ -306,7 +306,7 @@
     .dbr-desc{ min-height:0; margin-top:1.4vh; font-size:clamp(18px,1.5vw,24px); }
     .hike p{ font-size:clamp(17px,1.45vw,22px); padding-bottom:6px; }
     .hike{ margin-top:1.2vh; margin-bottom:.8vh; }
-    .refs-slide .refs-cols{ font-size:clamp(9.5px,.74vw,13px); line-height:1.32; }
+    .refs-slide .refs-cols{ font-size:clamp(12px,.95vw,16px); line-height:1.35; }
     .refs-cols h4{ margin-bottom:4px; }
   }
   .simslide .wrap{ max-width:1560px; }
@@ -374,7 +374,7 @@
   .hike p{ font-size:clamp(19.8px,1.65vw,25.08px); font-weight:600; color:#4a3656; line-height:1.45; padding-bottom:14px; }
   .refs-slide{ padding-top:6vh; padding-bottom:7vh; }
   .refs-slide h1{ margin-bottom:2vh; }
-  .refs-slide .refs-cols{ columns:3; column-gap:2.6vw; font-size:clamp(12.07px,0.9vw,15.52px); line-height:1.38; }
+  .refs-slide .refs-cols{ columns:3; column-gap:2.6vw; font-size:clamp(13px,1vw,17px); line-height:1.4; }
   .refs-slide .refs-cols p{ margin-bottom:6px; }
   .refs-slide .refs-cols section{ break-inside:auto; margin-bottom:10px; }
   @media (max-width:980px){ .funnel{ display:none; } .dark h1,.dark .answer{ max-width:none; } .hike{ grid-template-columns:1fr; } .refs-slide .refs-cols{ columns:1; } }
@@ -606,9 +606,9 @@
       <h1 class="rv" style="--d:1">Casos de <em>aplicação</em></h1>
       <p class="lead rv" style="--d:2">A TOC funciona em qualquer sistema com uma restrição: fábrica, serviço ou projeto. Cada integrante do grupo traz um caso.</p>
       <div class="grid g3 cases">
-        <div class="card rv" style="--d:3"><span class="tag">Prática · simulador</span><h3>Fábrica de Poções</h3><p>Cinco estações em linha, e a Fervura (3 un/min) segura todas as outras. Os 5 passos mudam o ritmo ao vivo, e a turma vê o gargalo andar de lugar.</p><div class="who">Caso de Jovanna · <a href="simulador.html" target="_blank" rel="noopener" style="color:inherit">abrir o simulador ↗</a></div></div>
+        <div class="card rv" style="--d:3"><span class="tag">Prática · simulador</span><h3>Linha de Produção</h3><p>Cinco estações em linha, e a Fervura (3 un/min) segura todas as outras. Os 5 passos mudam o ritmo ao vivo, e a turma vê o gargalo andar de lugar.</p><div class="who">Caso de Jovanna · <a href="simulador.html" target="_blank" rel="noopener" style="color:inherit">abrir o simulador ↗</a></div></div>
         <div class="card rv" style="--d:4"><span class="tag">Serviço</span><h3>Ambulatório</h3><p>A fila cresce na porta do consultório. Os 5 passos organizam o fluxo de pacientes ao redor do médico.</p><div class="who">Caso de [integrante 2]</div></div>
-        <div class="card rv" style="--d:5"><span class="tag">Indústria · móveis</span><h3>Cadeiras no Paraná</h3><p>O gargalo não era uma máquina: faltava espuma na estofaria. Veja o jogo mais adiante.</p><div class="who">Caso de [integrante 3]</div></div>
+        <div class="card rv" style="--d:5"><span class="tag">Indústria · móveis</span><h3>Cadeiras no Paraná</h3><p>O gargalo não era uma máquina: faltava espuma na estofaria. Os 5 passos aparecem no jogo, no slide seguinte.</p><div class="who">Caso de [integrante 3]</div></div>
       </div>
     </div>
     <div class="foot"><span class="src plain">Casos em definição pelo grupo</span></div>
@@ -616,7 +616,7 @@
 
   <!-- simulador (caso da Jovanna): tela cheia, textos em pop-up -->
   <section class="slide embed">
-    <iframe src="simulador.html?slide" title="Simulador da Fábrica de Poções" loading="lazy"></iframe>
+    <iframe src="simulador.html?slide" title="Simulador da linha de produção" loading="lazy"></iframe>
   </section>
 
   <!-- jogo da estofaria: caso da colega (tela cheia, textos em pop-up) -->
@@ -640,28 +640,16 @@
           <p>GOLDRATT, E. M. <b>The Haystack Syndrome</b>. North River Press, 1990.</p>
           <p>GOLDRATT, E. M. <b>What Is This Thing Called Theory of Constraints and How Should It Be Implemented?</b> North River Press, 1990.</p>
           <p>GOLDRATT, E. M. <b>Critical Chain</b>. North River Press, 1997.</p></section>
-        <section><h4>TOC: livros acadêmicos</h4>
-          <p>UMBLE, M. M.; SRIKANTH, M. L. <b>Synchronous Manufacturing</b>. South-Western, 1990.</p>
-          <p>DETTMER, H. W. <b>Goldratt's Theory of Constraints</b>. ASQC Quality Press, 1997.</p>
-          <p>COX, J. F.; SCHLEIER, J. G. (eds.). <b>Theory of Constraints Handbook</b>. McGraw-Hill, 2010.</p>
-          <p>SCHRAGENHEIM, E.; DETTMER, H. W. <b>Manufacturing at Warp Speed</b>. St. Lucie Press, 2000.</p>
+        <section><h4>TOC: livros e artigos</h4>
           <p>NOREEN, E.; SMITH, D.; MACKEY, J. T. <b>The Theory of Constraints and Its Implications for Management Accounting</b>. North River Press, 1995.</p>
-          <p>NEWBOLD, R. C. <b>Project Management in the Fast Lane</b>. St. Lucie Press, 1998.</p></section>
-        <section><h4>TOC: artigos em periódicos</h4>
-          <p>ANTUNES JÚNIOR, J. A. V.; RODRIGUES, L. H. A Teoria das Restrições como balizadora para as ações visando a troca rápida de ferramentas. <b>Produção</b>, v. 3, n. 2, p. 73-86, 1993.</p>
+          <p>SCHRAGENHEIM, E.; DETTMER, H. W. <b>Manufacturing at Warp Speed</b>. St. Lucie Press, 2000.</p>
           <p>SPENCER, M. S.; COX, J. F. OPT and TOC: analysis and genealogy. <b>International Journal of Production Research</b>, v. 33, n. 6, 1995.</p>
-          <p>SCHRAGENHEIM, E.; RONEN, B. Drum-buffer-rope shop floor control. <b>Production and Inventory Management Journal</b>, v. 31, n. 3, 1990.</p>
-          <p>WATSON, K. J.; BLACKSTONE, J. H.; GARDINER, S. C. The evolution of a management philosophy: the theory of constraints. <b>Journal of Operations Management</b>, v. 25, n. 2, 2007.</p>
-          <p>GUPTA, M.; BOYD, L. Theory of constraints: a theory for operations management. <b>IJOPM</b>, v. 28, n. 10, 2008.</p>
-          <p>RAHMAN, S. Theory of constraints: a review. <b>IJOPM</b>, v. 18, n. 4, 1998.</p></section>
+          <p>ANTUNES JÚNIOR, J. A. V.; RODRIGUES, L. H. A Teoria das Restrições como balizadora para as ações visando a troca rápida de ferramentas. <b>Produção</b>, v. 3, n. 2, p. 73-86, 1993.</p></section>
         <section><h4>STP, critérios de desempenho e PCP</h4>
           <p>OHNO, T. <b>O Sistema Toyota de Produção</b>. Bookman, 1997.</p>
           <p>LIKER, J. K. <b>O Modelo Toyota</b>. Bookman, 2005.</p>
           <p>ANTUNES, J. <i>et al.</i> <b>Sistemas de Produção</b>: conceitos e práticas para projeto e gestão da produção enxuta. Bookman, 2008.</p>
           <p>SLACK, N.; CHAMBERS, S.; JOHNSTON, R. <b>Administração da Produção</b>. Atlas (edição mais recente).</p>
-          <p>CORRÊA, H. L.; GIANESI, I. G. N.; CAON, M. <b>Planejamento, Programação e Controle da Produção</b>. Atlas.</p>
-          <p>HOPP, W.; SPEARMAN, M. <b>Factory Physics</b>. 3. ed. Waveland, 2011.</p>
-          <p>CORBETT NETO, T. <b>Contabilidade de Ganhos</b>. Nobel, 1997.</p>
           <p>ALBERTIN, M.; JAGUARIBE PONTES, H. L. <b>Gestão de Processos e Técnicas de Produção Enxuta</b>. Curitiba: InterSaberes.</p></section>
       </div>
     </div>

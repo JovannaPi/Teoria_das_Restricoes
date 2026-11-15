@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fábrica de Poções 8-Bit</title>
+<title>Linha de Produção 8-Bit</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -555,7 +555,7 @@
 <div class="wrap">
 
   <div class="hud">
-    <div class="hud-title"><span class="icon">🔮</span> FÁBRICA DE POÇÕES</div>
+    <div class="hud-title"><span class="icon">🔮</span> LINHA DE PRODUÇÃO</div>
     <div class="chip" style="display:none;">
       <div class="lab">TEMPO</div>
       <div class="val" id="simTime">00:00</div>
@@ -612,8 +612,9 @@
   const RATE_MIN = 1, RATE_MAX = 12; // un/min
   const DEFAULT_RATES = [8, 8, 3, 8, 8]; // estação 3 = gargalo proposital
   const MAX_VISIBLE_BUFFER = 10;
-  const OVERLOAD_THRESHOLD = 8;
-  const GOAL = 60;
+  const IN_SLIDE = new URLSearchParams(location.search).has('slide');
+  const OVERLOAD_THRESHOLD = IN_SLIDE ? 5 : 8;
+  const GOAL = IN_SLIDE ? 30 : 60;
   const BEST_KEY = 'toc_best_time_seconds';
 
   // cada máquina faz uma etapa diferente da poção
@@ -665,6 +666,7 @@
   let resumeAfter = false;
   if(POP){
     document.body.classList.add('in-slide');
+    speedMult = 4; [...speedGroup.children].forEach(b => b.classList.toggle('active', b.dataset.speed === '4'));
     const fit = () => { const z = Math.max(0.8, Math.min(innerWidth/1300, innerHeight/660)); document.documentElement.style.zoom = z; document.body.style.minHeight = (innerHeight / z) + 'px'; document.body.style.height = (innerHeight / z) + 'px'; document.documentElement.style.overflow = 'hidden'; };
     fit(); addEventListener('resize', fit);
     document.addEventListener('keydown', (e) => {
@@ -700,7 +702,7 @@
     const newPace = Math.min(...rates);
     if(i === lastB && newPace > lastPace && !seen.elevou){
       seen.elevou = true;
-      popup('<div class="kick">PASSO 4 · ELEVAR</div><h3>VOCÊ ELEVOU O GARGALO</h3><div class="facts"><span><b>' + lastPace + ' → ' + newPace + '</b>un/min da fábrica</span></div><p>Ao aumentar o ritmo de quem limita a fábrica, a <b style="color:var(--green);font-weight:normal">produção inteira sobe</b>. Mas olhe: o gargalo pode ter mudado de lugar. É o passo 5, repetir.</p><div class="btns"><button class="go" data-act="close">CONTINUAR</button></div>');
+      popup('<div class="kick">PASSO 4 · ELEVAR</div><h3>VOCÊ ELEVOU O GARGALO</h3><div class="facts"><span><b>' + lastPace + ' → ' + newPace + '</b>un/min da fábrica</span></div><p>Ao aumentar o ritmo de quem limita a fábrica, a <b style="color:var(--green);font-weight:normal">produção inteira sobe</b>. Mas olhe: o gargalo pode ter mudado de lugar. É o passo 5, repetir.</p><p>E um aviso: na vida real, elevar custa dinheiro. Por isso vem depois de explorar e subordinar.</p><div class="btns"><button class="go" data-act="close">CONTINUAR</button></div>');
     } else if(i !== lastB && rates[i] > lastRates[i] && !seen.fora){
       seen.fora = true;
       popup('<div class="kick">PERGUNTA PARA A TURMA</div><h3>VOCÊ ACELEROU A ESTAÇÃO ' + STATION_LABELS[i] + '. A FÁBRICA PRODUZ MAIS?</h3><div class="ans"><b style="color:var(--green);font-weight:normal">NÃO.</b> O ritmo continua em ' + newPace + ' un/min, porque quem manda é a estação ' + STATION_LABELS[lastB] + '. Ritmo extra fora do gargalo só enche a fila.</div><div class="btns"><button class="go" data-act="answer">VER RESPOSTA</button><button data-act="close">FECHAR</button></div>');
@@ -939,7 +941,7 @@
       winRecordEl.innerHTML = 'RECORDE: <b>' + fmtTime(bestSeconds) + '</b>';
     }
     winOverlay.classList.add('show');
-    setTimeout(() => popup('<div class="kick">META CUMPRIDA</div><h3>60 POÇÕES EM ' + fmtTime(simSeconds) + '</h3><p><b style="color:var(--yellow);font-weight:normal">PERGUNTA:</b> e agora, qual é o próximo passo da TOC?</p><div class="ans"><b style="color:var(--green);font-weight:normal">REPETIR.</b> Volte ao passo 1 e procure o novo gargalo. Quando uma restrição é tratada, outra aparece.</div><div class="btns"><button class="go" data-act="answer">VER RESPOSTA</button><button data-act="steps">OS 5 PASSOS</button><button data-act="close">FECHAR</button></div>'), 1400);
+    setTimeout(() => popup('<div class="kick">META CUMPRIDA</div><h3>' + GOAL + ' POÇÕES EM ' + fmtTime(simSeconds) + '</h3><p><b style="color:var(--yellow);font-weight:normal">PERGUNTA:</b> e agora, qual é o próximo passo da TOC?</p><div class="ans"><b style="color:var(--green);font-weight:normal">REPETIR.</b> Volte ao passo 1 e procure o novo gargalo. Quando uma restrição é tratada, outra aparece.</div><div class="btns"><button class="go" data-act="answer">VER RESPOSTA</button><button data-act="steps">OS 5 PASSOS</button><button data-act="close">FECHAR</button></div>'), 1400);
   }
 
   function tick(){
@@ -1059,7 +1061,7 @@
   buildLine();
   renderBuffers();
   renderBars();
-  if(POP) setTimeout(() => popup('<div class="kick">O CASO</div><h3>A FÁBRICA DE POÇÕES</h3><p>Cinco estações em linha: corte, mistura, fervura, frasco e selo. A fábrica anda no ritmo da estação mais lenta.</p><div class="facts"><span><b>3 UN/MIN</b>FERVURA (GARGALO)</span><span><b>8 UN/MIN</b>AS OUTRAS</span><span><b>60</b>POÇÕES DE META</span></div><p>Mexa nos controles e veja o que acontece.</p><div class="btns"><button class="go" data-act="close">COMEÇAR</button></div>'), 500);
+  if(POP) setTimeout(() => popup('<div class="kick">O CASO</div><h3>A LINHA DE PRODUÇÃO</h3><p>Cinco estações em linha: corte, mistura, fervura, frasco e selo. A fábrica anda no ritmo da estação mais lenta.</p><div class="facts"><span><b>3 UN/MIN</b>FERVURA (GARGALO)</span><span><b>8 UN/MIN</b>AS OUTRAS</span><span><b>' + GOAL + '</b>POÇÕES DE META</span></div><p>Mexa nos controles e veja o que acontece.</p><div class="btns"><button class="go" data-act="close">COMEÇAR</button></div>'), 500);
 })();
 </script>
 </body>

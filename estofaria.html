@@ -209,7 +209,7 @@
       popup('<div class="kick">Quase</div><h3>Pulmão inchado</h3><p>A estofaria não parou, mas o <b>estoque médio foi de ' + avg + '</b>. Espuma parada ocupa espaço e custa dinheiro. Tente um ponto de pedido menor.</p><div class="pbtns"><button class="btn go" data-act="again">Tentar de novo</button><button class="btn" data-act="close">Fechar</button></div>', noop);
     } else {
       say('A estofaria parou ' + st.stops + ' dia(s) esperando espuma.');
-      popup('<div class="kick">Fim do mês</div><h3>Parou ' + st.stops + ' dias</h3><p>As compras só saíam quando a espuma acabava, <b>sem contar os 8 dias de entrega</b>. O ponto de pedido precisa cobrir esse prazo, mais uma folga para os atrasos do fornecedor.</p><div class="pbtns"><button class="btn go" data-act="toc">Ver como a TOC resolve</button><button class="btn" data-act="again">Tentar de novo</button><button class="btn" data-act="close">Fechar</button></div>', noop);
+      popup('<div class="kick">Fim do mês</div><h3>Parou ' + st.stops + ' dias</h3><p>No estudo, as compras <b>não consideravam o prazo de reposição</b> do fornecedor. Aqui isso vira pedir só quando a espuma acaba, sem contar os 8 dias de entrega. O ponto de pedido precisa cobrir esse prazo, mais uma folga.</p><div class="pbtns"><button class="btn go" data-act="toc">Ver como a TOC resolve</button><button class="btn" data-act="again">Tentar de novo</button><button class="btn" data-act="close">Fechar</button></div>', noop);
     }
   }
 
@@ -300,7 +300,7 @@
   $('resetBtn').addEventListener('click', reset);
   $('ponto').addEventListener('input', () => { hud(); chart(); });
   $('qtd').addEventListener('input', hud);
-  $('preAntes').addEventListener('click', () => { setPreset(0, 300); say('Como era: só pede quando a espuma acaba, sem contar os 8 dias de entrega.'); });
+  $('preAntes').addEventListener('click', () => { setPreset(0, 300); say('Como era (aproximação): pede só quando a espuma acaba, sem contar o prazo de entrega.'); });
   $('preToc').addEventListener('click', () => { setPreset(240, 300); say('Com TOC: pede com 240 mantas, o bastante para os 8 dias de entrega e uma folga.'); });
   $('helpBtn').addEventListener('click', showSteps);
   addEventListener('resize', chart);
