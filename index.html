@@ -639,6 +639,34 @@
     <div class="foot"><span class="src">Orciuolo (2015)</span></div>
   </section>
 
+  <!-- jogo da estofaria: caso da colega -->
+  <section class="slide simslide">
+    <div class="wrap">
+      <h1 class="rv" style="--d:1">A estofaria, <em>ao vivo</em></h1>
+      <div class="simgrid">
+        <div class="simbox rv" style="--d:2"><iframe src="estofaria.html" title="Jogo Estofaria em Apuros" loading="lazy"></iframe></div>
+        <div class="simside">
+          <div class="card rv" style="--d:3">
+            <span class="tag">Demonstração</span>
+            <ol class="try">
+              <li><b>COMO ERA:</b> pede espuma só quando acaba. A estofaria para 7 dias.</li>
+              <li><b>COM TOC:</b> pede com 240 mantas, o bastante para os 8 dias de entrega. Não para nenhum dia.</li>
+              <li>A linha azul em dente de serra é o <b>pulmão</b> de espuma.</li>
+            </ol>
+          </div>
+          <div class="card quiz rv" style="--d:4">
+            <span class="tag">Pergunta para a turma</span>
+            <p class="q">Por que não pedir muito mais espuma, só para garantir?</p>
+            <button type="button" class="reveal">Ver resposta</button>
+            <p class="ans"><b>Pulmão grande demais custa caro.</b> Ele infla o estoque e o lead time. O tamanho certo cobre a entrega e a variação do fornecedor, e nada além.</p>
+          </div>
+        </div>
+      </div>
+      <div class="simchips rv" style="--d:5"><span>Consumo: <b>20 mantas por dia</b></span><span>Entrega: <b>8 dias úteis</b></span><span>O fornecedor <b>atrasa até 4 dias</b></span></div>
+    </div>
+    <div class="foot"><span class="src">Orciuolo (2015), caso adaptado para a simulação · <a href="estofaria.html" target="_blank" rel="noopener" style="color:inherit">abrir em tela cheia ↗</a></span></div>
+  </section>
+
   <!-- simulador ao vivo: caso da Jovanna -->
   <section class="slide simslide">
     <div class="wrap">
@@ -871,15 +899,15 @@
   go(Number.isFinite(start) ? start - 1 : 0);
 })();
 
-  // simulador dentro do slide: escala o iframe para caber na caixa e devolve o teclado ao slide
+  // jogos dentro dos slides: escalam o iframe para caber na caixa e devolvem o teclado ao slide
   (function(){
-    const box = document.getElementById('simBox'), fr = document.getElementById('simFrame');
-    if (!box || !fr) return;
-    const fit = () => { fr.style.transform = 'scale(' + (box.clientWidth / 1300) + ')'; };
-    fit(); addEventListener('resize', fit); if (window.ResizeObserver) new ResizeObserver(fit).observe(box);
-    fr.addEventListener('load', () => { try { fr.contentWindow.addEventListener('mouseup', () => setTimeout(() => window.focus(), 60)); } catch (e) {} });
-    const q = document.getElementById('simQuiz'), b = document.getElementById('simReveal');
-    if (q && b) b.addEventListener('click', () => q.classList.add('open'));
+    document.querySelectorAll('.simbox').forEach((box) => {
+      const fr = box.querySelector('iframe'); if (!fr) return;
+      const fit = () => { fr.style.transform = 'scale(' + (box.clientWidth / 1300) + ')'; };
+      fit(); addEventListener('resize', fit); if (window.ResizeObserver) new ResizeObserver(fit).observe(box);
+      fr.addEventListener('load', () => { try { fr.contentWindow.addEventListener('mouseup', () => setTimeout(() => window.focus(), 60)); } catch (e) {} });
+    });
+    document.querySelectorAll('.quiz .reveal').forEach((b) => b.addEventListener('click', () => b.closest('.quiz').classList.add('open')));
   })();
 </script>
 </body>

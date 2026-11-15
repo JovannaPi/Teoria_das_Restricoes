@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estofaria em Apuros 8-Bit</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  :root{
+    --bg:#120a1f; --panel:#1e1233; --panel-2:#2c1c4a; --line:#f4e9ff; --muted:#a892d6;
+    --yellow:#ffd23f; --red:#ff4d6d; --green:#39e6a4; --blue:#4ec9ff; --purple:#b48bff; --pink:#ff6fc7; --orange:#ff9f45;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0; min-height:100vh; color:var(--line);
+    font-family:"Press Start 2P","Courier New",monospace; font-size:11px; line-height:1.6; padding:22px 24px 40px;
+    background-color:var(--bg);
+    background-image:linear-gradient(rgba(0,0,0,0) 50%,rgba(0,0,0,.35) 50%),
+      radial-gradient(600px 380px at 10% 0%,rgba(255,111,199,.20),transparent 60%),
+      radial-gradient(700px 420px at 95% 10%,rgba(78,201,255,.18),transparent 60%);
+    background-size:100% 4px,auto,auto; background-attachment:fixed;
+  }
+  .wrap{ max-width:1400px; margin:auto; }
+  .hud{ display:flex; gap:14px; flex-wrap:wrap; align-items:stretch; margin-bottom:14px; }
+  .title{ display:flex; align-items:center; gap:10px; font-size:15px; color:var(--pink); text-shadow:3px 3px 0 #000; padding-right:8px; }
+  .chip{ background:var(--panel); border:3px solid var(--line); padding:8px 12px; min-width:120px; box-shadow:4px 4px 0 #000; }
+  .chip .lab{ font-size:8px; color:var(--muted); }
+  .chip .val{ font-size:16px; margin-top:4px; }
+  .chip.bad .val{ color:var(--red); } .chip.good .val{ color:var(--green); }
+  .chart{ background:var(--panel); border:3px solid var(--line); box-shadow:4px 4px 0 #000; padding:10px; position:relative; }
+  canvas{ width:100%; height:250px; display:block; image-rendering:pixelated; }
+  .legend{ display:flex; gap:16px; flex-wrap:wrap; font-size:8px; color:var(--muted); margin-top:8px; }
+  .legend i{ display:inline-block; width:10px; height:10px; margin-right:6px; vertical-align:-1px; }
+  .msg{ margin-top:10px; min-height:44px; background:var(--panel-2); border:3px solid var(--line); padding:10px 12px; font-size:10px; line-height:1.7; box-shadow:4px 4px 0 #000; }
+  .controls{ display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  .ctl{ background:var(--panel); border:3px solid var(--line); padding:8px 12px; box-shadow:4px 4px 0 #000; min-width:230px; }
+  .ctl .lab{ font-size:8px; color:var(--muted); display:flex; justify-content:space-between; }
+  .ctl .lab b{ color:var(--yellow); font-weight:normal; font-size:11px; }
+  input[type=range]{ width:100%; accent-color:var(--pink); margin:6px 0 0; }
+  button{ font:inherit; font-size:10px; color:var(--line); background:var(--panel); border:3px solid var(--line); padding:10px 14px; cursor:pointer; box-shadow:4px 4px 0 #000; }
+  button.primary{ background:var(--green); color:#04241a; }
+  button.warn{ background:var(--red); color:#fff; }
+  button:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 #000; }
+  .spacer{ flex:1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <div class="title">🛋️ ESTOFARIA EM APUROS</div>
+    <div class="chip" id="chipDia"><div class="lab">DIA</div><div class="val" id="vDia">0/22</div></div>
+    <div class="chip" id="chipStock"><div class="lab">ESPUMA (MANTAS)</div><div class="val" id="vStock">300</div></div>
+    <div class="chip" id="chipStop"><div class="lab">DIAS PARADOS</div><div class="val" id="vStop">0</div></div>
+    <div class="chip"><div class="lab">ESTOQUE MÉDIO</div><div class="val" id="vAvg">0</div></div>
+  </div>
+
+  <div class="chart">
+    <canvas id="cv" width="1300" height="250"></canvas>
+    <div class="legend">
+      <span><i style="background:var(--blue)"></i>ESTOQUE DE ESPUMA</span>
+      <span><i style="background:var(--yellow)"></i>PONTO DE PEDIDO</span>
+      <span><i style="background:var(--pink)"></i>PEDIDO FEITO</span>
+      <span><i style="background:var(--green)"></i>CHEGADA DA ESPUMA</span>
+      <span><i style="background:var(--red)"></i>ESTOFARIA PARADA</span>
+    </div>
+  </div>
+
+  <div class="msg" id="msg">A estofaria gasta 20 mantas por dia. A espuma leva 8 dias úteis para chegar, e o fornecedor às vezes atrasa. Escolha quando pedir.</div>
+
+  <div class="controls">
+    <button class="primary" id="playBtn">▶ START</button>
+    <button id="resetBtn">↺ RESET</button>
+    <div class="ctl"><div class="lab"><span>PONTO DE PEDIDO</span><b id="lPonto">0</b></div><input type="range" id="ponto" min="0" max="400" step="20" value="0"></div>
+    <div class="ctl"><div class="lab"><span>QUANTIDADE POR PEDIDO</span><b id="lQtd">300</b></div><input type="range" id="qtd" min="100" max="600" step="50" value="300"></div>
+    <div class="spacer"></div>
+    <button id="preAntes">COMO ERA</button>
+    <button id="preToc" class="warn">COM TOC</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const DIAS = 22, CONSUMO = 20, LEAD = 8, INICIAL = 300;
+  // atrasos do fornecedor, sempre os mesmos para a comparação ser justa (em dias úteis)
+  const ATRASOS = [3, 0, 2, 4, 1, 0, 3];
+  const $ = (id) => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const C = { blue:'#4ec9ff', yellow:'#ffd23f', pink:'#ff6fc7', green:'#39e6a4', red:'#ff4d6d', grid:'rgba(244,233,255,.12)', txt:'#a892d6' };
+
+  let st, timer = null;
+  const params = () => ({ ponto: +$('ponto').value, qtd: +$('qtd').value });
+
+  function reset(){
+    clearInterval(timer); timer = null;
+    st = { dia: 0, stock: INICIAL, hist: [INICIAL], paradas: [], pedidos: [], chegadas: [], pend: null, nPed: 0, stops: 0, soma: INICIAL, fim: false };
+    $('playBtn').textContent = '▶ START';
+    say('A estofaria gasta 20 mantas por dia. A espuma leva 8 dias úteis para chegar, e o fornecedor às vezes atrasa. Escolha quando pedir.');
+    draw(); hud();
+  }
+
+  function step(){
+    if (st.fim) return;
+    const { ponto, qtd } = params();
+    st.dia++;
+    // chegada de pedido
+    if (st.pend && st.dia >= st.pend.chega) { st.stock += st.pend.qtd; st.chegadas.push(st.dia); st.pend = null; }
+    // produção do dia
+    if (st.stock >= CONSUMO) { st.stock -= CONSUMO; }
+    else { st.stock = 0; st.stops++; st.paradas.push(st.dia); }
+    // novo pedido
+    if (!st.pend && st.stock <= ponto) {
+      const atraso = ATRASOS[st.nPed % ATRASOS.length];
+      st.pend = { chega: st.dia + LEAD + atraso, qtd };
+      st.pedidos.push(st.dia); st.nPed++;
+    }
+    st.hist.push(st.stock); st.soma += st.stock;
+    if (st.dia >= DIAS) finish();
+    draw(); hud();
+  }
+
+  function finish(){
+    st.fim = true; clearInterval(timer); timer = null; $('playBtn').textContent = '▶ DE NOVO';
+    const avg = Math.round(st.soma / (st.hist.length));
+    if (st.stops === 0 && avg <= 260) say('STAGE CLEAR! A estofaria não parou nenhum dia e o estoque ficou enxuto. É o pulmão no tamanho certo.');
+    else if (st.stops === 0) say('Não parou, mas o estoque ficou grande demais: pulmão inchado custa dinheiro e espaço. Tente pedir um pouco mais tarde.');
+    else say('A estofaria parou ' + st.stops + ' dia(s) esperando espuma, e todos os lotes ficaram presos. Peça mais cedo: o ponto de pedido precisa cobrir os 8 dias da entrega.');
+  }
+
+  function say(t){ $('msg').textContent = t; }
+
+  function hud(){
+    $('vDia').textContent = st.dia + '/' + DIAS;
+    $('vStock').textContent = st.stock;
+    $('vStop').textContent = st.stops;
+    $('vAvg').textContent = Math.round(st.soma / st.hist.length);
+    $('chipStop').className = 'chip ' + (st.stops ? 'bad' : (st.dia ? 'good' : ''));
+  }
+
+  function draw(){
+    const w = cv.width, h = cv.height, L = 46, R = 12, T = 12, B = 26;
+    ctx.clearRect(0, 0, w, h);
+    const maxY = 700;
+    const x = (d) => L + (w - L - R) * d / DIAS;
+    const y = (v) => T + (h - T - B) * (1 - Math.min(v, maxY) / maxY);
+    ctx.font = '10px "Press Start 2P", monospace'; ctx.textBaseline = 'middle';
+    ctx.strokeStyle = C.grid; ctx.fillStyle = C.txt; ctx.lineWidth = 1;
+    [0, 200, 400, 600].forEach((v) => { ctx.beginPath(); ctx.moveTo(L, y(v)); ctx.lineTo(w - R, y(v)); ctx.stroke(); ctx.fillText(v, 4, y(v)); });
+    [0, 5, 10, 15, 20].forEach((d) => ctx.fillText(d, x(d) - 6, h - 8));
+    // ponto de pedido
+    ctx.strokeStyle = C.yellow; ctx.setLineDash([8, 6]); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(L, y(params().ponto)); ctx.lineTo(w - R, y(params().ponto)); ctx.stroke(); ctx.setLineDash([]);
+    // paradas
+    ctx.fillStyle = 'rgba(255,77,109,.35)';
+    st.paradas.forEach((d) => ctx.fillRect(x(d - 1), T, x(d) - x(d - 1), h - T - B));
+    // estoque (dente de serra)
+    ctx.strokeStyle = C.blue; ctx.lineWidth = 4; ctx.lineJoin = 'miter'; ctx.beginPath();
+    st.hist.forEach((v, d) => { if (d === 0) ctx.moveTo(x(d), y(v)); else ctx.lineTo(x(d), y(v)); });
+    ctx.stroke();
+    // posição atual
+    ctx.fillStyle = C.blue; const lv = st.hist[st.hist.length - 1]; ctx.fillRect(x(st.hist.length - 1) - 6, y(lv) - 6, 12, 12);
+    // marcadores
+    st.pedidos.forEach((d) => { ctx.fillStyle = C.pink; ctx.fillRect(x(d) - 5, T, 10, 14); });
+    st.chegadas.forEach((d) => { ctx.fillStyle = C.green; ctx.fillRect(x(d) - 5, h - B - 14, 10, 14); });
+  }
+
+  function play(){
+    if (st.fim) reset();
+    if (timer) { clearInterval(timer); timer = null; $('playBtn').textContent = '▶ CONTINUAR'; return; }
+    $('playBtn').textContent = '⏸ PAUSAR';
+    timer = setInterval(step, 520);
+  }
+
+  function setPreset(ponto, qtd, txt){
+    $('ponto').value = ponto; $('qtd').value = qtd; sync(); reset(); say(txt);
+  }
+  function sync(){ $('lPonto').textContent = $('ponto').value; $('lQtd').textContent = $('qtd').value; if (st) draw(); }
+
+  $('playBtn').addEventListener('click', play);
+  $('resetBtn').addEventListener('click', reset);
+  $('ponto').addEventListener('input', sync);
+  $('qtd').addEventListener('input', sync);
+  $('preAntes').addEventListener('click', () => setPreset(0, 300, 'COMO ERA: só compra quando a espuma acaba, sem contar os 8 dias de entrega. Aperte START e veja a estofaria parar.'));
+  $('preToc').addEventListener('click', () => setPreset(240, 300, 'COM TOC: pede quando restam 240 mantas, o bastante para os 8 dias de entrega mais uma folga. Aperte START.'));
+  sync(); reset();
+})();
+</script>
+</body>
+</html>
