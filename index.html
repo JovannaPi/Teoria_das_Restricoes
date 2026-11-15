@@ -493,17 +493,17 @@
           <span class="tag">Medidores operacionais</span>
           <div class="measure"><div class="L">T</div><div><h3>Ganho</h3><p>Dinheiro que entra pelas vendas, menos o material. Produzir sem vender não conta.</p></div></div>
           <div class="measure"><div class="L">I</div><div><h3>Inventário</h3><p>Dinheiro preso no sistema em coisas que se pretende vender.</p></div></div>
-          <div class="measure"><div class="L">OE</div><div><h3>Despesa operacional</h3><p>O que se gasta para transformar inventário em ganho.</p></div></div>
+          <div class="measure"><div class="L">DO</div><div><h3>Despesa operacional</h3><p>O que se gasta para transformar inventário em ganho.</p></div></div>
         </div>
         <div class="ledger rv" style="--d:4">
           <span class="tag">Medidores financeiros</span>
-          <div class="eq"><b>LL</b> = T − OE</div><small>lucro líquido</small>
-          <div class="eq"><b>RSI</b> = (T − OE) ÷ I</div><small>retorno sobre o investimento</small>
+          <div class="eq"><b>LL</b> = T − DO</div><small>lucro líquido</small>
+          <div class="eq"><b>ROI</b> = (T − DO) ÷ I</div><small>retorno sobre o investimento</small>
           <div class="eq"><b>Caixa</b></div><small>a condição para continuar no jogo</small>
           <img class="coin float" src="img/dinheiro.webp" alt="">
         </div>
       </div>
-      <p class="note rv" style="--d:6">Uma decisão é boa se <b>aumenta T</b> ou reduz I e OE sem derrubar o ganho.</p>
+      <p class="note rv" style="--d:6">Um sistema não melhora porque cada parte trabalha mais rápido, e sim quando as decisões favorecem o todo: uma decisão é boa se <b>aumenta T</b> ou reduz I e DO sem derrubar o ganho.</p>
     </div>
     <div class="foot"><span class="src">Goldratt &amp; Cox (1984); Antunes &amp; Rodrigues (1993); Noreen <i>et al.</i> (1995)</span></div>
   </section>
@@ -563,7 +563,7 @@
         <div class="card rv" style="--d:3"><span class="chip">no prazo ↑</span><h3>Confiabilidade</h3><p>O pulmão de tempo antes do gargalo absorve imprevistos, e a data de entrega fica previsível.</p><div class="ind"><b>Indicador</b>% de pedidos entregues no prazo</div></div>
         <div class="card rv" style="--d:4"><span class="chip">inventário ↓</span><h3>Custo</h3><p>Máquinas fora do gargalo ficam ociosas de propósito: sem excesso de estoque, cai o custo de armazenar.</p><div class="ind"><b>Indicador</b>custo por unidade e valor em estoque</div></div>
         <div class="card rv" style="--d:5"><span class="chip">resposta ↓</span><h3>Flexibilidade</h3><p>Pouco estoque na linha, e o mix é escolhido pelo ganho por minuto do gargalo, não pela margem.</p><div class="ind"><b>Indicador</b>tempo para mudar o mix de produtos</div></div>
-        <div class="card rv" style="--d:6"><span class="chip">refugo ↓</span><h3>Qualidade</h3><p>Inspeção 100% antes do gargalo e zero refugo depois: o que passa pela restrição vira ganho.</p><div class="ind"><b>Indicador</b>% de refugo e retrabalho na restrição</div></div>
+        <div class="card rv" style="--d:6"><span class="chip">refugo ↓</span><h3>Qualidade</h3><p>Inspecionar antes do gargalo evita gastar o tempo dele com peça ruim.</p><div class="ind"><b>Indicador</b>% de refugo e retrabalho na restrição</div></div>
       </div>
       <p class="note rv" style="--d:7">Com menos fila parada, os critérios melhoram juntos. A eficiência das máquinas fora do gargalo pode cair, e tudo bem: ficar ocupado não é o objetivo.</p>
     </div>
@@ -625,6 +625,18 @@
   <!-- aplicação prática em sala: QR + painel da turma -->
   <section class="slide embed">
     <iframe src="pocao/?painel&slide" title="Poção em Apuros — QR Code da sala e painel da turma ao vivo"></iframe>
+  </section>
+
+  <!-- fechamento -->
+  <section class="slide">
+    <div class="wrap">
+      <h1 class="rv" style="--d:1">O que aprendemos <em>com a TOC</em></h1>
+      <div class="grid g3 s5">
+        <div class="card rv" style="--d:2"><div class="n">1</div><h3>Toda fábrica tem uma restrição</h3><p>Algo limita o desempenho do sistema inteiro, seja máquina, material, mercado ou regra.</p></div>
+        <div class="card rv" style="--d:3"><div class="n">2</div><h3>Foque no gargalo</h3><p>Melhorar o gargalo vale mais do que acelerar todos os recursos ao mesmo tempo.</p></div>
+        <div class="card rv" style="--d:4"><div class="n">3</div><h3>A melhoria não acaba</h3><p>Quando uma restrição é superada, outra assume o lugar, e o ciclo recomeça.</p></div>
+      </div>
+    </div>
   </section>
 
   <!-- referências -->
@@ -801,7 +813,7 @@
   const tabs = [...document.querySelectorAll('.dbr-tab')];
   const text = {
     tambor: '<b>Tambor:</b> a restrição. É a estação mais lenta, e a programação dela dita o ritmo que o resto da fábrica precisa seguir.',
-    pulmao: '<b>Pulmão:</b> uma proteção em tempo antes da restrição, para ela nunca ficar parada esperando material.',
+    pulmao: '<b>Pulmão:</b> proteção de <b>tempo</b> antes da restrição, para ela nunca ficar parada esperando material. Pode aparecer como estoque, mas o que ele protege é o tempo.',
     corda: '<b>Corda:</b> um sinal que só libera matéria-prima no ritmo do tambor. Evita acumular estoque no meio da linha.'
   };
   const parts = ['tambor', 'pulmao', 'corda'];
