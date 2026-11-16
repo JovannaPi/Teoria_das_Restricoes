@@ -325,6 +325,13 @@
   .quiz .ans{ display:none; margin-top:10px; font-size:clamp(15px,1.15vw,19px); line-height:1.4; color:var(--ink); border-left:4px solid var(--moss); padding-left:12px; }
   .quiz.open .ans{ display:block; } .quiz.open .reveal{ display:none; }
   @media (max-width:980px){ .simgrid{ grid-template-columns:1fr; } }
+  .bigstmt{ background:linear-gradient(160deg,#2b0a3d,#170323); color:#fff; border-radius:26px; padding:clamp(22px,3vh,38px) clamp(26px,2.6vw,46px); font-family:var(--serif); font-weight:600; font-size:clamp(26px,2.5vw,44px); line-height:1.25; margin:0 0 3vh; max-width:1320px; box-shadow:0 30px 60px -30px rgba(23,3,35,.8); }
+  .rel{ width:100%; border-collapse:separate; border-spacing:0; background:var(--card); border:1px solid var(--line); border-radius:20px; overflow:hidden; box-shadow:0 14px 34px -18px rgba(30,2,43,.35); font-size:clamp(18px,1.5vw,27px); }
+  .rel th{ background:var(--plum); color:#fff; text-align:left; font-size:.78em; letter-spacing:.06em; text-transform:uppercase; padding:clamp(10px,1.4vh,18px) clamp(16px,1.6vw,28px); }
+  .rel td{ padding:clamp(10px,1.5vh,20px) clamp(16px,1.6vw,28px); border-top:1px solid var(--line); font-weight:600; color:var(--muted); line-height:1.35; }
+  .rel td:first-child{ width:31%; font-family:var(--serif); font-weight:700; color:var(--ink); }
+  .rel tr:nth-child(odd) td{ background:rgba(232,116,44,.05); }
+  .callout{ margin-top:2.6vh; background:var(--amber); color:var(--ink); border-radius:20px; padding:clamp(14px,2vh,24px) clamp(20px,2vw,34px); font-weight:800; font-size:clamp(18px,1.6vw,28px); line-height:1.35; }
   /* ---------------------------------------------------------------- embeds */
   .slide.embed{ padding:0; background:var(--night); }
   .slide.embed iframe{ width:100%; height:100%; border:0; }
@@ -508,6 +515,20 @@
     <div class="foot"><span class="src">Goldratt &amp; Cox (1984); Antunes &amp; Rodrigues (1993); Noreen <i>et al.</i> (1995)</span></div>
   </section>
 
+  <!-- definição da TOC -->
+  <section class="slide">
+    <div class="wrap">
+      <h1 class="rv" style="--d:1">Teoria das <em>Restrições</em></h1>
+      <div class="bigstmt rv" style="--d:2">Todo sistema produtivo tem pelo menos uma restrição, e é ela que limita o desempenho do conjunto.</div>
+      <div class="grid g3">
+        <div class="card rv" style="--d:3"><h3>O que é restrição</h3><p>Qualquer fator que limita o ganho: máquina, material, mão de obra, demanda ou uma política.</p></div>
+        <div class="card rv" style="--d:4"><h3>Premissa</h3><p>Hora perdida no gargalo é hora perdida no sistema inteiro. Hora ganha fora dele não aumenta a produção.</p></div>
+        <div class="card rv" style="--d:5"><h3>Foco</h3><p>Melhorar o ponto mais fraco, em vez de otimizar cada máquina isoladamente.</p></div>
+      </div>
+    </div>
+    <div class="foot"><span class="src">Goldratt e Cox (1984)</span></div>
+  </section>
+
   <!-- 5 passos -->
   <section class="slide">
     <div class="wrap">
@@ -522,10 +543,10 @@
           <g class="node"><circle cx="111.8" cy="321.4" r="40"/><g class="gl"><path d="M111.8 333.4 V309.4 M102.8 318.4 L111.8 309.4 L120.8 318.4"/></g></g>
           <g class="node"><circle cx="57.3" cy="153.6" r="40"/><g class="gl"><path d="M68.3 150.6 A12 12 0 1 0 65.3 161.6"/><path d="M69.3 141.6 V151.6 H59.3"/></g></g>
           <text x="200" y="-16" text-anchor="middle" font-size="19">1 · Identificar</text><text class="sub" x="200" y="2" text-anchor="middle">achar a restrição</text>
-          <text x="392" y="146" font-size="19">2 · Explorar</text><text class="sub" x="392" y="166">não desperdiçar</text><text class="sub" x="392" y="182">nenhum minuto dela</text>
+          <text x="392" y="146" font-size="19">2 · Explorar</text><text class="sub" x="392" y="166">sem paradas,</text><text class="sub" x="392" y="182">espera ou refugo</text>
           <text x="300" y="384" font-size="19">3 · Subordinar</text><text class="sub" x="300" y="404">o resto anda no ritmo dela</text>
-          <text x="100" y="384" text-anchor="end" font-size="19">4 · Elevar</text><text class="sub" x="100" y="404" text-anchor="end">investir na capacidade</text>
-          <text x="8" y="146" text-anchor="end" font-size="19">5 · Repetir</text><text class="sub" x="8" y="166" text-anchor="end">a restrição mudou?</text><text class="sub" x="8" y="182" text-anchor="end">volte ao passo 1</text>
+          <text x="100" y="384" text-anchor="end" font-size="19">4 · Elevar</text><text class="sub" x="100" y="404" text-anchor="end">investir, turno ou máquina</text>
+          <text x="8" y="146" text-anchor="end" font-size="19">5 · Repetir</text><text class="sub" x="8" y="166" text-anchor="end">a restrição mudou?</text><text class="sub" x="8" y="182" text-anchor="end">volte ao passo 1:</text><text class="sub" x="8" y="198" text-anchor="end">a inércia não pode se instalar</text>
         </svg>
         <div class="types">
           <span class="tag rv" style="--d:3">Tipos de restrição</span>
@@ -534,24 +555,41 @@
           <div class="card rv" style="--d:6"><div><h3>Política</h3><p>regras e métricas, como eficiência local ou lote grande, que travam o fluxo. É a mais comum.</p></div></div>
         </div>
       </div>
+      <p class="note rv" style="--d:7">A ordem importa: só se investe (passo 4) depois de explorar e subordinar.</p>
     </div>
-    <div class="foot"><span class="src">Goldratt (1990, cap. 1)</span></div>
+    <div class="foot"><span class="src">Goldratt (1990, cap. 1); Goldratt e Cox (1984)</span></div>
   </section>
 
-  <!-- STP -->
+  <!-- STP: princípios -->
   <section class="slide">
     <div class="wrap">
-      <h1 class="rv" style="--d:1">TOC e <em>Sistema Toyota</em></h1>
-      <div class="vs">
-        <div class="side stp rv" style="--d:2"><h3>Sistema Toyota</h3>
-          <ul><li>Ataca os <b>7 desperdícios</b> em toda a fábrica.</li><li>Busca <b>fluxo contínuo</b> e produção puxada.</li><li>Melhoria contínua em todos os postos.</li></ul></div>
-        <div class="plus rv" style="--d:3">&amp;</div>
-        <div class="side toc rv" style="--d:4"><h3>Teoria das Restrições</h3>
-          <ul><li>Começa pela <b>restrição</b>, onde a melhoria rende mais.</li><li>Melhorar fora dela não melhora o sistema.</li><li>Mostra <b>onde</b> vale a pena melhorar.</li></ul></div>
-      </div>
-      <div class="chips rv" style="--d:6"><em>Juntas: a TOC acha o gargalo e o STP atua nele</em><span>Kaizen</span><span>Poka-Yoke</span><span>Troca Rápida de Ferramenta</span><span>Kanban e corda</span></div>
+      <h1 class="rv" style="--d:1">TOC e os <em>princípios do STP</em></h1>
+      <table class="rel rv" style="--d:2">
+        <tr><th>Princípio do STP</th><th>Relação com a TOC</th></tr>
+        <tr><td>Eliminação de perdas</td><td>Parada ou refugo no gargalo é perda para o sistema inteiro.</td></tr>
+        <tr><td>Produção puxada</td><td>A corda libera material no ritmo do gargalo; o Kanban, no da demanda.</td></tr>
+        <tr><td>Melhoria contínua</td><td>O passo 5 recomeça o ciclo, como o Kaizen.</td></tr>
+        <tr><td>Controle visual</td><td>O pulmão usa zonas verde, amarela e vermelha, como o porta-Kanban.</td></tr>
+        <tr><td>Fluxo contínuo</td><td>O fluxo se sincroniza ao gargalo para não acumular estoque.</td></tr>
+      </table>
     </div>
-    <div class="foot"><span class="src">Ohno (1997); Liker (2005); Antunes <i>et al.</i> (2008)</span></div>
+    <div class="foot"><span class="src">Albertin e Jaguaribe Pontes (cap. 3)</span></div>
+  </section>
+
+  <!-- STP: ferramentas -->
+  <section class="slide">
+    <div class="wrap">
+      <h1 class="rv" style="--d:1">TOC e as <em>ferramentas do STP</em></h1>
+      <table class="rel rv" style="--d:2">
+        <tr><th>Ferramenta do STP</th><th>Relação com a TOC</th></tr>
+        <tr><td>TRF / SMED</td><td>Menos setup no gargalo libera capacidade (estudo de caso 5.1).</td></tr>
+        <tr><td>MPT</td><td>Gargalo parado é sistema parado: a manutenção protege o ganho.</td></tr>
+        <tr><td>Poka Yoke e Zero Defeitos</td><td>Defeito no gargalo desperdiça capacidade que já é escassa.</td></tr>
+        <tr><td>Takt Time</td><td>O takt do cliente e o ritmo do tambor precisam ser compatíveis.</td></tr>
+      </table>
+      <div class="callout rv" style="--d:4">Diferença: a TOC foca no gargalo, e o STP elimina perdas em todo o fluxo. As duas abordagens se complementam.</div>
+    </div>
+    <div class="foot"><span class="src">Albertin e Jaguaribe Pontes (cap. 4 e 5)</span></div>
   </section>
 
   <!-- critérios -->
@@ -812,9 +850,9 @@
   const diagram = document.getElementById('dbrDiagram');
   const tabs = [...document.querySelectorAll('.dbr-tab')];
   const text = {
-    tambor: '<b>Tambor:</b> a restrição. É a estação mais lenta, e a programação dela dita o ritmo que o resto da fábrica precisa seguir.',
+    tambor: '<b>Tambor:</b> o ritmo do gargalo. Ele define quanto o sistema inteiro consegue produzir.',
     pulmao: '<b>Pulmão:</b> proteção de <b>tempo</b> antes da restrição, para ela nunca ficar parada esperando material. Pode aparecer como estoque, mas o que ele protege é o tempo.',
-    corda: '<b>Corda:</b> um sinal que só libera matéria-prima no ritmo do tambor. Evita acumular estoque no meio da linha.'
+    corda: '<b>Corda:</b> libera material no início do processo só no ritmo do gargalo. Evita acumular estoque no meio da linha.'
   };
   const parts = ['tambor', 'pulmao', 'corda'];
   let p = 0, timer = null;
