@@ -339,6 +339,12 @@
   .relpair{ gap:clamp(14px,1.6vw,28px); align-items:start; }
   .relpair .rel{ font-size:clamp(14px,1.12vw,20px); }
   .relpair .rel td:first-child{ width:36%; }
+  h1{ text-wrap:balance; }
+  .relpair{ align-items:stretch !important; }
+  .relpair .rel{ height:100%; }
+  .slide.center .wrap{ text-align:center; }
+  .slide.center h1{ margin-left:auto; margin-right:auto; }
+  .slide.center .card{ text-align:center; }
   /* ---------------------------------------------------------------- embeds */
   .slide.embed{ padding:0; background:var(--night); }
   .slide.embed iframe{ width:100%; height:100%; border:0; }
@@ -393,7 +399,7 @@
   .refs-slide .refs-cols section{ break-inside:auto; margin-bottom:10px; }
   @media (max-width:980px){ .funnel{ display:none; } .dark h1,.dark .answer{ max-width:none; } .hike{ grid-template-columns:1fr; } .refs-slide .refs-cols{ columns:1; } }
 
-  .qcard{ position:relative; display:grid; grid-template-columns:1fr auto; gap:2vw; align-items:center; background:linear-gradient(160deg,#2b0a3d,#170323); color:#fff; border-radius:24px; padding:20px 26px; margin:0 0 4vh; max-width:1150px; }
+  .qcard{ position:relative; display:grid; grid-template-columns:1fr auto; gap:2vw; align-items:center; background:linear-gradient(160deg,#2b0a3d,#170323); color:#fff; border-radius:24px; padding:20px 26px; margin:0 0 4vh; max-width:none; }
   .qcard .tag{ color:var(--amber); }
   .qcard .q{ font-family:var(--serif); font-size:clamp(26.4px,2.51vw,42.24px); font-weight:600; line-height:1.2; margin:6px 0 10px; }
   .qcard .q em{ color:var(--amber); font-weight:800; }
@@ -641,7 +647,7 @@
   </section>
 
   <!-- fechamento -->
-  <section class="slide">
+  <section class="slide center">
     <div class="wrap">
       <h1 class="rv" style="--d:1">O que aprendemos <em>com a TOC</em></h1>
       <div class="grid g3 s5">

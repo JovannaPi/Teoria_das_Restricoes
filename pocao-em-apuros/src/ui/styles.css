@@ -3726,3 +3726,9 @@ body.room-mode .pausebtn {
 .room-panel.deck .rp-rank li, .room-panel.deck .rp-debate li { color: var(--deck-ink); }
 .room-panel.deck .rp-rank li::marker, .room-panel.deck .rp-debate li::marker { color: var(--deck-orange); font-weight: 800; }
 .room-panel.deck .warnbox { background: rgba(232, 116, 44, 0.12); color: var(--deck-ink); border: 1px solid var(--deck-orange); border-radius: 12px; }
+
+/* painel dentro dos slides: QR maior, para ler de longe */
+.room-panel.deck .rp-grid { grid-template-columns: minmax(0, 38%) minmax(0, 1fr); }
+.room-panel.deck .rp-join canvas { max-height: 38vh; }
+.room-panel.deck .rp-big { font-size: 1.45em; }
+.room-panel.deck .rp-wait { font-size: 1.3em; align-self: center; }
