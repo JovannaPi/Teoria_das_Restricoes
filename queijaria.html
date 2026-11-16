@@ -1243,21 +1243,52 @@ const Cheese = (() => {
     if (can(dir)) p.scrollBy({ top: dir * p.clientHeight * .8, behavior: 'smooth' });
     else go(i + dir);
   }
-  // cada página se ajusta para caber inteira na tela (sem rolar)
+  // Cada página reserva o espaço do pior caso (testando as opções uma vez, escondida)
+  // e se ajusta para caber inteira na tela: assim nada pula nem se reconfigura ao clicar.
+  var $ = function (id) { return d.getElementById(id); };
+  function click(id) { var e = $(id); if (e) e.click(); }
+  function setRange(id, v) { var e = $(id); if (!e) return; e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); }
+  function measureAll() {
+    pgs.forEach(function (pg) {
+      var c = pg.firstElementChild; if (!c || c.classList.contains('hero')) return;
+      c.style.zoom = ''; c.style.minHeight = '';
+      pg._max = Math.max(pg._max || 0, c.offsetHeight);
+    });
+  }
+  function explore() {
+    pgs.forEach(function (pg) { pg._max = 0; });
+    measureAll();
+    // despesa operacional
+    click('do5'); measureAll(); click('do6'); measureAll();
+    // desafio: revelar, priorizar, zerar, tudo
+    click('b-rev'); measureAll(); click('b-rev');
+    click('b-trad'); measureAll();
+    setRange('sp', 0); setRange('sq', 0); measureAll();
+    setRange('sp', 100); setRange('sq', 0); measureAll();
+    click('b-all'); measureAll();
+    // método gráfico: os 6 passos
+    for (var k = 0; k < 5; k++) { click('g-next'); measureAll(); }
+    for (k = 0; k < 5; k++) click('g-prev');
+    // elevar e recalcular: combinações
+    click('e-press'); measureAll(); click('e-mkt'); measureAll(); click('e-press'); measureAll(); click('e-mkt'); measureAll();
+    setRange('e-disc', 0); measureAll(); setRange('e-disc', 50); measureAll(); setRange('e-disc', 20);
+    setRange('e-weeks', 1); measureAll(); setRange('e-weeks', 6); measureAll(); setRange('e-weeks', 3);
+    // curto e longo prazo
+    setRange('p-extra', 2000); measureAll(); setRange('p-extra', 0); measureAll();
+    measureAll();
+  }
   function fitPage(pg) {
-    var c = pg.firstElementChild; if (!c) return;
-    c.style.zoom = ''; c.style.width = '';
-    var avail = pg.clientHeight - 44, need = c.offsetHeight;
-    if (need > avail && need > 0) {
-      var z = Math.max(0.45, avail / need);
-      c.style.zoom = z;
-    }
+    var c = pg.firstElementChild; if (!c || c.classList.contains('hero')) return;
+    c.style.zoom = ''; c.style.minHeight = '';
+    var avail = pg.clientHeight - 44, need = Math.max(c.offsetHeight, pg._max || 0);
+    c.style.minHeight = need + 'px';
+    if (need > avail && need > 0) c.style.zoom = Math.max(0.45, avail / need);
   }
   function fitAll() { pgs.forEach(fitPage); }
-  var fitT; function fitSoon() { clearTimeout(fitT); fitT = setTimeout(fitAll, 60); }
-  addEventListener('resize', fitSoon);
-  ['click', 'input', 'change'].forEach(function (ev) { document.addEventListener(ev, fitSoon, true); });
-  setTimeout(fitAll, 50); setTimeout(fitAll, 700);
+  var rT, lw = innerWidth, lh = innerHeight;
+  addEventListener('resize', function () { if (innerWidth === lw && innerHeight === lh) return; lw = innerWidth; lh = innerHeight; clearTimeout(rT); rT = setTimeout(function () { explore(); fitAll(); }, 150); });
+  function boot() { explore(); fitAll(); }
+  boot(); setTimeout(boot, 600);
   go(0);
 
   document.addEventListener('keydown', function (e) {
