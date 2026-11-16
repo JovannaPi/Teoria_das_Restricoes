@@ -300,6 +300,10 @@
   .slidebat svg{ animation:flap .46s ease-in-out infinite alternate; }
 
   @media (max-height:940px){
+    .bigstmt{ font-size:clamp(17px,1.55vw,28px); padding:10px 20px; margin-bottom:1.2vh; }
+    .cyc{ max-height:44vh; }
+    .types .card{ padding:8px 16px; margin-top:7px; } .types .card p{ font-size:clamp(14px,1.1vw,19px); line-height:1.35; } .types .card h3{ font-size:clamp(16px,1.3vw,22px); }
+    .steps ~ .note{ font-size:clamp(15px,1.2vw,22px); margin-top:1.4vh; }
     .tl{ padding-top:26px; } .tl .year{ font-size:27px; margin-top:4px; } .tl .card{ padding:12px 14px 14px; }
     .slide:not(.cover):not(.embed){ padding-top:3.2vh; padding-bottom:11vh; }
     h1{ margin-bottom:1.4vh; }
@@ -325,13 +329,16 @@
   .quiz .ans{ display:none; margin-top:10px; font-size:clamp(15px,1.15vw,19px); line-height:1.4; color:var(--ink); border-left:4px solid var(--moss); padding-left:12px; }
   .quiz.open .ans{ display:block; } .quiz.open .reveal{ display:none; }
   @media (max-width:980px){ .simgrid{ grid-template-columns:1fr; } }
-  .bigstmt{ background:linear-gradient(160deg,#2b0a3d,#170323); color:#fff; border-radius:26px; padding:clamp(22px,3vh,38px) clamp(26px,2.6vw,46px); font-family:var(--serif); font-weight:600; font-size:clamp(26px,2.5vw,44px); line-height:1.25; margin:0 0 3vh; max-width:1320px; box-shadow:0 30px 60px -30px rgba(23,3,35,.8); }
+  .bigstmt{ background:linear-gradient(160deg,#2b0a3d,#170323); color:#fff; border-radius:22px; padding:clamp(14px,2vh,24px) clamp(22px,2.2vw,38px); font-family:var(--serif); font-weight:600; font-size:clamp(20px,1.85vw,33px); line-height:1.3; margin:0 0 2.2vh; max-width:1320px; box-shadow:0 24px 50px -28px rgba(23,3,35,.8); }
   .rel{ width:100%; border-collapse:separate; border-spacing:0; background:var(--card); border:1px solid var(--line); border-radius:20px; overflow:hidden; box-shadow:0 14px 34px -18px rgba(30,2,43,.35); font-size:clamp(18px,1.5vw,27px); }
   .rel th{ background:var(--plum); color:#fff; text-align:left; font-size:.78em; letter-spacing:.06em; text-transform:uppercase; padding:clamp(10px,1.4vh,18px) clamp(16px,1.6vw,28px); }
   .rel td{ padding:clamp(10px,1.5vh,20px) clamp(16px,1.6vw,28px); border-top:1px solid var(--line); font-weight:600; color:var(--muted); line-height:1.35; }
   .rel td:first-child{ width:31%; font-family:var(--serif); font-weight:700; color:var(--ink); }
   .rel tr:nth-child(odd) td{ background:rgba(232,116,44,.05); }
   .callout{ margin-top:2.6vh; background:var(--amber); color:var(--ink); border-radius:20px; padding:clamp(14px,2vh,24px) clamp(20px,2vw,34px); font-weight:800; font-size:clamp(18px,1.6vw,28px); line-height:1.35; }
+  .relpair{ gap:clamp(14px,1.6vw,28px); align-items:start; }
+  .relpair .rel{ font-size:clamp(14px,1.12vw,20px); }
+  .relpair .rel td:first-child{ width:36%; }
   /* ---------------------------------------------------------------- embeds */
   .slide.embed{ padding:0; background:var(--night); }
   .slide.embed iframe{ width:100%; height:100%; border:0; }
@@ -515,24 +522,11 @@
     <div class="foot"><span class="src">Goldratt &amp; Cox (1984); Antunes &amp; Rodrigues (1993); Noreen <i>et al.</i> (1995)</span></div>
   </section>
 
-  <!-- definição da TOC -->
-  <section class="slide">
-    <div class="wrap">
-      <h1 class="rv" style="--d:1">Teoria das <em>Restrições</em></h1>
-      <div class="bigstmt rv" style="--d:2">Todo sistema produtivo tem pelo menos uma restrição, e é ela que limita o desempenho do conjunto.</div>
-      <div class="grid g3">
-        <div class="card rv" style="--d:3"><h3>O que é restrição</h3><p>Qualquer fator que limita o ganho: máquina, material, mão de obra, demanda ou uma política.</p></div>
-        <div class="card rv" style="--d:4"><h3>Premissa</h3><p>Hora perdida no gargalo é hora perdida no sistema inteiro. Hora ganha fora dele não aumenta a produção.</p></div>
-        <div class="card rv" style="--d:5"><h3>Foco</h3><p>Melhorar o ponto mais fraco, em vez de otimizar cada máquina isoladamente.</p></div>
-      </div>
-    </div>
-    <div class="foot"><span class="src">Goldratt e Cox (1984)</span></div>
-  </section>
-
   <!-- 5 passos -->
   <section class="slide">
     <div class="wrap">
-      <h1 class="rv" style="--d:1">Os 5 passos de <em>focalização</em></h1>
+      <h1 class="rv" style="--d:1">Teoria das Restrições: <em>5 passos</em></h1>
+      <div class="bigstmt rv" style="--d:2">Todo sistema produtivo tem pelo menos uma restrição, e é ela que limita o desempenho do conjunto.</div>
       <div class="steps">
         <svg class="cyc rv" style="--d:2" viewBox="-150 -50 700 500" aria-label="Ciclo dos 5 passos">
           <path id="orb" class="ring" d="M200,50 A150,150 0 1 1 199.9,50"/>
@@ -555,41 +549,35 @@
           <div class="card rv" style="--d:6"><div><h3>Política</h3><p>regras e métricas, como eficiência local ou lote grande, que travam o fluxo. É a mais comum.</p></div></div>
         </div>
       </div>
-      <p class="note rv" style="--d:7">A ordem importa: só se investe (passo 4) depois de explorar e subordinar.</p>
+      <p class="note rv" style="--d:7">Hora perdida no gargalo é hora perdida no sistema inteiro. E a ordem importa: só se investe (passo 4) depois de explorar e subordinar.</p>
     </div>
     <div class="foot"><span class="src">Goldratt (1990, cap. 1); Goldratt e Cox (1984)</span></div>
   </section>
 
-  <!-- STP: princípios -->
+  <!-- STP: princípios e ferramentas -->
   <section class="slide">
     <div class="wrap">
-      <h1 class="rv" style="--d:1">TOC e os <em>princípios do STP</em></h1>
-      <table class="rel rv" style="--d:2">
-        <tr><th>Princípio do STP</th><th>Relação com a TOC</th></tr>
-        <tr><td>Eliminação de perdas</td><td>Parada ou refugo no gargalo é perda para o sistema inteiro.</td></tr>
-        <tr><td>Produção puxada</td><td>A corda libera material no ritmo do gargalo; o Kanban, no da demanda.</td></tr>
-        <tr><td>Melhoria contínua</td><td>O passo 5 recomeça o ciclo, como o Kaizen.</td></tr>
-        <tr><td>Controle visual</td><td>O pulmão usa zonas verde, amarela e vermelha, como o porta-Kanban.</td></tr>
-        <tr><td>Fluxo contínuo</td><td>O fluxo se sincroniza ao gargalo para não acumular estoque.</td></tr>
-      </table>
-    </div>
-    <div class="foot"><span class="src">Albertin e Jaguaribe Pontes (cap. 3)</span></div>
-  </section>
-
-  <!-- STP: ferramentas -->
-  <section class="slide">
-    <div class="wrap">
-      <h1 class="rv" style="--d:1">TOC e as <em>ferramentas do STP</em></h1>
-      <table class="rel rv" style="--d:2">
-        <tr><th>Ferramenta do STP</th><th>Relação com a TOC</th></tr>
-        <tr><td>TRF / SMED</td><td>Menos setup no gargalo libera capacidade (estudo de caso 5.1).</td></tr>
-        <tr><td>MPT</td><td>Gargalo parado é sistema parado: a manutenção protege o ganho.</td></tr>
-        <tr><td>Poka Yoke e Zero Defeitos</td><td>Defeito no gargalo desperdiça capacidade que já é escassa.</td></tr>
-        <tr><td>Takt Time</td><td>O takt do cliente e o ritmo do tambor precisam ser compatíveis.</td></tr>
-      </table>
+      <h1 class="rv" style="--d:1">TOC e o <em>Sistema Toyota</em></h1>
+      <div class="grid g2 relpair">
+        <table class="rel rv" style="--d:2">
+          <tr><th>Princípio do STP</th><th>Relação com a TOC</th></tr>
+          <tr><td>Eliminação de perdas</td><td>Parada ou refugo no gargalo é perda para o sistema inteiro.</td></tr>
+          <tr><td>Produção puxada</td><td>A corda libera material no ritmo do gargalo; o Kanban, no da demanda.</td></tr>
+          <tr><td>Melhoria contínua</td><td>O passo 5 recomeça o ciclo, como o Kaizen.</td></tr>
+          <tr><td>Controle visual</td><td>O pulmão usa zonas verde, amarela e vermelha, como o porta-Kanban.</td></tr>
+          <tr><td>Fluxo contínuo</td><td>O fluxo se sincroniza ao gargalo para não acumular estoque.</td></tr>
+        </table>
+        <table class="rel rv" style="--d:3">
+          <tr><th>Ferramenta do STP</th><th>Relação com a TOC</th></tr>
+          <tr><td>TRF / SMED</td><td>Menos setup no gargalo libera capacidade (estudo de caso 5.1).</td></tr>
+          <tr><td>MPT</td><td>Gargalo parado é sistema parado: a manutenção protege o ganho.</td></tr>
+          <tr><td>Poka Yoke e Zero Defeitos</td><td>Defeito no gargalo desperdiça capacidade que já é escassa.</td></tr>
+          <tr><td>Takt Time</td><td>O takt do cliente e o ritmo do tambor precisam ser compatíveis.</td></tr>
+        </table>
+      </div>
       <div class="callout rv" style="--d:4">Diferença: a TOC foca no gargalo, e o STP elimina perdas em todo o fluxo. As duas abordagens se complementam.</div>
     </div>
-    <div class="foot"><span class="src">Albertin e Jaguaribe Pontes (cap. 4 e 5)</span></div>
+    <div class="foot"><span class="src">Albertin e Jaguaribe Pontes (cap. 3, 4 e 5)</span></div>
   </section>
 
   <!-- critérios -->
@@ -635,19 +623,6 @@
       </div>
     </div>
     <div class="foot"><span class="src">Goldratt &amp; Fox (1986); Schragenheim &amp; Dettmer (2000)</span></div>
-  </section>
-
-  <!-- casos de aplicação -->
-  <section class="slide">
-    <div class="wrap">
-      <h1 class="rv" style="--d:1">Casos de <em>aplicação</em></h1>
-      <p class="lead rv" style="--d:2">Dois casos do grupo: uma simulação de linha de produção e um estudo real de uma fábrica de cadeiras.</p>
-      <div class="grid g2 cases">
-        <div class="card rv" style="--d:3"><span class="tag">Simulação</span><h3>Linha de Produção</h3><p>Cinco estações em linha: a Fervura (3 un/min) segura todas as outras. Aplicamos os 5 passos ao vivo e o gargalo muda de lugar.</p></div>
-        <div class="card rv" style="--d:4"><span class="tag">Estudo real · móveis</span><h3>Cadeiras no Paraná</h3><p>O gargalo não era uma máquina: faltava espuma na estofaria. O jogo mostra o ponto de pedido e os 5 passos do estudo.</p></div>
-      </div>
-    </div>
-    <div class="foot"><span class="src">Orciuolo (2015)</span></div>
   </section>
 
   <!-- simulador (caso da Jovanna): tela cheia, textos em pop-up -->
