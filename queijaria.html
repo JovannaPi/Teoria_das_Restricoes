@@ -1155,18 +1155,136 @@ const Cheese = (() => {
 })();
 </script>
 <script>
-/* dentro da apresentação (?slide): letra maior e setas do teclado trocam de slide */
+/* dentro da apresentação (?slide): letra maior, setas esquerda/direita trocam de slide
+   e seta para baixo/cima passam as "páginas" (cada parte da queijaria aparece sozinha na tela) */
 (function () {
   if (!/[?&]slide\b/.test(location.search)) return;
-  var fit = function () { document.documentElement.style.zoom = Math.max(1, Math.min(1.5, innerWidth / 1180)); };
+  var fit = function () { document.documentElement.style.zoom = Math.max(1, Math.min(1.3, innerWidth / 1180)); };
   fit(); addEventListener('resize', fit);
+
+  /* ---- páginas ---- */
+  var d = document;
+  var css = d.createElement('style');
+  css.textContent =
+    'html.pgmode, html.pgmode body { height: 100%; overflow: hidden; }' +
+    '#pgs { position: fixed; inset: 0; }' +
+    '.pg { position: absolute; inset: 0; overflow-y: auto; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateY(5vh); transition: opacity .5s ease, transform .5s cubic-bezier(.2,.75,.2,1), visibility 0s .5s; }' +
+    '.pg.on { opacity: 1; visibility: visible; transform: none; transition: opacity .5s ease, transform .5s cubic-bezier(.2,.75,.2,1), visibility 0s; }' +
+    '.pg > * { margin-top: auto; margin-bottom: auto; width: 100%; }' +
+    '.pg { padding-bottom: 44px; } .pg .ctrls { gap: 8px; margin: 8px 0; } .pg .bars { gap: 7px; margin: 8px 0; } .pg .tiles { margin: 10px 0; } .pg .scale-note, .pg .dark + div { display: none; } .pg .gplot { max-width: 600px; margin-left: auto; margin-right: auto; } .pg .grid.g2 { margin-top: 12px !important; } .pg .card { padding-top: 16px; padding-bottom: 14px; }' +
+    '.pg .sec { padding: 26px 0 22px; } .pg .step { margin-top: 10px; } .pg h2 { margin-bottom: 8px; } .pg .intro { margin-bottom: 8px; } .pg .hero { padding: 40px 0 44px; }' +
+    '.pg > .hero, .pg > .dark { margin: 0; min-height: 100%; display: flex; flex-direction: column; justify-content: center; }' +
+    '.pgdots { position: fixed; right: 14px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 9px; z-index: 30; }' +
+    '.pgdots button { width: 11px; height: 11px; border-radius: 50%; border: 0; padding: 0; background: rgba(120, 90, 150, .45); cursor: pointer; transition: transform .25s, background .25s; }' +
+    '.pgdots button.on { background: #e8742c; transform: scale(1.5); }' +
+    '.pgnext { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 30; border: 0; border-radius: 999px; padding: 6px 18px; background: rgba(30, 2, 43, .6); color: #fff; font: 800 15px/1.4 Nunito, sans-serif; cursor: pointer; animation: pgbob 1.6s ease-in-out infinite; }' +
+    '.pgnext[hidden] { display: none; }' +
+    '@keyframes pgbob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 4px); } }';
+  d.head.appendChild(css);
+
+  var hero = d.querySelector('header.hero');
+  var sec = function (id) { return d.getElementById(id); };
+  function splitSteps(el) {
+    var out = [el], steps = [].slice.call(el.querySelectorAll('.step'));
+    var after = el;
+    steps.slice(1).forEach(function (st) {
+      var ns = d.createElement('section'); ns.className = 'sec';
+      var w = d.createElement('div'); w.className = 'wrap'; ns.appendChild(w); w.appendChild(st);
+      after.parentNode.insertBefore(ns, after.nextSibling); after = ns; out.push(ns);
+    });
+    return out;
+  }
+  // o caso: produtos e etapas numa página, medidas na outra
+  var caso = sec('caso'), meta = caso.querySelector('.meta'), seg = caso.querySelector('.seg');
+  var casoB = d.createElement('section'); casoB.className = 'sec';
+  var wB = d.createElement('div'); wB.className = 'wrap'; casoB.appendChild(wB);
+  var kB = d.createElement('div'); kB.className = 'kicker'; kB.textContent = 'O caso · as medidas'; wB.appendChild(kB);
+  var hB = d.createElement('h2'); hB.innerHTML = 'Ganho, inventário e <em>despesa</em>'; wB.appendChild(hB);
+  wB.appendChild(meta); wB.appendChild(seg);
+  caso.parentNode.insertBefore(casoB, caso.nextSibling);
+  var graf = sec('grafico'), gcards = graf.querySelector('.grid.g2'), gnote = gcards ? gcards.nextElementSibling : null;
+  var grafB = d.createElement('section'); grafB.className = 'sec';
+  var wG = d.createElement('div'); wG.className = 'wrap'; grafB.appendChild(wG);
+  var kG = d.createElement('div'); kG.className = 'kicker'; kG.textContent = 'Pesquisa operacional · o modelo'; wG.appendChild(kG);
+  var hG = d.createElement('h2'); hG.innerHTML = 'O modelo e os <em>vértices</em>'; wG.appendChild(hG);
+  if (gcards) wG.appendChild(gcards);
+  if (gnote) wG.appendChild(gnote);
+  graf.parentNode.insertBefore(grafB, graf.nextSibling);
+  var list = [hero, caso, casoB, sec('desafio')]
+    .concat(splitSteps(sec('gargalo')))
+    .concat([graf, grafB])
+    .concat(splitSteps(sec('elevar')))
+    .concat([sec('prazo'), sec('sala')]);
+  var foot = d.querySelector('footer'); if (foot) foot.style.display = 'none';
+
+  var host = d.createElement('div'); host.id = 'pgs';
+  var pgs = list.map(function (el) { var pg = d.createElement('div'); pg.className = 'pg'; pg.appendChild(el); host.appendChild(pg); return pg; });
+  d.body.insertBefore(host, d.body.firstChild);
+  d.documentElement.classList.add('pgmode');
+
+  var dots = d.createElement('div'); dots.className = 'pgdots';
+  var dotBtns = pgs.map(function (_, k) { var b = d.createElement('button'); b.setAttribute('aria-label', 'Página ' + (k + 1)); b.addEventListener('click', function () { go(k); }); dots.appendChild(b); return b; });
+  d.body.appendChild(dots);
+  var nextBtn = d.createElement('button'); nextBtn.className = 'pgnext'; nextBtn.textContent = '↓ próxima'; nextBtn.addEventListener('click', function () { step(1); });
+  d.body.appendChild(nextBtn);
+
+  var i = 0, lock = 0;
+  function go(k) {
+    k = Math.max(0, Math.min(pgs.length - 1, k));
+    pgs.forEach(function (p, j) { p.classList.toggle('on', j === k); });
+    dotBtns.forEach(function (b, j) { b.classList.toggle('on', j === k); });
+    if (k !== i) pgs[k].scrollTop = 0;
+    i = k; nextBtn.hidden = (k === pgs.length - 1);
+    window.dispatchEvent(new Event('resize'));
+  }
+  function can(dir) { var p = pgs[i]; return dir > 0 ? p.scrollTop + p.clientHeight < p.scrollHeight - 4 : p.scrollTop > 4; }
+  function step(dir) {
+    var p = pgs[i];
+    if (can(dir)) p.scrollBy({ top: dir * p.clientHeight * .8, behavior: 'smooth' });
+    else go(i + dir);
+  }
+  // cada página se ajusta para caber inteira na tela (sem rolar)
+  function fitPage(pg) {
+    var c = pg.firstElementChild; if (!c) return;
+    c.style.zoom = ''; c.style.width = '';
+    var avail = pg.clientHeight - 44, need = c.offsetHeight;
+    if (need > avail && need > 0) {
+      var z = Math.max(0.6, avail / need);
+      c.style.zoom = z;
+    }
+  }
+  function fitAll() { pgs.forEach(fitPage); }
+  var fitT; function fitSoon() { clearTimeout(fitT); fitT = setTimeout(fitAll, 60); }
+  addEventListener('resize', fitSoon);
+  ['click', 'input', 'change'].forEach(function (ev) { document.addEventListener(ev, fitSoon, true); });
+  setTimeout(fitAll, 50); setTimeout(fitAll, 700);
+  go(0);
+
   document.addEventListener('keydown', function (e) {
-    if (parent === window) return;
-    var t = e.target;
-    if (t && (t.type === 'range' || t.type === 'checkbox')) return;
-    if (e.key === 'ArrowRight') parent.postMessage('deck-next', '*');
-    if (e.key === 'ArrowLeft') parent.postMessage('deck-prev', '*');
+    var t = e.target, k = e.key;
+    var typing = t && (t.tagName === 'BUTTON' || t.tagName === 'A' || t.tagName === 'SUMMARY' || (t.tagName === 'INPUT' && t.type !== 'range'));
+    if (k === 'ArrowDown' || k === 'PageDown' || (k === ' ' && !typing)) { e.preventDefault(); step(1); return; }
+    if (k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); step(-1); return; }
+    if (parent === window || (t && (t.type === 'range' || t.type === 'checkbox'))) return;
+    if (k === 'ArrowRight') parent.postMessage('deck-next', '*');
+    if (k === 'ArrowLeft') parent.postMessage('deck-prev', '*');
   });
+  // o controle deslizante não prende mais as setas depois de usado
+  document.addEventListener('change', function (e) { if (e.target && e.target.type === 'range') e.target.blur(); });
+  // roda do mouse: ao chegar no fim da página, passa para a próxima
+  document.addEventListener('wheel', function (e) {
+    var now = Date.now(); if (now < lock) return;
+    var dir = e.deltaY > 0 ? 1 : -1;
+    if (!can(dir)) { lock = now + 800; step(dir); }
+  }, { passive: true });
+  // atalhos do topo ("Tentar o desafio" etc.) levam à página certa
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a) return;
+    var el = d.getElementById(a.getAttribute('href').slice(1)); if (!el) return;
+    e.preventDefault();
+    for (var j = 0; j < pgs.length; j++) if (pgs[j].contains(el)) { go(j); break; }
+  });
+  window.addEventListener('message', function (e) { if (e.data === 'page-next') step(1); else if (e.data === 'page-prev') step(-1); });
 })();
 </script>
 </body>

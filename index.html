@@ -639,7 +639,7 @@
 
   <!-- queijaria (caso da Raíra): página rolável -->
   <section class="slide embed">
-    <iframe src="queijaria.html?slide" title="Queijaria Caldeirão da Lua" loading="lazy"></iframe>
+    <iframe data-pages src="queijaria.html?slide" title="Queijaria Caldeirão da Lua" loading="lazy"></iframe>
   </section>
 
   <!-- jogo da estofaria: caso da colega (tela cheia, textos em pop-up) -->
@@ -815,12 +815,14 @@
     counter.textContent = (idx + 1) + ' / ' + slides.length;
     progress.style.width = ((idx + 1) / slides.length * 100) + '%';
     if (history.replaceState) history.replaceState(null, '', '#' + (idx + 1));
+    const pf = slides[idx].querySelector('iframe[data-pages]'); if (pf) setTimeout(() => { try { pf.contentWindow.focus(); } catch (err) {} }, 300);
   }
   document.getElementById('prevBtn').addEventListener('click', (e) => { e.stopPropagation(); go(idx - 1); });
   document.getElementById('nextBtn').addEventListener('click', (e) => { e.stopPropagation(); go(idx + 1); });
   document.addEventListener('keydown', (e) => {
     if (['ArrowRight', ' ', 'PageDown'].includes(e.key)) { e.preventDefault(); go(idx + 1); }
     if (['ArrowLeft', 'PageUp'].includes(e.key)) go(idx - 1);
+    if (['ArrowDown', 'ArrowUp'].includes(e.key)) { const fr = slides[idx].querySelector('iframe[data-pages]'); if (fr && fr.contentWindow) { e.preventDefault(); fr.contentWindow.postMessage(e.key === 'ArrowDown' ? 'page-next' : 'page-prev', '*'); } }
     if (e.key === 'Home') go(0);
     if (e.key === 'End') go(slides.length - 1);
     if (e.key === 'f' || e.key === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
