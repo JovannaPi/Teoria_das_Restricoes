@@ -66,7 +66,6 @@ function liveHtml(): string {
 
 
 /* ---------- painel dentro dos slides (?painel&slide): dois cartões, no estilo da apresentação ---------- */
-const CORNER = '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M4 62 V30 Q4 5 30 5 H62 M4 46 Q12 22 40 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M10 10 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="currentColor"/></svg>';
 const HOURGLASS = '<svg class="dk-ico" viewBox="0 0 40 52" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 H33 M7 48 H33 M10 4 C10 20 20 22 20 26 C20 30 10 32 10 48 M30 4 C30 20 20 22 20 26 C20 30 30 32 30 48"/><path d="M14 40 H26" /></svg>';
 const CHECK = '<svg class="dk-ico" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="16"/><path d="M12 21 L18 27 L29 14"/></svg>';
 const PEOPLE = '<svg class="dk-people" viewBox="0 0 220 120" aria-hidden="true" fill="currentColor"><g opacity=".7"><circle cx="45" cy="52" r="17"/><path d="M14 112 q4 -40 31 -40 q27 0 31 40z"/><circle cx="175" cy="52" r="17"/><path d="M144 112 q4 -40 31 -40 q27 0 31 40z"/></g><circle cx="110" cy="40" r="22"/><path d="M70 114 q5 -52 40 -52 q35 0 40 52z"/><path d="M110 4 v8 M82 12 l5 7 M138 12 l-5 7" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/></svg>';
@@ -75,8 +74,8 @@ function renderDeck(root: HTMLElement): void {
   const url = roomUrl(code);
   const local = isLocalUrl(url);
   root.classList.add('dk');
+  document.documentElement.classList.add('deck-bg'); // fundo transparente: aparece o fundo do slide
   root.innerHTML = `
-    <span class="dk-corner tl">${CORNER}</span><span class="dk-corner tr">${CORNER}</span><span class="dk-corner bl">${CORNER}</span><span class="dk-corner br">${CORNER}</span>
     <header class="dk-head">
       <div><h1>Sala <b data-room-code>${esc(code)}</b></h1><p class="dk-sub">Poção em Apuros · Modo rápido</p></div>
       <span class="dk-pill" data-pill></span>
@@ -94,7 +93,8 @@ function renderDeck(root: HTMLElement): void {
         <div class="dk-live" data-live aria-live="polite"></div>
       </section>
     </div>
-    <div class="dk-cta" data-cta></div>`;
+    <div class="dk-cta" data-cta></div>
+    <button class="dk-new" data-action="room-new" title="Abrir outra sala">nova sala</button>`;
   const c = root.querySelector('canvas');
   if (c) drawQr(c, url, 520);
   refreshDeck();

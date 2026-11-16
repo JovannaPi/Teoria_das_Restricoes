@@ -346,7 +346,8 @@
   .slide.center h1{ margin-left:auto; margin-right:auto; }
   .slide.center .card{ text-align:center; }
   /* ---------------------------------------------------------------- embeds */
-  .slide.embed{ padding:0; background:var(--night); }
+  .slide.embed{ padding:0; }
+  .slide.embed:not(.light){ background:var(--night); }
   .slide.embed iframe{ width:100%; height:100%; border:0; }
 
   /* ---------------------------------------------------------------- navegação */
@@ -642,7 +643,7 @@
   </section>
 
   <!-- aplicação prática em sala: QR + painel da turma -->
-  <section class="slide embed">
+  <section class="slide embed light">
     <iframe src="pocao/?painel&slide" title="Poção em Apuros — QR Code da sala e painel da turma ao vivo"></iframe>
   </section>
 
@@ -772,7 +773,7 @@
     const top = 26 + Math.round(r() * 38);
     return `<div class="mowrap" style="${lr ? 'left' : 'right'}:1.1vw;top:${top}vh">${MOTIFS[0]()}</div>`;
   };
-  document.querySelectorAll('.slide:not([data-scene]):not(.embed)').forEach((sl, i) => {
+  document.querySelectorAll('.slide:not([data-scene]):not(.embed:not(.light))').forEach((sl, i) => {
     const r = mulberry(100 + i * 13);
     const flip = i % 2 === 1;
     const sparks = Array.from({ length: 12 }, () => {
