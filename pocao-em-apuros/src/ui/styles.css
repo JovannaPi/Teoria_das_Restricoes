@@ -3732,3 +3732,59 @@ body.room-mode .pausebtn {
 .room-panel.deck .rp-join canvas { max-height: 38vh; }
 .room-panel.deck .rp-big { font-size: 1.45em; }
 .room-panel.deck .rp-wait { font-size: 1.3em; align-self: center; }
+
+/* ---- painel do slide, em dois cartões ---- */
+.room-panel.deck.dk { display: flex; flex-direction: column; gap: 1.5vh; padding: 3vh 5.5vw 8vh; overflow: hidden; }
+.dk-corner { position: absolute; width: 8.5vh; height: 8.5vh; color: #5b2a86; opacity: 0.5; pointer-events: none; }
+.dk-corner svg { width: 100%; height: 100%; display: block; }
+.dk-corner.tl { left: 1.2vw; top: 1.6vh; } .dk-corner.tr { right: 1.2vw; top: 1.6vh; transform: scaleX(-1); }
+.dk-corner.bl { left: 1.2vw; bottom: 1.6vh; transform: scaleY(-1); } .dk-corner.br { right: 1.2vw; bottom: 1.6vh; transform: scale(-1, -1); }
+.dk-head { flex: none; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 1vw; }
+.dk-head h1 { margin: 0; font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 2.6em; line-height: 1; color: #1e022b; }
+.dk-head h1 b { color: #e8742c; font-style: italic; letter-spacing: 0.05em; }
+.dk-sub { margin: 0.3em 0 0; font-size: 0.62em; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: #6b5878; }
+.dk-pill { border-radius: 999px; padding: 0.4em 1.3em; font-weight: 800; border: 2px solid; font-size: 0.95em; }
+.dk-pill.off { background: rgba(232, 116, 44, 0.14); color: #a8470f; border-color: rgba(232, 116, 44, 0.5); }
+.dk-pill.on { background: rgba(88, 168, 80, 0.16); color: #2f6b2c; border-color: rgba(88, 168, 80, 0.6); }
+.dk-status { flex: none; display: flex; align-items: center; justify-content: space-between; background: #fbf6e8; border: 1px solid rgba(30, 2, 43, 0.12); border-radius: 22px; padding: 1.1vh 1.8vw; box-shadow: 0 14px 34px -20px rgba(30, 2, 43, 0.4); }
+.dk-st-l { display: flex; align-items: center; gap: 1.1vw; }
+.dk-ico { width: 1.9em; height: 1.9em; color: #5b2a86; }
+.dk-st-l b { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 1.3em; color: #1e022b; }
+.dk-st-l small { color: #6b5878; font-size: 0.85em; }
+.dk-count { font-weight: 800; color: #5b2a86; font-size: 1.15em; border-left: 1px solid rgba(30, 2, 43, 0.15); padding-left: 1.6vw; white-space: nowrap; }
+.dk-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2.2vw; padding-top: 1.6vh; }
+.dk-card { position: relative; display: flex; flex-direction: column; align-items: center; min-height: 0; background: #fbf6e8; border: 2px solid rgba(91, 42, 134, 0.4); border-radius: 26px; padding: 3.4vh 1.6vw 1.4vh; box-shadow: 0 18px 40px -22px rgba(30, 2, 43, 0.5), inset 0 0 0 7px #fbf6e8, inset 0 0 0 8px rgba(91, 42, 134, 0.12); }
+.dk-title { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); margin: 0; background: #2b0a3d; color: #fff; font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 1.15em; border-radius: 999px; padding: 0.35em 1.8em; white-space: nowrap; box-shadow: 0 8px 18px -8px rgba(30, 2, 43, 0.7); }
+.dk-qr { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
+.dk-qr canvas { height: 100%; width: auto; max-width: 100%; aspect-ratio: 1; background: #fff; padding: 10px; border-radius: 18px; border: 1px solid rgba(30, 2, 43, 0.15); box-shadow: 0 12px 26px -16px rgba(30, 2, 43, 0.5); image-rendering: pixelated; }
+.dk-cap { margin: 0.6vh 0 0; text-align: center; font-weight: 700; color: #1e022b; font-size: 0.95em; }
+.dk-url { margin: 0.2vh 0 0; text-align: center; font-weight: 800; color: #5b2a86; font-size: 0.8em; word-break: break-all; }
+.dk-live { flex: 1; min-height: 0; width: 100%; overflow: hidden; display: flex; flex-direction: column; }
+.dk-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #6b5878; }
+.dk-empty p { margin: 1vh 0 0; font-style: italic; font-weight: 600; font-size: 1.05em; }
+.dk-people { width: 52%; max-height: 52%; color: rgba(91, 42, 134, 0.22); }
+.dk-names { display: flex; flex-wrap: wrap; gap: 0.5em; justify-content: center; align-content: flex-start; padding-top: 1vh; }
+.dk-names span { background: rgba(91, 42, 134, 0.1); color: #5b2a86; border-radius: 999px; padding: 0.3em 1em; font-weight: 800; font-size: 0.95em; }
+.dk-cta { flex: none; display: flex; justify-content: center; padding-top: 1vh; }
+.dk-btn { font: inherit; font-weight: 800; font-size: 1.5em; color: #fff; background: #e8742c; border: 0; border-radius: 999px; padding: 0.45em 2.6em; cursor: pointer; box-shadow: 0 14px 26px -12px rgba(232, 116, 44, 0.9), inset 0 -3px 0 rgba(0, 0, 0, 0.12); }
+.dk-btn.ghost { background: transparent; color: #5b2a86; border: 2px solid rgba(91, 42, 134, 0.4); font-size: 1.05em; padding: 0.4em 1.8em; box-shadow: none; }
+@media (max-width: 800px) { .dk-grid { grid-template-columns: 1fr; } }
+
+.dk-sum { display: flex; flex-direction: column; gap: 1.1vh; width: 100%; min-height: 0; }
+.dk-sumhead { text-align: center; font-weight: 700; color: #6b5878; font-size: 1.05em; }
+.dk-sumhead b { font-family: 'Fraunces', Georgia, serif; font-style: italic; color: #e8742c; font-size: 1.5em; }
+.dk-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5em; }
+.dk-fact { background: #fff; border: 1px solid rgba(30, 2, 43, 0.12); border-radius: 14px; padding: 0.35em 0.5em; text-align: center; }
+.dk-fact b { display: block; font-family: 'Fraunces', Georgia, serif; font-style: italic; color: #e8742c; font-size: 1.45em; line-height: 1.1; }
+.dk-fact span { display: block; color: #6b5878; font-size: 0.68em; line-height: 1.2; font-weight: 600; }
+.dk-two { display: grid; grid-template-columns: 1fr 1.25fr; gap: 1.2vw; min-height: 0; }
+.dk-two h3 { margin: 0 0 0.3em; font-family: 'Fraunces', Georgia, serif; font-size: 1em; color: #1e022b; }
+.dk-rank, .dk-deb { margin: 0; padding-left: 1.3em; font-size: 0.8em; line-height: 1.3; font-weight: 600; color: #1e022b; }
+.dk-rank li { margin-bottom: 0.15em; } .dk-rank li span { display: inline-block; min-width: 8.5em; }
+.dk-deb li { margin-bottom: 0.3em; }
+.dk-rank li::marker, .dk-deb li::marker { color: #e8742c; font-weight: 800; }
+.dk-corner.br { bottom: 7.5vh; }
+@media (max-height: 800px) {
+  .dk-sum { font-size: 0.9em; gap: 0.8vh; }
+  .dk-facts { display: none; } /* os números já aparecem nas perguntas do debate */
+}
