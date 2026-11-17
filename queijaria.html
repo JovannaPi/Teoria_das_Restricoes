@@ -1099,14 +1099,15 @@ const Cheese = (() => {
       '<div class="mrow"><i class="sw dash"></i><span class="eq">P ≤ ' + N(m.t.P.d1) + ' · Q ≤ ' + N(m.t.Q.d1) + '</span><small>demanda semanal</small></div>' +
       '<div class="mrow"><i class="sw none"></i><span class="eq">P ≥ 0 · Q ≥ 0</span><small>não negatividade</small></div>';
 
-    if (st < 4) {
+    var allv = document.documentElement.classList.contains('pgmode');
+    if (st < 4 && !allv) {
       $('g-verts').innerHTML = '<span class="tag">Vértices</span><p style="margin-top:8px">Os vértices e o valor de Z em cada um aparecem no passo 4.</p>';
     } else {
       $('g-verts').innerHTML = '<span class="tag">Z em cada vértice</span><div class="scroll-x"><table class="tbl vt"><tr><th>Nº</th><th>(P; Q)</th><th>Z</th><th>Lucro</th></tr>' +
         m.verts.map(function (v, idx) {
-          return '<tr class="' + (st >= 6 && idx === m.best ? 'top' : '') + '"><td><span class="vtag">' + (idx + 1) + '</span></td><td>(' + N(v.p) + '; ' + N(v.q) + ')</td><td>' + R(v.z) + '</td><td>' + R(v.l) + '</td></tr>';
+          return '<tr class="' + ((st >= 6 || allv) && idx === m.best ? 'top' : '') + '"><td><span class="vtag">' + (idx + 1) + '</span></td><td>(' + N(v.p) + '; ' + N(v.q) + ')</td><td>' + R(v.z) + '</td><td>' + R(v.l) + '</td></tr>';
         }).join('') + '</table></div>' +
-        (st >= 6 ? '<p style="margin:6px 0 0">O maior Z está no vértice ' + (m.best + 1) + '.</p>' : '');
+        ((st >= 6 || allv) ? '<p style="margin:6px 0 0">O maior Z está no vértice ' + (m.best + 1) + '.</p>' : '');
     }
   }
   function gotoStep(n) {
