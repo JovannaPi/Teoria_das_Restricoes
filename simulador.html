@@ -574,6 +574,10 @@
       <div class="lab">RECORDE</div>
       <div class="val" id="bestTime">--:--</div>
     </div>
+    <div class="chip" id="ropeChip">
+      <div class="lab">CORDA</div>
+      <div class="val" id="ropeVal" style="font-size:12px;">OFF</div>
+    </div>
     <div class="chip">
       <div class="lab">RITMO</div>
       <div class="val" id="paceVal">0 <span style="font-size:8px;">UN/MIN</span></div>
@@ -661,6 +665,8 @@
   let speedMult = 1;
   let prevBottleneck = null;
   let won = false;
+  let rope = false;           // corda: o início só libera material quando o pulmão do gargalo pede
+  const ROPE_LIMIT = 3;       // tamanho do pulmão (peças esperando o gargalo)
   let wasOverload = new Array(NUM_STATIONS).fill(false);
 
   const lineEl = document.getElementById('line');
@@ -973,7 +979,11 @@
 
       for(let i=0;i<NUM_STATIONS;i++){
         const rateSec = rates[i] / 60;
-        const hasInput = (i === 0) ? true : buffer[i] > 0;
+        let hasInput = (i === 0) ? true : buffer[i] > 0;
+        if(i === 0 && rope){
+          const g = bottleneckIndex();
+          if(g > 0){ let wip = 0; for(let k = 1; k <= g; k++) wip += buffer[k]; if(wip >= ROPE_LIMIT) hasInput = false; }
+        }
         busy[i] = hasInput;
         if(hasInput) busyTime[i] += DT;
         if(hasInput){
@@ -1060,6 +1070,7 @@
     won = false;
     wasOverload = new Array(NUM_STATIONS).fill(false);
     winOverlay.classList.remove('show');
+    if(typeof setRope === 'function') setRope(false);
     if(typeof stepbarEl !== 'undefined'){ [...stepbarEl.querySelectorAll('button')].forEach(x => x.classList.remove('on')); stepcapEl.textContent = ''; }
     lastPace = Math.min(...DEFAULT_RATES); lastB = DEFAULT_RATES.indexOf(lastPace); lastRates = DEFAULT_RATES.slice();
     buildLine();
@@ -1088,6 +1099,7 @@
     const sl = document.getElementById('rate-slider-' + i); if(!sl) return;
     sl.value = v; sl.dispatchEvent(new Event('input', { bubbles: true }));
   }
+  function setRope(on){ rope = on; const v = document.getElementById('ropeVal'); v.textContent = on ? 'ON' : 'OFF'; v.style.color = on ? 'var(--green)' : ''; }
   function flashStation(i){
     const el = document.getElementById('station-' + i); if(!el) return;
     el.classList.remove('just-changed'); void el.offsetWidth; el.classList.add('just-changed');
@@ -1096,7 +1108,7 @@
     '1': 'A fila cresce antes da FERVURA: ela é o gargalo, 3 un/min.',
     '2': 'A FERVURA não pode parar nem um minuto: ela dita o ritmo de todas.',
     't': 'Corte a 12: a fábrica continua em 3. Ritmo extra fora do gargalo só enche a fila.',
-    '3': 'Corte e Mistura no ritmo da FERVURA: a fila para de crescer e a produção é a mesma.',
+    '3': 'CORDA ligada: o Corte só libera material quando a FERVURA pede. A fila esvazia e a produção é a mesma.',
     '4': 'FERVURA de 3 para 8 (e o resto acompanha): a fábrica sobe para 8 un/min.',
     '5': 'Tudo igual a 8: o gargalo pode ter mudado de lugar. Volte ao passo 1.'
   };
@@ -1107,8 +1119,8 @@
     if(k === '1'){ if(!running && !won) start(); flashStation(g); }
     else if(k === '2'){ flashStation(g); }
     else if(k === 't'){ setRate(0, 12); }
-    else if(k === '3'){ setRate(0, rates[g]); setRate(1, rates[g]); flashStation(g); }
-    else if(k === '4'){ for(let i = 0; i < NUM_STATIONS; i++) setRate(i, 8); }
+    else if(k === '3'){ setRate(0, 8); setRope(true); flashStation(g); }
+    else if(k === '4'){ for(let i = 0; i < NUM_STATIONS; i++) setRate(i, 8); setRope(false); }
     else if(k === '5'){ for(let i = 0; i < NUM_STATIONS; i++) flashStation(i); }
     [...stepbarEl.querySelectorAll('button')].forEach(x => x.classList.toggle('on', x === b));
     stepcapEl.textContent = STEP_TXT[k];
