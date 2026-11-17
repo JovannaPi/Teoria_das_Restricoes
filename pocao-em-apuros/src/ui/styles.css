@@ -3787,8 +3787,11 @@ body.room-mode .pausebtn {
 /* fundo transparente para mostrar os detalhes do slide, e o botão discreto de nova sala */
 html.deck-bg, html.deck-bg body { background: transparent !important; }
 .room-panel.deck.dk { background: transparent; }
-.dk-new { position: absolute; left: 1.2vw; bottom: 1.2vh; font: inherit; font-size: 0.7em; font-weight: 700; color: #6b5878; background: transparent; border: 0; opacity: 0.12; cursor: pointer; padding: 0.4em 0.8em; border-radius: 999px; }
+.dk-mini { position: absolute; left: 1.2vw; bottom: 1.2vh; display: flex; gap: 0.3em; }
+.dk-new { font: inherit; font-size: 0.7em; font-weight: 700; color: #6b5878; background: transparent; border: 0; opacity: 0.12; cursor: pointer; padding: 0.4em 0.8em; border-radius: 999px; }
 .dk-new:hover, .dk-new:focus-visible { opacity: 0.9; background: rgba(91, 42, 134, 0.1); }
 html.deck-bg body > *:not(.room-panel) { display: none !important; }
 html.deck-bg { color-scheme: light !important; }
 .dk-head .dk-pill { margin-right: 6vw; }
+
+.dk-mini .dk-new:first-child { opacity: 0.4; }
