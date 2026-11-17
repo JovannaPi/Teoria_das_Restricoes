@@ -94,7 +94,7 @@ function renderDeck(root: HTMLElement): void {
       </section>
     </div>
     <div class="dk-cta" data-cta></div>
-    <button class="dk-new" data-action="room-new" title="Abrir outra sala">nova sala</button>`;
+    <span class="dk-mini"><button class="dk-new" data-action="room-copy" title="Copiar o link da sala para colar no chat">copiar link da sala</button><button class="dk-new" data-action="room-new" title="Abrir outra sala">nova sala</button></span>`;
   const c = root.querySelector('canvas');
   if (c) drawQr(c, url, 520);
   refreshDeck();
@@ -161,7 +161,7 @@ function render(root: HTMLElement): void {
   root.innerHTML = `
     <header class="rp-head">
       <div><h1>Sala <b data-room-code>${esc(code)}</b></h1><p>Poção em Apuros · Modo rápido</p></div>
-      <div class="rp-tools"><button data-action="room-new">Nova sala</button><button class="primary" data-action="room-close">Fechar</button></div>
+      <div class="rp-tools"><button data-action="room-copy">Copiar link</button><button data-action="room-new">Nova sala</button><button class="primary" data-action="room-close">Fechar</button></div>
     </header>
     <div class="rp-gatebar" data-gatebar>${gateHtml()}</div>
     <div class="rp-grid">
@@ -227,6 +227,22 @@ export function showRoomPanel(g: Game, fresh = false): void {
     document.querySelector('.room-panel')?.remove();
   };
   a['room-new'] = () => showRoomPanel(g, true);
+  a['room-copy'] = (el) => {
+    const url = roomUrl(code);
+    const done = () => {
+      const old = el.dataset.t || el.textContent || '';
+      el.dataset.t = old;
+      el.textContent = 'link copiado ✓';
+      setTimeout(() => { el.textContent = old; }, 2200);
+    };
+    const fallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = url; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch { /* sem permissão */ }
+      ta.remove(); done();
+    };
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(done, fallback); else fallback();
+  };
   a['room-gate'] = () => {
     open = !open; // já mostra o novo estado; o servidor confirma em seguida
     refreshLive();
