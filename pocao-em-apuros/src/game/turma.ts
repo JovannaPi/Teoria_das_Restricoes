@@ -129,7 +129,7 @@ export class TurmaGuide {
       case 0:
         this.card = {
           step: STEP[0],
-          text: 'Os pedidos chegam mais rápido do que a loja entrega. Toque em duas estações para conhecer a loja.',
+          text: 'Lina, esta loja era minha e agora é sua, neta. Os pedidos chegam mais rápido do que a loja entrega. Toque em duas estações para conhecê-la.',
         };
         break;
       case 1: {
