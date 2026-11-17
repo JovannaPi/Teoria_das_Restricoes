@@ -549,6 +549,16 @@
   .helpbtn{ display:none; position:fixed; top:16px; right:18px; z-index:70; font:inherit; font-size:14px; width:42px; height:42px; color:var(--yellow); background:var(--panel); border:3px solid var(--yellow); cursor:pointer; box-shadow:4px 4px 0 #000; }
   body.in-slide.has-popups .helpbtn{ display:block; }
   body.in-slide{ padding-bottom:84px; }
+
+  /* barra dos 5 passos */
+  .stepbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:stretch; margin:-8px 0 18px; }
+  .stepbar button{ font:inherit; font-size:10px; line-height:1.5; color:var(--line); background:var(--panel); border:3px solid var(--line); padding:9px 12px; cursor:pointer; box-shadow:4px 4px 0 #000; text-align:left; }
+  .stepbar button b{ display:block; color:var(--yellow); font-weight:normal; font-size:9px; }
+  .stepbar button:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 #000; }
+  .stepbar button.on{ background:var(--purple); color:#12061f; }
+  .stepbar button.on b{ color:#12061f; }
+  .stepbar button.test{ border-style:dashed; color:var(--muted); }
+  .stepcap{ flex:1 1 100%; min-height:1.6em; color:var(--green); font-size:10px; }
 </style>
 </head>
 <body>
@@ -572,6 +582,16 @@
       <div class="lab"><span id="finishedCount">0</span> / <span id="goalVal">60</span> POÇÕES</div>
       <div class="goal-bar"><div class="fill" id="goalFill"></div></div>
     </div>
+  </div>
+
+  <div class="stepbar" id="stepbar">
+    <button type="button" data-step="1"><b>PASSO 1</b>IDENTIFICAR</button>
+    <button type="button" data-step="2"><b>PASSO 2</b>EXPLORAR</button>
+    <button type="button" class="test" data-step="t"><b>TESTE</b>ACELERAR O CORTE</button>
+    <button type="button" data-step="3"><b>PASSO 3</b>SUBORDINAR</button>
+    <button type="button" data-step="4"><b>PASSO 4</b>ELEVAR</button>
+    <button type="button" data-step="5"><b>PASSO 5</b>REPETIR</button>
+    <div class="stepcap" id="stepcap"></div>
   </div>
 
   <div class="line" id="line"><!-- gerado via JS --></div>
@@ -1040,6 +1060,7 @@
     won = false;
     wasOverload = new Array(NUM_STATIONS).fill(false);
     winOverlay.classList.remove('show');
+    if(typeof stepbarEl !== 'undefined'){ [...stepbarEl.querySelectorAll('button')].forEach(x => x.classList.remove('on')); stepcapEl.textContent = ''; }
     lastPace = Math.min(...DEFAULT_RATES); lastB = DEFAULT_RATES.indexOf(lastPace); lastRates = DEFAULT_RATES.slice();
     buildLine();
     renderBuffers();
@@ -1058,6 +1079,39 @@
     if(!btn) return;
     speedMult = parseInt(btn.dataset.speed, 10);
     [...speedGroup.children].forEach(b => b.classList.toggle('active', b === btn));
+  });
+
+
+  // --- barra dos 5 passos: cada botão faz a mudança nos controles ---
+  const stepbarEl = document.getElementById('stepbar'), stepcapEl = document.getElementById('stepcap');
+  function setRate(i, v){
+    const sl = document.getElementById('rate-slider-' + i); if(!sl) return;
+    sl.value = v; sl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  function flashStation(i){
+    const el = document.getElementById('station-' + i); if(!el) return;
+    el.classList.remove('just-changed'); void el.offsetWidth; el.classList.add('just-changed');
+  }
+  const STEP_TXT = {
+    '1': 'A fila cresce antes da FERVURA: ela é o gargalo, 3 un/min.',
+    '2': 'A FERVURA não pode parar nem um minuto: ela dita o ritmo de todas.',
+    't': 'Corte a 12: a fábrica continua em 3. Ritmo extra fora do gargalo só enche a fila.',
+    '3': 'Corte e Mistura no ritmo da FERVURA: a fila para de crescer e a produção é a mesma.',
+    '4': 'FERVURA de 3 para 8 (e o resto acompanha): a fábrica sobe para 8 un/min.',
+    '5': 'Tudo igual a 8: o gargalo pode ter mudado de lugar. Volte ao passo 1.'
+  };
+  stepbarEl.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-step]'); if(!b) return;
+    const k = b.dataset.step, g = DEFAULT_RATES.indexOf(Math.min(...DEFAULT_RATES));
+    ensureAudio();
+    if(k === '1'){ if(!running && !won) start(); flashStation(g); }
+    else if(k === '2'){ flashStation(g); }
+    else if(k === 't'){ setRate(0, 12); }
+    else if(k === '3'){ setRate(0, rates[g]); setRate(1, rates[g]); flashStation(g); }
+    else if(k === '4'){ for(let i = 0; i < NUM_STATIONS; i++) setRate(i, 8); }
+    else if(k === '5'){ for(let i = 0; i < NUM_STATIONS; i++) flashStation(i); }
+    [...stepbarEl.querySelectorAll('button')].forEach(x => x.classList.toggle('on', x === b));
+    stepcapEl.textContent = STEP_TXT[k];
   });
 
   buildLine();
