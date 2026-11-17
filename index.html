@@ -345,6 +345,9 @@
   .slide.center .wrap{ text-align:center; }
   .slide.center h1{ margin-left:auto; margin-right:auto; }
   .slide.center .card{ text-align:center; }
+  .slide.figslide{ padding:3vh 3vw 7vh; align-items:center; justify-content:center; }
+  .figbox{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  .figbox img{ max-width:100%; max-height:100%; object-fit:contain; border-radius:18px; box-shadow:0 24px 50px -26px rgba(30,2,43,.6); }
   /* ---------------------------------------------------------------- embeds */
   .slide.embed{ padding:0; }
   .slide.embed:not(.light){ background:var(--night); }
@@ -630,6 +633,12 @@
       </div>
     </div>
     <div class="foot"><span class="src">Goldratt &amp; Fox (1986); Schragenheim &amp; Dettmer (2000)</span></div>
+  </section>
+
+  <!-- diagrama visual feito com auxílio de IA -->
+  <section class="slide figslide">
+    <div class="figbox rv" style="--d:1"><img src="img/diagrama-ia.webp" alt="Infográfico: a Teoria das Restrições na viagem do Motor Clube, com os 5 passos, o Tambor-Pulmão-Corda, os 5 critérios de desempenho e o resumo"></div>
+    <div class="foot"><span class="src plain">Diagrama elaborado com auxílio de IA</span></div>
   </section>
 
   <!-- simulador (caso da Jovanna): tela cheia, textos em pop-up -->
